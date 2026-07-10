@@ -1,0 +1,594 @@
+{
+  "skills": [
+    {
+      "id": 1,
+      "name": "Python",
+      "category": "General"
+    },
+    {
+      "id": 2,
+      "name": "FastAPI",
+      "category": "General"
+    },
+    {
+      "id": 3,
+      "name": "SQL",
+      "category": "General"
+    },
+    {
+      "id": 4,
+      "name": "PostgreSQL",
+      "category": "General"
+    },
+    {
+      "id": 5,
+      "name": "Docker",
+      "category": "General"
+    },
+    {
+      "id": 6,
+      "name": "Machine Learning",
+      "category": "General"
+    },
+    {
+      "id": 7,
+      "name": "React",
+      "category": "General"
+    },
+    {
+      "id": 8,
+      "name": "TypeScript",
+      "category": "General"
+    },
+    {
+      "id": 9,
+      "name": "Ollama",
+      "category": "General"
+    },
+    {
+      "id": 10,
+      "name": "Plotly",
+      "category": "General"
+    },
+    {
+      "id": 11,
+      "name": "AgGrid",
+      "category": "General"
+    },
+    {
+      "id": 12,
+      "name": "AWS",
+      "category": "General"
+    },
+    {
+      "id": 13,
+      "name": "Kubernetes",
+      "category": "General"
+    }
+  ],
+  "jobs": [
+    {
+      "id": 1,
+      "title": "Senior Python & ML Engineer",
+      "department": "Engineering",
+      "location": "Remote",
+      "experience_min": 5,
+      "experience_max": 10,
+      "salary_min": 120000,
+      "salary_max": 180000,
+      "employment_type": "Full-time",
+      "hiring_manager": "Ava Morgan",
+      "deadline": "2026-07-31",
+      "status": "Active",
+      "description": "Build AI-native recruitment workflows and backend services.",
+      "responsibilities": [
+        "Design backend services",
+        "Integrate resume parsing",
+        "Collaborate with HR operations"
+      ],
+      "requirements": [
+        "Python",
+        "FastAPI",
+        "SQLAlchemy",
+        "PostgreSQL"
+      ],
+      "preferred_skills": [
+        "Ollama",
+        "Streamlit",
+        "Plotly"
+      ],
+      "nice_to_have_skills": [
+        "Kubernetes",
+        "React"
+      ],
+      "benefits": [
+        "Full medical/dental/vision coverage",
+        "Flexible working hours & remote work",
+        "Annual learning & development stipend",
+        "401(k) matching plan"
+      ],
+      "applications_count": 3,
+      "created_at": "2026-07-10T15:32:18.295304",
+      "updated_at": "2026-07-10T15:32:18.295916",
+      "skills": [
+        {
+          "id": 1,
+          "name": "Python",
+          "category": "General"
+        },
+        {
+          "id": 2,
+          "name": "FastAPI",
+          "category": "General"
+        },
+        {
+          "id": 3,
+          "name": "SQL",
+          "category": "General"
+        },
+        {
+          "id": 4,
+          "name": "PostgreSQL",
+          "category": "General"
+        },
+        {
+          "id": 5,
+          "name": "Docker",
+          "category": "General"
+        },
+        {
+          "id": 6,
+          "name": "Machine Learning",
+          "category": "General"
+        },
+        {
+          "id": 7,
+          "name": "React",
+          "category": "General"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Data Analyst",
+      "department": "Analytics",
+      "location": "Hybrid",
+      "experience_min": 2,
+      "experience_max": 5,
+      "salary_min": 80000,
+      "salary_max": 110000,
+      "employment_type": "Full-time",
+      "hiring_manager": "Ava Morgan",
+      "deadline": "2026-07-24",
+      "status": "Active",
+      "description": "Help design and construct analytics dashboards and compile recruitment trends.",
+      "responsibilities": [
+        "Build SQL queries",
+        "Construct visualization dashboards",
+        "Draft analytics reports"
+      ],
+      "requirements": [
+        "SQL",
+        "Python",
+        "Tableau"
+      ],
+      "preferred_skills": [
+        "Plotly",
+        "Excel"
+      ],
+      "nice_to_have_skills": [
+        "dbt"
+      ],
+      "benefits": [
+        "Health & wellness reimbursement",
+        "Hybrid office workspace stipend",
+        "Generous PTO & parental leave"
+      ],
+      "applications_count": 0,
+      "created_at": "2026-07-10T15:32:18.296083",
+      "updated_at": "2026-07-10T15:32:18.296097",
+      "skills": [
+        {
+          "id": 1,
+          "name": "Python",
+          "category": "General"
+        },
+        {
+          "id": 3,
+          "name": "SQL",
+          "category": "General"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "id": 1,
+      "name": "Sarah Jenkins",
+      "email": "sarah.jenkins@example.com",
+      "phone": "+1 (555) 019-2834",
+      "linkedin": "https://linkedin.com/in/sarahjenkins",
+      "github": "https://github.com/sarahjenkins",
+      "portfolio": "https://sarahjenkins.dev",
+      "current_title": "Senior Full-Stack Engineer",
+      "years_experience": 8,
+      "location": "New York, NY",
+      "status": "Shortlisted",
+      "match_score": 91,
+      "tags": [
+        "Full-stack",
+        "Cloud"
+      ],
+      "notes": [
+        {
+          "author": "Ava Morgan",
+          "note": "Excellent technical review. Move to leadership round.",
+          "created_at": "2026-07-10T15:32:18.296123"
+        }
+      ],
+      "avatar_url": "",
+      "summary": "Senior engineer with strong product delivery and FastAPI experience.",
+      "created_at": "2026-07-10T15:32:18.296138",
+      "updated_at": "2026-07-10T15:32:18.296150",
+      "skills": [
+        {
+          "id": 1,
+          "name": "Python",
+          "category": "General"
+        },
+        {
+          "id": 2,
+          "name": "FastAPI",
+          "category": "General"
+        },
+        {
+          "id": 3,
+          "name": "SQL",
+          "category": "General"
+        },
+        {
+          "id": 4,
+          "name": "PostgreSQL",
+          "category": "General"
+        },
+        {
+          "id": 5,
+          "name": "Docker",
+          "category": "General"
+        },
+        {
+          "id": 6,
+          "name": "Machine Learning",
+          "category": "General"
+        },
+        {
+          "id": 7,
+          "name": "React",
+          "category": "General"
+        },
+        {
+          "id": 8,
+          "name": "TypeScript",
+          "category": "General"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "David Chen",
+      "email": "david.chen@example.com",
+      "phone": "+1 (555) 024-8192",
+      "linkedin": "https://linkedin.com/in/davidchen",
+      "github": "https://github.com/davidchen",
+      "portfolio": "",
+      "current_title": "Data Scientist",
+      "years_experience": 4,
+      "location": "San Francisco, CA",
+      "status": "Interview Scheduled",
+      "match_score": 84,
+      "tags": [
+        "ML",
+        "NLP"
+      ],
+      "notes": [
+        {
+          "author": "Ava Morgan",
+          "note": "Strong machine learning basics. Schedule live test.",
+          "created_at": "2026-07-10T15:32:18.296169"
+        }
+      ],
+      "avatar_url": "",
+      "summary": "Machine learning specialist with applied analytics experience.",
+      "created_at": "2026-07-10T15:32:18.296183",
+      "updated_at": "2026-07-10T15:32:18.296195",
+      "skills": [
+        {
+          "id": 1,
+          "name": "Python",
+          "category": "General"
+        },
+        {
+          "id": 6,
+          "name": "Machine Learning",
+          "category": "General"
+        },
+        {
+          "id": 9,
+          "name": "Ollama",
+          "category": "General"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Emily Taylor",
+      "email": "emily.taylor@example.com",
+      "phone": "+1 (555) 013-5749",
+      "linkedin": "https://linkedin.com/in/emilytaylor",
+      "github": "https://github.com/emilytaylor",
+      "portfolio": "",
+      "current_title": "Backend Developer",
+      "years_experience": 5,
+      "location": "Austin, TX",
+      "status": "Applied",
+      "match_score": 78,
+      "tags": [
+        "API",
+        "Databases"
+      ],
+      "notes": [],
+      "avatar_url": "",
+      "summary": "Backend specialist with strong API design and PostgreSQL experience.",
+      "created_at": "2026-07-10T15:32:18.296214",
+      "updated_at": "2026-07-10T15:32:18.296228",
+      "skills": [
+        {
+          "id": 1,
+          "name": "Python",
+          "category": "General"
+        },
+        {
+          "id": 2,
+          "name": "FastAPI",
+          "category": "General"
+        },
+        {
+          "id": 3,
+          "name": "SQL",
+          "category": "General"
+        },
+        {
+          "id": 4,
+          "name": "PostgreSQL",
+          "category": "General"
+        },
+        {
+          "id": 5,
+          "name": "Docker",
+          "category": "General"
+        }
+      ]
+    }
+  ],
+  "applications": [
+    {
+      "id": 1,
+      "candidate_id": 1,
+      "job_id": 1,
+      "status": "Shortlisted",
+      "match_score": 91,
+      "ai_summary": "Excellent fit for Python ML role.",
+      "recruiter_notes": "Highly recommend.",
+      "created_at": "2026-07-10T15:32:18.296244",
+      "updated_at": "2026-07-10T15:32:18.296258"
+    },
+    {
+      "id": 2,
+      "candidate_id": 2,
+      "job_id": 1,
+      "status": "Interview Scheduled",
+      "match_score": 84,
+      "ai_summary": "Good ML foundations.",
+      "recruiter_notes": "Needs tech screen.",
+      "created_at": "2026-07-10T15:32:18.296275",
+      "updated_at": "2026-07-10T15:32:18.296290"
+    },
+    {
+      "id": 3,
+      "candidate_id": 3,
+      "job_id": 1,
+      "status": "Applied",
+      "match_score": 78,
+      "ai_summary": "Solid API and SQL skills.",
+      "recruiter_notes": "",
+      "created_at": "2026-07-10T15:32:18.296306",
+      "updated_at": "2026-07-10T15:32:18.296321"
+    }
+  ],
+  "resume_data": [
+    {
+      "id": 1,
+      "candidate_id": 1,
+      "filename": "sarah_jenkins_resume.pdf",
+      "mime_type": "application/pdf",
+      "file_path": "uploads/sarah_jenkins_resume.pdf",
+      "extracted_text": "Sarah Jenkins resume text...",
+      "parsed_json": {
+        "source": "seed"
+      },
+      "name": "Sarah Jenkins",
+      "email": "sarah.jenkins@example.com",
+      "phone": "+1 (555) 019-2834",
+      "education": [
+        "MS Computer Science - Georgia Tech"
+      ],
+      "skills": [
+        "Python",
+        "SQL",
+        "FastAPI",
+        "AWS",
+        "React"
+      ],
+      "experience": [
+        "8 years leading product engineering teams"
+      ],
+      "projects": [
+        "AI Resume Screener",
+        "Cloud Native SaaS Platform"
+      ],
+      "certifications": [
+        "AWS Solutions Architect"
+      ],
+      "languages": [
+        "English"
+      ],
+      "achievements": [
+        "Led hiring automation at scale"
+      ],
+      "status": "Parsed",
+      "created_at": "2026-07-10T15:32:18.296345"
+    }
+  ],
+  "activities": [
+    {
+      "icon": "fa-file-lines",
+      "title": "Resume Uploaded",
+      "description": "Sarah Jenkins - Senior Full-Stack Engineer",
+      "time": "10 minutes ago"
+    },
+    {
+      "icon": "fa-circle-check",
+      "title": "Candidate Shortlisted",
+      "description": "David Chen - Data Scientist",
+      "time": "2 hours ago"
+    },
+    {
+      "icon": "fa-calendar-days",
+      "title": "Interview Scheduled",
+      "description": "Emily Taylor - Backend Developer",
+      "time": "Yesterday"
+    }
+  ],
+  "interviews": [
+    {
+      "id": 1,
+      "candidate_id": 1,
+      "candidate_name": "Sarah Jenkins",
+      "interviewer": "Ava Morgan",
+      "date": "2026-07-11",
+      "time": "10:00",
+      "stage": "Technical Assessment",
+      "meeting_link": "https://meet.google.com/abc-defg-hij",
+      "status": "Scheduled",
+      "feedback_notes": "",
+      "recommendation": "",
+      "created_at": "2026-07-10T15:32:18.296368"
+    },
+    {
+      "id": 2,
+      "candidate_id": 2,
+      "candidate_name": "David Chen",
+      "interviewer": "Ava Morgan",
+      "date": "2026-07-11",
+      "time": "11:30",
+      "stage": "HR Culture Fit",
+      "meeting_link": "https://meet.google.com/xyz-pdqo-lmn",
+      "status": "Scheduled",
+      "feedback_notes": "",
+      "recommendation": "",
+      "created_at": "2026-07-10T15:32:18.296390"
+    }
+  ],
+  "employees": [
+    {
+      "id": 1,
+      "name": "Alice Johnson",
+      "department": "Engineering",
+      "role": "Lead Frontend Engineer",
+      "manager": "Marcus Aurelius",
+      "joining_date": "2024-03-15",
+      "performance_score": 92,
+      "skills": [
+        {
+          "name": "React",
+          "progress": 95
+        },
+        {
+          "name": "TypeScript",
+          "progress": 90
+        },
+        {
+          "name": "CSS Grid",
+          "progress": 85
+        }
+      ],
+      "projects": [
+        "Design System Revamp",
+        "Stripe Checkout Integration"
+      ],
+      "promotions": [
+        "Senior Engineer (Jan 2025)",
+        "Lead Engineer (Mar 2026)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Bob Chen",
+      "department": "Engineering",
+      "role": "Senior ML Engineer",
+      "manager": "Ava Morgan",
+      "joining_date": "2023-11-01",
+      "performance_score": 88,
+      "skills": [
+        {
+          "name": "Python",
+          "progress": 95
+        },
+        {
+          "name": "PyTorch",
+          "progress": 90
+        },
+        {
+          "name": "Docker",
+          "progress": 80
+        }
+      ],
+      "projects": [
+        "LLM Screening Pipeline",
+        "Recommendation Engine v2"
+      ],
+      "promotions": [
+        "ML Engineer II (Jul 2024)",
+        "Senior ML Engineer (Feb 2026)"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Charlie Davis",
+      "department": "Analytics",
+      "role": "Senior Data Analyst",
+      "manager": "Sophia Lin",
+      "joining_date": "2025-01-10",
+      "performance_score": 85,
+      "skills": [
+        {
+          "name": "SQL",
+          "progress": 90
+        },
+        {
+          "name": "Tableau",
+          "progress": 85
+        },
+        {
+          "name": "Python",
+          "progress": 75
+        }
+      ],
+      "projects": [
+        "Recruiter ROI Dashboard",
+        "Funnel Conversion Analytics"
+      ],
+      "promotions": []
+    }
+  ]
+}

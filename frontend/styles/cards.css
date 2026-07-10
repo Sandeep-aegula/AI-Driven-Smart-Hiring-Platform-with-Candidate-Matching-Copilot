@@ -1,0 +1,204 @@
+/* Custom Card Wrappers */
+.custom-card-wrapper {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.015), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    border: 1px solid #E2E8F0;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0F172A;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #F1F5F9;
+    padding-bottom: 12px;
+}
+
+/* KPI Overview Cards styling */
+.kpi-container {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.kpi-card {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.015), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    border: 1px solid #E2E8F0;
+    flex: 1;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 5px solid #6366F1;
+}
+
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    border-left-width: 8px;
+}
+
+.kpi-icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #EEF2FF;
+    border-radius: 10px;
+    font-size: 18px;
+    color: #6366F1;
+    margin-bottom: 12px;
+}
+
+.kpi-title {
+    font-size: 0.8rem;
+    color: #64748B;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.kpi-value {
+    font-size: 1.95rem;
+    color: #0F172A;
+    font-weight: 800;
+    margin: 4px 0;
+    line-height: 1;
+}
+
+.kpi-growth {
+    font-size: 0.76rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.growth-up {
+    color: #10B981;
+}
+
+.growth-down {
+    color: #EF4444;
+}
+
+/* Badge Styles */
+.badge-strong {
+    background-color: #D1FAE5;
+    color: #065F46;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 0.72rem;
+    display: inline-block;
+}
+
+.badge-moderate {
+    background-color: #FEF3C7;
+    color: #92400E;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 0.72rem;
+    display: inline-block;
+}
+
+.badge-low {
+    background-color: #FEE2E2;
+    color: #991B1B;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 0.72rem;
+    display: inline-block;
+}
+
+.badge-blue {
+    background-color: #EEF2FF;
+    color: #4F46E5;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 0.72rem;
+    display: inline-block;
+}
+
+/* Custom Tag Styles */
+.tag {
+    background-color: #EEF2FF;
+    color: #4F46E5;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-right: 6px;
+    margin-bottom: 6px;
+    border: 1px solid #E0E7FF;
+}
+
+.tag-success {
+    background-color: #ECFDF5;
+    color: #047857;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-right: 6px;
+    margin-bottom: 6px;
+    border: 1px solid #D1FAE5;
+}
+
+.tag-missing {
+    background-color: #FEF2F2;
+    color: #B91C1C;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-right: 6px;
+    margin-bottom: 6px;
+    border: 1px solid #FEE2E2;
+}
+
+/* Ensure columns in the dashboard expand to equal heights and containers stretch to fill the column height */
+div[data-testid="stHorizontalBlock"] {
+    align-items: stretch !important;
+}
+
+div[data-testid="column"] {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+div[data-testid="column"] > div[data-testid="stVerticalBlock"] {
+    flex-grow: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+div[data-testid="column"] > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
+    flex-grow: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+div[data-testid="column"] > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] > div[data-testid="stVerticalBlock"] {
+    flex-grow: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}

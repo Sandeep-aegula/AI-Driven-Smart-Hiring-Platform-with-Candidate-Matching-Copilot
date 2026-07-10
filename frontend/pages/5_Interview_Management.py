@@ -1,0 +1,233 @@
+import streamlit as st
+import os
+import sys
+import datetime
+
+# Setup path to import api_client
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+from frontend.components import api_client
+from frontend.services.cache import get_interviews_cached, get_candidates_cached, invalidate_interviews
+from frontend.services.app_state import AppState
+from frontend.components.page_utils import setup_page, render_sidebar_footer
+
+# Page Config
+st.set_page_config(
+    page_title="Interview Management - HirePilot",
+    page_icon="📅",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+setup_page("Interview Management", "Schedule and coordinate candidate interviews", page_key=__file__)
+
+# State initialization
+if "selected_interview_id" not in st.session_state:
+    st.session_state.selected_interview_id = None
+if "generated_questions" not in st.session_state:
+    st.session_state.generated_questions = None
+
+# Load Candidates and Interviews
+candidates = api_client.get_candidates()
+interviews = api_client.get_interviews()
+
+# Divide screen into Left list/calendar and Right forms/AI utilities
+col_left, col_right = st.columns([1.2, 0.8])
+
+with col_left:
+    # 1. Today's & Upcoming Interviews
+    st.markdown("#### <i class='fa-solid fa-clipboard-list' style='color:#6366F1;'></i> Scheduled Sessions", unsafe_allow_html=True)
+    if not interviews:
+        st.markdown("<p style='color:#64748B;'>No interviews scheduled.</p>", unsafe_allow_html=True)
+    else:
+        for idx, i in enumerate(interviews):
+            status_color = "#10B981" if i.get("status") == "Scheduled" else ("#6366F1" if i.get("status") == "Completed" else "#EF4444")
+            
+            with st.container(border=True):
+                c_row1, c_row2 = st.columns([3.5, 1.5])
+                with c_row1:
+                    st.markdown(f"""
+                    <div>
+                        <span class="badge-blue" style="font-size:0.7rem; padding:2px 8px; border-radius:9999px;">{i.get('stage')}</span>
+                        <div style="font-weight: 800; font-size: 1.05rem; color:#0F172A; margin-top:4px;">{i.get('candidate_name')}</div>
+                        <div style="font-size: 0.8rem; color: #64748B; margin-top:2px;">
+                            <i class="fa-solid fa-clock"></i> {i.get('date')} at {i.get('time')} • <strong>Interviewer:</strong> {i.get('interviewer')}
+                        </div>
+                        <div style="font-size:0.75rem; color:#4F46E5; margin-top:4px; font-weight:600;">
+                            <i class="fa-solid fa-link"></i> <a href="{i.get('meeting_link')}" target="_blank">{i.get('meeting_link')}</a>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with c_row2:
+                    st.markdown(f"<div style='text-align:right; font-weight:700; color:{status_color}; font-size:0.8rem;'>{i.get('status')}</div>", unsafe_allow_html=True)
+                    st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+                    
+                    # Selection triggers for logging feedback
+                    if st.button("Feedback / Notes", key=f"feed_btn_{i.get('id')}", use_container_width=True):
+                        st.session_state.selected_interview_id = i.get('id')
+                        st.rerun()
+                        
+            st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+
+    # 2. Calendar Widget Grid
+    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    st.markdown("#### <i class='fa-solid fa-calendar' style='color:#6366F1;'></i> Monthly Overview", unsafe_allow_html=True)
+    
+    # Render mock calendar slots (7 columns: Mon-Sun)
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    cols_cal = st.columns(7)
+    for index, d in enumerate(days):
+        cols_cal[index].markdown(f"<div style='text-align:center; font-weight:700; color:#475569; font-size:0.8rem;'>{d}</div>", unsafe_allow_html=True)
+        
+    cal_grid = [
+        ["", "", "", "1", "2", "3", "4"],
+        ["5", "6", "7", "8", "9", "10", "11 📅"],
+        ["12", "13", "14", "15", "16", "17", "18"],
+        ["19", "20", "21", "22", "23", "24", "25"],
+        ["26", "27", "28", "29", "30", "31", ""]
+    ]
+    for row in cal_grid:
+        cols_row = st.columns(7)
+        for index, day in enumerate(row):
+            bg_color = "#F8FAFC" if day else "transparent"
+            border = "1px solid #E2E8F0" if day else "none"
+            accent_border = "border-top: 3px solid #6366F1;" if "📅" in day else ""
+            cols_row[index].markdown(f"""
+            <div style="background-color: {bg_color}; border: {border}; {accent_border} border-radius: 8px; padding: 8px; height: 50px; font-size: 0.78rem; font-weight: 600; color: #0F172A; text-align: left; margin-bottom: 5px;">
+                {day}
+            </div>
+            """, unsafe_allow_html=True)
+
+    # 3. Timeline History
+    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    st.markdown("#### <i class='fa-solid fa-timeline' style='color:#6366F1;'></i> Timeline Activities", unsafe_allow_html=True)
+    activities = [
+        {"time": "Just now", "title": "Interview scheduled", "desc": "Technical Assessment scheduled with Sarah Jenkins."},
+        {"time": "2 hours ago", "title": "Feedback submitted", "desc": "Ava Morgan submitted feedback on candidate David Chen."},
+        {"time": "Yesterday", "title": "HR screening completed", "desc": "HR Culture Fit passed for Emily Taylor."}
+    ]
+    timeline_html = "<div style='display: flex; flex-direction: column; gap: 12px; margin-top: 10px;'>"
+    for event in activities:
+        timeline_html += f"""
+        <div style="display: flex; gap: 10px;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <div style="width: 14px; height: 14px; border-radius: 50%; background-color: #6366F1; border: 2.5px solid #EEF2FF;"></div>
+                <div style="width: 1.5px; flex-grow: 1; background-color: #E2E8F0; min-height: 20px;"></div>
+            </div>
+            <div>
+                <span style="font-weight: 700; color: #0F172A; font-size: 0.8rem;">{event['title']}</span>
+                <span style="font-size: 0.72rem; color: #64748B; margin-left: 8px;">{event['time']}</span>
+                <div style="font-size: 0.76rem; color: #475569; margin-top: 1px;">{event['desc']}</div>
+            </div>
+        </div>
+        """
+    timeline_html += "</div>"
+    st.markdown(timeline_html, unsafe_allow_html=True)
+
+with col_right:
+    # 1. Schedule Interview Form
+    with st.container(border=True):
+        st.markdown("#### <i class='fa-solid fa-calendar-plus' style='color:#6366F1;'></i> Schedule Interview", unsafe_allow_html=True)
+        
+        if not candidates:
+            st.warning("Please add candidates first.")
+        else:
+            cand_map = {c["name"]: c["id"] for c in candidates}
+            selected_cand = st.selectbox("Candidate *", list(cand_map.keys()))
+            stage = st.selectbox("Interview Stage", ["Technical Assessment", "Coding Round", "HR Culture Fit", "System Design"])
+            interviewer = st.text_input("Assign Interviewer", value="Ava Morgan")
+            
+            c_date, c_time = st.columns(2)
+            with c_date:
+                date = st.date_input("Interview Date", value=datetime.date.today() + datetime.timedelta(days=1))
+            with c_time:
+                time = st.time_input("Interview Time", value=datetime.time(10, 0))
+                
+            meet_link = st.text_input("Meeting Link", value="https://meet.google.com/abc-defg-hij")
+            
+            if st.button("Schedule Session", type="primary", use_container_width=True):
+                payload = {
+                    "candidate_id": cand_map[selected_cand],
+                    "interviewer": interviewer,
+                    "date": date.isoformat(),
+                    "time": time.strftime("%H:%M"),
+                    "stage": stage,
+                    "meeting_link": meet_link
+                }
+                res = api_client.schedule_interview(payload)
+                if res:
+                    st.toast("Interview successfully scheduled!", icon="🎉")
+                    st.rerun()
+
+    # 2. Ollama AI Questions Generator
+    st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown("#### <i class='fa-solid fa-wand-magic-sparkles' style='color:#6366F1;'></i> Generate Interview Questions", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:0.8rem; color:#64748B;'>Select category and generate questions based on the candidate's core skills.</p>", unsafe_allow_html=True)
+        
+        ai_stage = st.selectbox("Category", ["Technical", "Coding", "Behavioral", "HR"], key="ai_q_stage")
+        ai_skills = st.text_input("Candidate Skills (comma separated)", value="Python, FastAPI, SQL")
+        
+        if st.button("Generate Questions with Ollama AI", type="secondary", use_container_width=True):
+            with st.spinner("Ollama qwen2.5-coder:7b is writing questions..."):
+                skills_list = [s.strip() for s in ai_skills.split(",") if s.strip()]
+                res_q = api_client.generate_interview_questions(ai_stage, skills_list)
+                if res_q:
+                    st.session_state.generated_questions = res_q
+                    st.success("Successfully generated questions!")
+                else:
+                    st.error("Ollama questions generator failed to respond.")
+                    
+        if st.session_state.generated_questions:
+            st.markdown("<div style='margin-top:10px; background-color:#EEF2FF; border-left:3px solid #6366F1; padding:10px; border-radius:4px;'>", unsafe_allow_html=True)
+            for idx, q in enumerate(st.session_state.generated_questions):
+                st.markdown(f"**Q{idx+1}:** *{q}*")
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    # 3. Log Feedback Notes & Recommendation
+    if st.session_state.selected_interview_id:
+        st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
+        
+        # Load active interview details
+        active_int = next((i for i in interviews if i.get("id") == st.session_state.selected_interview_id), None)
+        if active_int:
+            with st.container(border=True):
+                st.markdown(f"#### <i class='fa-solid fa-comment-medical' style='color:#6366F1;'></i> Log Feedback: {active_int.get('candidate_name')}", unsafe_allow_html=True)
+                
+                feedback = st.text_area("Feedback Notes", value=active_int.get("feedback_notes", ""), placeholder="Enter candidate performance details...")
+                recommendation = st.selectbox("Recommendation", ["Select...", "Approve", "Shortlist", "Reject"], index=["Select...", "Approve", "Shortlist", "Reject"].index(active_int.get("recommendation", "Select...") or "Select..."))
+                
+                c_act1, c_act2 = st.columns(2)
+                with c_act1:
+                    if st.button("Save Feedback", type="primary", use_container_width=True):
+                        if recommendation == "Select...":
+                            st.error("Please pick a recommendation.")
+                        else:
+                            res = api_client.add_interview_feedback(st.session_state.selected_interview_id, feedback, recommendation)
+                            if res:
+                                st.toast("Feedback logged successfully!", icon="✅")
+                                st.session_state.selected_interview_id = None
+                                st.rerun()
+                with c_act2:
+                    if st.button("Cancel Log", use_container_width=True):
+                        st.session_state.selected_interview_id = None
+                        st.rerun()
+
+# Sidebar footer metadata
+with st.sidebar:
+    st.markdown("""
+    <div style="margin-top: 80px; padding: 16px 10px 0 10px; border-top: 1px solid #1E293B;">
+        <div style="display: flex; align-items: center; gap: 10px; opacity: 0.85;">
+            <div style="background-color: #1E293B; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6366F1;">
+                <i class="fa-solid fa-rocket"></i>
+            </div>
+            <div>
+                <div style="font-weight: 700; color: #E2E8F0; font-size: 0.78rem;">HirePilot v1.2</div>
+                <div style="font-size: 0.65rem; color: #64748B;">Plan: Enterprise</div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)

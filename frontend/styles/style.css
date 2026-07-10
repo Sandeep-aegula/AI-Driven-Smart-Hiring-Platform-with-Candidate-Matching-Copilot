@@ -1,0 +1,108 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+html, body, [class*="css"], [class*="st-"] {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* App Background (Light Mode default) */
+.stApp {
+    background-color: #F8FAFC !important;
+}
+
+/* Hide default Streamlit decoration */
+#MainMenu {visibility: hidden;}
+header {visibility: hidden;}
+footer {visibility: hidden;}
+.stApp [data-testid="stHeader"] {
+    display: none;
+}
+
+/* Main block padding */
+.block-container {
+    padding-top: 1.5rem !important;
+    padding-bottom: 2rem !important;
+    padding-left: 3rem !important;
+    padding-right: 3rem !important;
+}
+
+/* --- SIDEBAR OVERRIDES --- */
+section[data-testid="stSidebar"] {
+    background-color: #0F172A !important; /* Dark Navy Background */
+    border-right: 1px solid #1E293B !important;
+    min-width: 250px !important;
+    max-width: 280px !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stSidebarNav"] {
+    background-color: #0F172A !important;
+    padding-top: 0.5rem !important;
+}
+
+/* Sidebar navigation links */
+section[data-testid="stSidebar"] [data-testid="stSidebarNav"] ul {
+    padding-left: 0 !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stSidebarNav"] li {
+    margin-bottom: 5px !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    background-color: transparent !important;
+    padding: 0 10px !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stSidebarNav"] li a {
+    color: #94A3B8 !important; /* Slate grey text */
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    padding: 10px 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    border-radius: 8px !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stSidebarNav"] li a:hover {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    color: #F8FAFC !important;
+}
+
+/* Selected active link in sidebar */
+section[data-testid="stSidebar"] [data-testid="stSidebarNav"] li a[aria-current="page"] {
+    background-color: #6366F1 !important; /* Premium Indigo background */
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25) !important;
+}
+
+/* Hide streamlit default sidebar nav header text if exists */
+section[data-testid="stSidebar"] [data-testid="stSidebarNav"] h2 {
+    display: none !important;
+}
+
+/* Modern Streamlit Sidebar Navigation Link text color fix */
+[data-testid="stSidebarNavLink"] span {
+    color: #94A3B8 !important;
+}
+[data-testid="stSidebarNavLink"] {
+    color: #94A3B8 !important;
+}
+[data-testid="stSidebarNavLink"][aria-current="page"] span {
+    color: #FFFFFF !important;
+}
+[data-testid="stSidebarNavLink"]:hover span {
+    color: #F8FAFC !important;
+}
+
+/* Custom Card Shadows */
+.custom-card-wrapper {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.015), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    border: 1px solid #E2E8F0;
+    margin-bottom: 20px;
+}
