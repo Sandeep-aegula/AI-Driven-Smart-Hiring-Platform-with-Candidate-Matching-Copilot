@@ -1,0 +1,27 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+html, body, [class*="css"], [class*="st-"] {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* App Background */
+.stApp {
+    background-color: #F8FAFC !important;
+}
+
+/* Hide default Streamlit decoration */
+#MainMenu {visibility: hidden;}
+header {visibility: hidden;}
+footer {visibility: hidden;}
+.stApp [data-testid="stHeader"] {
+    display: none;
+}
+
+/* Main block padding */
+.block-container {
+    padding-top: 1.5rem !important;
+    padding-bottom: 2rem !important;
+    padding-left: 3rem !important;
+    padding-right: 3rem !important;
+}
