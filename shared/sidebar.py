@@ -24,7 +24,6 @@ _NAV_ITEMS = [
     {"page": "Analytics",      "icon": "📊", "label": "Analytics"},
     {"page": "Reports",        "icon": "📑", "label": "Reports"},
     {"page": "AI Copilot",     "icon": "🤖", "label": "AI Copilot"},
-    {"page": "About",          "icon": "ℹ️",  "label": "About"},
 ]
 
 

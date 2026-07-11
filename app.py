@@ -128,10 +128,6 @@ def main():
         from components.ai_copilot import render_ai_copilot
         render_ai_copilot()
 
-    elif page == "About":
-        from components.about import render_about
-        render_about()
-
     else:
         st.error(f"Page '{page}' not found.")
 

@@ -41,16 +41,13 @@ def _load_css_bundle() -> str:
 
 def inject_css_once() -> None:
     """
-    Inject the combined CSS bundle into Streamlit exactly ONE time per
-    browser session. Subsequent reruns (page switches, filter changes, etc.)
-    skip this entirely — eliminating the main cause of flickering.
+    Inject the combined CSS bundle into Streamlit on every rerun.
+    This guarantees that the CSS stylesheet stays active in the DOM
+    when page components dynamically render.
     """
-    if st.session_state.get("__css_injected__"):
-        return
     css = _load_css_bundle()
     st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
     st.markdown(_FONT_AWESOME, unsafe_allow_html=True)
-    st.session_state["__css_injected__"] = True
 
 
 # ── Ollama / AI Client Singleton ─────────────────────────────────────────────
