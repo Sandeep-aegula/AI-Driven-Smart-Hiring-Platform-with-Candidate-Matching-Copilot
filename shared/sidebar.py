@@ -14,16 +14,16 @@ import streamlit as st
 
 # ── Navigation menu definition ───────────────────────────────────────────────
 _NAV_ITEMS = [
-    {"page": "Dashboard",      "icon": "🏠", "label": "Dashboard"},
-    {"page": "Jobs",           "icon": "💼", "label": "Jobs"},
-    {"page": "Candidates",     "icon": "👥", "label": "Candidates"},
-    {"page": "Resume Parser",  "icon": "📄", "label": "Resume Parser"},
-    {"page": "AI Screening",   "icon": "🤖", "label": "AI Screening"},
-    {"page": "Interviews",     "icon": "📅", "label": "Interviews"},
-    {"page": "Employees",      "icon": "👨‍💼", "label": "Employees"},
-    {"page": "Analytics",      "icon": "📊", "label": "Analytics"},
-    {"page": "Reports",        "icon": "📑", "label": "Reports"},
-    {"page": "AI Copilot",     "icon": "🤖", "label": "AI Copilot"},
+    {"page": "Dashboard",      "icon": ":material/dashboard:",      "label": "Dashboard"},
+    {"page": "Jobs",           "icon": ":material/work:",           "label": "Jobs"},
+    {"page": "Candidates",     "icon": ":material/group:",          "label": "Candidates"},
+    {"page": "Resume Parser",  "icon": ":material/description:",    "label": "Resume Parser"},
+    {"page": "AI Screening",   "icon": ":material/psychology:",     "label": "AI Screening"},
+    {"page": "Interviews",     "icon": ":material/calendar_today:", "label": "Interviews"},
+    {"page": "Employees",      "icon": ":material/badge:",          "label": "Employees"},
+    {"page": "Analytics",      "icon": ":material/bar_chart:",      "label": "Analytics"},
+    {"page": "Reports",        "icon": ":material/assessment:",     "label": "Reports"},
+    {"page": "AI Copilot",     "icon": ":material/assistant:",      "label": "AI Copilot"},
 ]
 
 
@@ -110,23 +110,14 @@ def render_sidebar() -> None:
             # Render as a full-width button
             col_pad, col_btn = st.columns([0.05, 0.95])
             with col_btn:
-                btn_label = f"{icon}  {label}"
-                if is_active:
-                    clicked = st.button(
-                        btn_label,
-                        key=f"nav_{page}",
-                        use_container_width=True,
-                        type="secondary",
-                        help=page,
-                    )
-                else:
-                    clicked = st.button(
-                        btn_label,
-                        key=f"nav_{page}",
-                        use_container_width=True,
-                        type="secondary",
-                        help=page,
-                    )
+                clicked = st.button(
+                    label,
+                    icon=icon,
+                    key=f"nav_{page}",
+                    use_container_width=True,
+                    type="secondary",
+                    help=page,
+                )
 
                 if clicked and not is_active:
                     st.session_state["current_page"] = page

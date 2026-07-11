@@ -131,5 +131,20 @@ def main():
     else:
         st.error(f"Page '{page}' not found.")
 
+    # ── Global Footer ───────────────────────────────────────────────────────
+    st.markdown("<div style='height:40px;'></div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="text-align: center; color: #94A3B8; font-size: 0.78rem; font-weight: 500; border-top: 1px solid #E2E8F0; padding-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <i class="fa-solid fa-paper-plane" style="color: #6366F1;"></i>
+        <span style="font-weight: 700; color: #475569;">HirePilot</span>
+        <span style="color: #CBD5E1;">•</span>
+        <i class="fa-solid fa-shield-halved" style="color: #6366F1;"></i>
+        <span style="font-weight: 700; color: #475569;">Enterprise SaaS</span>
+        <span style="color: #CBD5E1;">•</span>
+        <i class="fa-solid fa-server" style="color: #6366F1;"></i>
+        <span style="font-weight: 700; color: #475569;">Local Ollama (qwen2.5-coder:7b)</span>
+    </div>
+    """, unsafe_allow_html=True)
+
 
 main()

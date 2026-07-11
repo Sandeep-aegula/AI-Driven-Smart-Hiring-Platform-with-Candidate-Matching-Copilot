@@ -286,15 +286,7 @@ def render_dashboard() -> None:
         _quick_action(qa[3], "🔍 AI Screening",       "AI Screening",  "qa_ai_screen")
         _quick_action(qa[4], "📅 Schedule Interview", "Interviews",    "qa_schedule")
 
-    # ── Footer ────────────────────────────────────────────────────────────
-    st.markdown("<div style='height:30px;'></div>", unsafe_allow_html=True)
-    st.markdown("""
-    <div style="text-align:center;color:#94A3B8;font-size:0.78rem;font-weight:500;
-                border-top:1px solid #F1F5F9;padding-top:18px;">
-        <i class="fa-solid fa-code" style="margin-right:4px;"></i>
-        HirePilot Dashboard • Plan: Enterprise SaaS • Connected to local Ollama (qwen2.5-coder:7b)
-    </div>
-    """, unsafe_allow_html=True)
+
 
 
 # ── Helper functions ─────────────────────────────────────────────────────────
