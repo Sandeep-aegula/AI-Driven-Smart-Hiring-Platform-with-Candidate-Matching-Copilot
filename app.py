@@ -66,6 +66,39 @@ def _start_backend():
     t.start()
 
 
+def _start_ollama():
+    """Start local Ollama server and run qwen2.5-coder:7b in a background thread if not already active."""
+    try:
+        import httpx
+        httpx.get("http://localhost:11434/", timeout=2.0)
+        return  # Already running
+    except Exception:
+        pass
+
+    def _run():
+        try:
+            # Launch Ollama background service
+            subprocess.Popen(
+                ["ollama", "serve"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            # Give it a moment to boot
+            import time
+            time.sleep(2)
+            # Run/pull the qwen2.5-coder:7b model to make sure it is pre-loaded
+            subprocess.Popen(
+                ["ollama", "run", "qwen2.5-coder:7b"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except Exception:
+            pass
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
     # 1. Initialise session state (no-op on subsequent reruns)
@@ -74,9 +107,10 @@ def main():
     # 2. Inject CSS exactly once per browser session (prevents flicker)
     inject_css_once()
 
-    # 3. Attempt to start backend (silently, if not already running)
+    # 3. Attempt to start backend & Ollama AI server (silently, if not already running)
     if not st.session_state.get("__backend_started__"):
         _start_backend()
+        _start_ollama()
         st.session_state["__backend_started__"] = True
 
     # 4. Persistent sidebar — renders on EVERY rerun, never destroyed
