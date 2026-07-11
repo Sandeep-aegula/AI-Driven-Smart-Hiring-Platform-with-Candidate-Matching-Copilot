@@ -1,29 +1,54 @@
-/* Keyframe Animations */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* ============================================================
+   HirePilot — Animations CSS
+   Micro-animations and smooth transitions
+   ============================================================ */
+
+/* ── Fade in ─────────────────────────────────────────────── */
+@keyframes hp-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Animations Application */
-.custom-card-wrapper, 
-.kpi-card, 
-.candidate-table-row, 
-.timeline-content-card {
-    animation: fadeIn 0.4s ease-out forwards;
+.hp-fade-in {
+  animation: hp-fade-in 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Transitions */
-.kpi-card, 
-.custom-card-wrapper, 
-.candidate-table-row, 
-.timeline-content-card {
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
-                box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
-                border-color 0.2s ease-in-out;
+/* ── Slide in from right ─────────────────────────────────── */
+@keyframes hp-slide-in {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
+
+.hp-slide-in {
+  animation: hp-slide-in 0.24s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ── Pulse badge ─────────────────────────────────────────── */
+@keyframes hp-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+.hp-pulse { animation: hp-pulse 2s ease-in-out infinite; }
+
+/* ── Progress bar fill animation ────────────────────────── */
+@keyframes hp-bar-fill {
+  from { width: 0%; }
+}
+
+.hp-bar-animated { animation: hp-bar-fill 0.6s ease-out both; }
+
+/* ── Card hover lift ─────────────────────────────────────── */
+.kpi-card,
+.custom-card-wrapper,
+div[data-testid="stVerticalBlockBorderWrapper"] {
+  transition: transform 0.20s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.20s cubic-bezier(0.4,0,0.2,1) !important;
+}
+
+/* ── Staggered children ─────────────────────────────────── */
+.hp-stagger > *:nth-child(1) { animation-delay: 0.00s; }
+.hp-stagger > *:nth-child(2) { animation-delay: 0.05s; }
+.hp-stagger > *:nth-child(3) { animation-delay: 0.10s; }
+.hp-stagger > *:nth-child(4) { animation-delay: 0.15s; }
+.hp-stagger > *:nth-child(5) { animation-delay: 0.20s; }

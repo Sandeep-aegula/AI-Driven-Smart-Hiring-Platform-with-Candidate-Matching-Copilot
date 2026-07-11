@@ -1,0 +1,172 @@
+/* ============================================================
+   HirePilot — Custom Sidebar CSS
+   Enterprise SaaS sidebar — inspired by Linear, Stripe, Notion
+   ============================================================ */
+
+/* ── Sidebar Container ──────────────────────────────────── */
+.hp-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #0F172A;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ── Logo Block ─────────────────────────────────────────── */
+.hp-logo-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px 18px 16px;
+  border-bottom: 1px solid #1E293B;
+  flex-shrink: 0;
+}
+
+.hp-logo-icon {
+  background: linear-gradient(135deg, #6366F1, #4F46E5);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: white;
+  box-shadow: 0 4px 14px rgba(99,102,241,0.40);
+  flex-shrink: 0;
+}
+
+.hp-logo-text-primary {
+  font-weight: 800;
+  color: #F8FAFC;
+  font-size: 1.18rem;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.hp-logo-text-sub {
+  font-size: 0.62rem;
+  color: #64748B;
+  font-weight: 600;
+  margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* ── Navigation Section Label ───────────────────────────── */
+.hp-nav-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  padding: 14px 16px 6px 16px;
+}
+
+/* ── Nav Item (Streamlit button override) ───────────────── */
+/* All nav buttons share this appearance */
+.hp-nav-item button {
+  background: transparent !important;
+  color: #94A3B8 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 9px 12px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  text-align: left !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  box-shadow: none !important;
+  margin: 1px 0 !important;
+}
+
+.hp-nav-item button:hover {
+  background: rgba(255,255,255,0.05) !important;
+  color: #F1F5F9 !important;
+}
+
+/* Active nav item */
+.hp-nav-item-active button {
+  background: linear-gradient(135deg, rgba(99,102,241,0.20), rgba(79,70,229,0.15)) !important;
+  color: #FFFFFF !important;
+  border-left: 3px solid #6366F1 !important;
+  border-radius: 0 8px 8px 0 !important;
+  font-weight: 700 !important;
+  padding-left: 9px !important;
+}
+
+.hp-nav-item-active button:hover {
+  background: linear-gradient(135deg, rgba(99,102,241,0.28), rgba(79,70,229,0.22)) !important;
+}
+
+/* ── Nav Divider ────────────────────────────────────────── */
+.hp-nav-divider {
+  height: 1px;
+  background-color: #1E293B;
+  margin: 8px 16px;
+}
+
+/* ── Profile Card ───────────────────────────────────────── */
+.hp-profile-card {
+  margin-top: auto;
+  padding: 14px 16px;
+  border-top: 1px solid #1E293B;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hp-profile-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366F1, #4F46E5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+
+.hp-profile-name {
+  font-weight: 700;
+  color: #E2E8F0;
+  font-size: 0.82rem;
+  line-height: 1;
+}
+
+.hp-profile-status {
+  font-size: 0.65rem;
+  color: #64748B;
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hp-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10B981;
+  flex-shrink: 0;
+}
+
+.hp-version-badge {
+  margin-left: auto;
+  font-size: 0.6rem;
+  color: #475569;
+  background-color: #1E293B;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-weight: 600;
+  flex-shrink: 0;
+}

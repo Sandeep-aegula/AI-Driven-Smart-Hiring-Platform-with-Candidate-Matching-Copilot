@@ -1,144 +1,181 @@
+"""
+components/analytics.py — HirePilot Analytics Page
+"""
 import streamlit as st
 import pandas as pd
-import numpy as np
-import plotly.express as px
 import plotly.graph_objects as go
+import plotly.express as px
 
-def apply_theme_layout(fig):
-    """Utility chart theme style helper."""
-    fig.update_layout(
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(family="Plus Jakarta Sans, sans-serif", color="#475569", size=11),
-        margin=dict(l=20, r=20, t=50, b=20),
-    )
-    try:
-        fig.update_xaxes(showgrid=True, gridcolor='#F1F5F9', zeroline=False)
-        fig.update_yaxes(showgrid=True, gridcolor='#F1F5F9', zeroline=False)
-    except Exception:
-        pass
-    return fig
 
-def render_analytics():
-    """Renders Section 8: Hiring Analytics charts grid."""
-    st.markdown("<!-- SECTION 8: HIRING ANALYTICS -->", unsafe_allow_html=True)
+def render_analytics() -> None:
     st.markdown("""
-    <div class="custom-card-wrapper" style="margin-bottom: 24px;">
-        <div class="section-title" style="margin-bottom: 0px; border-bottom: none; padding-bottom: 0px;">
-            <span><i class="fa-solid fa-chart-line"></i></span> Hiring Analytics & Insights Dashboard
-        </div>
-    </div>
+    <h1 style="font-size:1.6rem;font-weight:800;color:#0F172A;margin:0 0 4px 0;">
+        📊 Analytics Dashboard
+    </h1>
+    <p style="font-size:0.85rem;color:#64748B;margin:0 0 20px 0;font-weight:500;">
+        Interactive recruitment statistics and reporting
+    </p>
+    <hr style="margin:0 0 20px 0;border:none;border-top:1px solid #F1F5F9;">
     """, unsafe_allow_html=True)
 
-    cands = st.session_state.candidates_list
-    total_cands = 1248 + (len(cands) - 5)
-    shortlisted_cands = 412 + sum(1 for c in cands if c["status"] == "Shortlisted")
-    interviews_cands = 85 + sum(1 for c in cands if c["status"] == "Interview Scheduled")
-    offers_cands = 34 + sum(1 for c in cands if c["status"] == "Offer Released")
+    # KPI Row
+    kpi = st.columns(4)
+    for col, icon, color, bg, title, val, growth, up in [
+        (kpi[0], "fa-folder-open",   "#6366F1", "#EEF2FF", "Total Applications", "352",  "↑ 12%", True),
+        (kpi[1], "fa-calendar-days", "#F59E0B", "#FEF3C7", "Interviewed",         "92",   "↑ 8%",  True),
+        (kpi[2], "fa-star",          "#8B5CF6", "#F5F3FF", "Shortlisted",         "64",   "↑ 4%",  True),
+        (kpi[3], "fa-circle-check",  "#10B981", "#ECFDF5", "Hired",               "28",   "↑ 18%", True),
+    ]:
+        g_class = "growth-up" if up else "growth-down"
+        with col:
+            st.markdown(f"""
+            <div class="kpi-card" style="border-left-color:{color};">
+                <div class="kpi-icon-wrapper" style="color:{color};background:{bg};">
+                    <i class="fa-solid {icon}"></i></div>
+                <div class="kpi-title">{title}</div>
+                <div class="kpi-value">{val}</div>
+                <div class="kpi-growth {g_class}"><span>{growth}</span>
+                    <span style="color:#94A3B8;font-weight:500;">vs last month</span></div>
+            </div>
+            """, unsafe_allow_html=True)
 
-    c_row1_col1, c_row1_col2 = st.columns(2)
-    c_row2_col1, c_row2_col2, c_row2_col3 = st.columns([4, 4, 3])
+    st.markdown("<div style='height:24px;'></div>", unsafe_allow_html=True)
 
-    # Chart 1: Applications by Month (Area)
-    with c_row1_col1:
-        months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
-        applications = [150, 182, 224, 290, 312, 420 + (len(cands) - 5) * 5]
-        
-        fig_apps = px.area(
-            x=months,
-            y=applications,
-            labels={"x": "Month", "y": "Applications Received"},
-            title="<b>Application Submission Trends (H1 2026)</b>"
-        )
-        fig_apps.update_traces(
-            line_color="#2563EB", 
-            fillcolor="rgba(37, 99, 235, 0.08)",
-            mode='lines+markers',
-            marker=dict(size=6, line=dict(width=2, color='#FFFFFF'))
-        )
-        st.plotly_chart(apply_theme_layout(fig_apps), use_container_width=True)
+    tab_funnel, tab_trends, tab_talent, tab_recruiters = st.tabs([
+        "📊 Pipeline & Funnel", "📈 Trends & Departments",
+        "⚡ Talent & Channels",  "💼 Recruiter Analytics"
+    ])
 
-    # Chart 2: Hiring Funnel
-    with c_row1_col2:
-        funnel_stages = ["Applied", "Screened", "Shortlisted", "Interviewed", "Offered"]
-        funnel_vals = [total_cands, 820, shortlisted_cands, interviews_cands, offers_cands]
-        
-        fig_funnel = go.Figure(go.Funnel(
-            y=funnel_stages,
-            x=funnel_vals,
-            textinfo="value+percent initial",
-            connector_line_color="#CBD5E1",
-            marker=dict(color=["#1E3A8A", "#2563EB", "#3B82F6", "#60A5FA", "#93C5FD"])
-        ))
-        fig_funnel.update_layout(title="<b>Active Recruitment Funnel Status</b>")
-        st.plotly_chart(apply_theme_layout(fig_funnel), use_container_width=True)
+    with tab_funnel:
+        col_l, col_r = st.columns(2)
+        with col_l:
+            with st.container(border=True):
+                st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Hiring Funnel Conversion</h4>",
+                            unsafe_allow_html=True)
+                fig = go.Figure(go.Funnel(
+                    y=["Applied","Screened","Interviewed","Shortlisted","Hired"],
+                    x=[352,210,92,64,28],
+                    textinfo="value+percent initial",
+                    connector={"fillcolor":"#EEF2FF"},
+                    marker={"color":["#4F46E5","#6366F1","#818CF8","#8B5CF6","#10B981"]}
+                ))
+                fig.update_layout(margin=dict(l=10,r=10,t=10,b=10), height=240,
+                                  paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                st.plotly_chart(fig, use_container_width=True, config={"displayModeBar":False})
+            st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+            with st.container(border=True):
+                st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Average Time to Hire</h4>",
+                            unsafe_allow_html=True)
+                df = pd.DataFrame([{"Role":"Frontend Eng","Days":18},{"Role":"ML Engineer","Days":24},
+                                   {"Role":"Data Analyst","Days":16},{"Role":"HR Specialist","Days":14},{"Role":"Sales Exec","Days":15}])
+                fig2 = px.bar(df, x="Days", y="Role", orientation="h", color="Days",
+                              color_continuous_scale=["#C7D2FE","#4F46E5"])
+                fig2.update_layout(margin=dict(l=10,r=10,t=10,b=10), height=230,
+                                   xaxis_title="Avg Days", yaxis_title=None, coloraxis_showscale=False,
+                                   paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar":False})
 
-    # Chart 3: Skill Distribution (Top Skills in candidate database)
-    with c_row2_col1:
-        skill_counts = {}
-        for cand in cands:
-            for skill in cand["skills"]:
-                skill_counts[skill] = skill_counts.get(skill, 0) + 1
-        
-        sorted_skills = sorted(skill_counts.items(), key=lambda x: x[1], reverse=True)[:7]
-        skill_y = [x[0] for x in sorted_skills]
-        skill_x = [x[1] for x in sorted_skills]
-        
-        fig_skills = px.bar(
-            x=skill_x,
-            y=skill_y,
-            orientation='h',
-            title="<b>Frequent Candidate Skills (Top 7)</b>",
-            labels={"x": "Occurrence Count", "y": "Skill Name"}
-        )
-        fig_skills.update_traces(
-            marker_color="#2563EB",
-            marker_line_color="#1D4ED8",
-            marker_line_width=1,
-            opacity=0.9
-        )
-        fig_skills.update_yaxes(categoryorder="total ascending")
-        st.plotly_chart(apply_theme_layout(fig_skills), use_container_width=True)
+        with col_r:
+            with st.container(border=True):
+                st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Recruitment Pipeline Status</h4>",
+                            unsafe_allow_html=True)
+                df2 = pd.DataFrame([{"Stage":"New Applied","Count":142},{"Stage":"AI Screening","Count":118},
+                                    {"Stage":"Interview Scheduled","Count":28},{"Stage":"Offers Pending","Count":8},
+                                    {"Stage":"Approved & Hired","Count":28}])
+                fig3 = px.pie(df2, values="Count", names="Stage", hole=0.5,
+                              color_discrete_sequence=["#6366F1","#818CF8","#F59E0B","#8B5CF6","#10B981"])
+                fig3.update_layout(margin=dict(l=10,r=10,t=10,b=10), height=530,
+                                   showlegend=True, legend=dict(orientation="h",yanchor="bottom",y=-0.15,xanchor="center",x=0.5),
+                                   paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                st.plotly_chart(fig3, use_container_width=True, config={"displayModeBar":False})
 
-    # Chart 4: Department Hiring
-    with c_row2_col2:
-        depts = ["Engineering", "Data & AI", "Product Management", "Design", "Human Resources"]
-        dept_hires = [24, 14, 8, 5, 3]
-        
-        fig_dept = px.pie(
-            names=depts,
-            values=dept_hires,
-            title="<b>Hiring Placements by Department</b>",
-            hole=0.45,
-            color_discrete_sequence=["#1E3A8A", "#2563EB", "#3B82F6", "#60A5FA", "#93C5FD"]
-        )
-        fig_dept.update_traces(textposition='inside', textinfo='percent+label')
-        st.plotly_chart(apply_theme_layout(fig_dept), use_container_width=True)
+    with tab_trends:
+        col_l, col_r = st.columns(2)
+        months = ["Jan","Feb","Mar","Apr","May","Jun","Jul"]
+        with col_l:
+            with st.container(border=True):
+                st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Hiring Trend (Monthly)</h4>",
+                            unsafe_allow_html=True)
+                fig = go.Figure(go.Scatter(x=months, y=[2,4,3,5,6,8,10],
+                                           mode="lines+markers", line=dict(color="#10B981",width=3),
+                                           fill="tozeroy", fillcolor="rgba(16,185,129,0.06)"))
+                fig.update_layout(margin=dict(l=20,r=20,t=10,b=10), height=230,
+                                  xaxis=dict(showgrid=False), yaxis=dict(showgrid=True,gridcolor="#F1F5F9"),
+                                  paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                st.plotly_chart(fig, use_container_width=True, config={"displayModeBar":False})
+            st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+            with st.container(border=True):
+                st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Department Distribution</h4>",
+                            unsafe_allow_html=True)
+                df = pd.DataFrame([{"Dept":"Engineering","Hires":12},{"Dept":"Analytics","Hires":6},
+                                   {"Dept":"Design","Hires":4},{"Dept":"Sales","Hires":4},{"Dept":"HR","Hires":2}])
+                fig2 = px.bar(df, x="Dept", y="Hires", color="Hires", color_continuous_scale=["#C7D2FE","#6366F1"])
+                fig2.update_layout(margin=dict(l=10,r=10,t=10,b=10), height=230,
+                                   xaxis_title=None, yaxis_title="Total Hires", coloraxis_showscale=False,
+                                   paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar":False})
+        with col_r:
+            with st.container(border=True):
+                st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Applications Over Time</h4>",
+                            unsafe_allow_html=True)
+                fig3 = go.Figure(go.Scatter(x=months, y=[45,60,78,110,130,155,180],
+                                            mode="lines", line=dict(color="#6366F1",width=3),
+                                            fill="tozeroy", fillcolor="rgba(99,102,241,0.08)"))
+                fig3.update_layout(margin=dict(l=20,r=20,t=10,b=10), height=510,
+                                   xaxis=dict(showgrid=False), yaxis=dict(showgrid=True,gridcolor="#F1F5F9"),
+                                   paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                st.plotly_chart(fig3, use_container_width=True, config={"displayModeBar":False})
 
-    # Chart 5: Offer Acceptance Rate (Gauge Meter)
-    with c_row2_col3:
-        fig_gauge = go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=82,
-            title={'text': "<b>Offer Acceptance Rate (%)</b>", 'font': {'size': 14, 'color': '#0F172A'}},
-            gauge={
-                'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#475569"},
-                'bar': {'color': "#2563EB"},
-                'bgcolor': "#F1F5F9",
-                'borderwidth': 1,
-                'bordercolor': "#E2E8F0",
-                'steps': [
-                    {'range': [0, 60], 'color': '#FEE2E2'},
-                    {'range': [60, 80], 'color': '#FEF3C7'},
-                    {'range': [80, 100], 'color': '#D1FAE5'}
-                ],
-                'threshold': {
-                    'line': {'color': "#EF4444", 'width': 3},
-                    'thickness': 0.75,
-                    'value': 85
-                }
-            }
-        ))
-        st.plotly_chart(apply_theme_layout(fig_gauge), use_container_width=True)
+    with tab_talent:
+        col_l, col_r = st.columns(2)
+        with col_l:
+            with st.container(border=True):
+                st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Top Skills in Demand</h4>",
+                            unsafe_allow_html=True)
+                df = pd.DataFrame([{"Skill":"Python","Count":128},{"Skill":"React","Count":94},
+                                   {"Skill":"SQL","Count":82},{"Skill":"FastAPI","Count":75},{"Skill":"Docker","Count":58}])
+                fig = px.bar(df, x="Count", y="Skill", orientation="h", color="Count",
+                             color_continuous_scale=["#EEF2FF","#4F46E5"])
+                fig.update_layout(margin=dict(l=10,r=10,t=10,b=10), height=230,
+                                  xaxis_title="JDs requiring skill", yaxis_title=None, coloraxis_showscale=False,
+                                  paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                fig.update_yaxes(autorange="reversed")
+                st.plotly_chart(fig, use_container_width=True, config={"displayModeBar":False})
+            st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+            with st.container(border=True):
+                st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Offer Acceptance</h4>",
+                            unsafe_allow_html=True)
+                df2 = pd.DataFrame([{"Status":"Accepted","Count":28},{"Status":"Declined","Count":4},{"Status":"Pending","Count":6}])
+                fig2 = px.pie(df2, values="Count", names="Status", hole=0.5,
+                              color_discrete_sequence=["#10B981","#EF4444","#F59E0B"])
+                fig2.update_layout(margin=dict(l=10,r=10,t=10,b=10), height=230,
+                                   showlegend=True, legend=dict(orientation="h",yanchor="bottom",y=-0.15,xanchor="center",x=0.5),
+                                   paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar":False})
+        with col_r:
+            with st.container(border=True):
+                st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Candidate Acquisition Sources</h4>",
+                            unsafe_allow_html=True)
+                df3 = pd.DataFrame([{"Source":"LinkedIn","Count":168},{"Source":"Referrals","Count":94},
+                                    {"Source":"Careers Page","Count":62},{"Source":"Agencies","Count":28}])
+                fig3 = px.pie(df3, values="Count", names="Source", hole=0.5,
+                              color_discrete_sequence=["#4F46E5","#6366F1","#818CF8","#C7D2FE"])
+                fig3.update_layout(margin=dict(l=10,r=10,t=10,b=10), height=510,
+                                   showlegend=True, legend=dict(orientation="h",yanchor="bottom",y=-0.15,xanchor="center",x=0.5),
+                                   paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                st.plotly_chart(fig3, use_container_width=True, config={"displayModeBar":False})
 
-    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+    with tab_recruiters:
+        with st.container(border=True):
+            st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Recruiter Performance</h4>",
+                        unsafe_allow_html=True)
+            fig = go.Figure(data=[
+                go.Bar(name="Screens Conducted", x=["Ava Morgan","Marcus Aurelius","Sophia Lin"],
+                       y=[45,30,25], marker_color="#818CF8"),
+                go.Bar(name="Hires Advanced",    x=["Ava Morgan","Marcus Aurelius","Sophia Lin"],
+                       y=[12,8,5], marker_color="#10B981")
+            ])
+            fig.update_layout(barmode="group", margin=dict(l=20,r=20,t=20,b=20), height=450,
+                              xaxis_title="Recruiter", yaxis_title="Count",
+                              paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar":False})

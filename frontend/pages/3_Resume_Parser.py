@@ -62,25 +62,28 @@ with col_top_left:
                 success_count = 0
                 for idx, file in enumerate(uploaded_files):
                     status_text.markdown(f"AI parsing: *{file.name}* (Ollama qwen2.5-coder)...")
-                    
-                    # Copy to local uploads folder
+
+                    # Read bytes from the Streamlit UploadedFile
+                    file_bytes = file.read()
+
+                    # Also save a local copy for preview
                     file_path = os.path.join(UPLOAD_DIR, file.name)
                     with open(file_path, "wb") as f:
-                        shutil.copyfileobj(file, f)
-                        
-                    # Request backend parse
-                    res = api_client.parse_resume(file_path)
+                        f.write(file_bytes)
+
+                    # Upload + parse via backend
+                    res = api_client.upload_resume(file_bytes, file.name)
                     if res:
                         success_count += 1
                         st.toast(f"Successfully parsed {file.name}!", icon="✅")
                     else:
                         st.error(f"Failed to parse resume: {file.name}")
-                        
+
                     progress = int(((idx + 1) / len(uploaded_files)) * 100)
                     progress_bar.progress(progress)
-                    
+
                 status_text.markdown(f"### 🎉 Successfully parsed {success_count} / {len(uploaded_files)} resume(s)!")
-                st.session_state.selected_resume_id = None # Force reload latest
+                st.session_state.selected_resume_id = None  # Force reload latest
                 st.rerun()
 
 with col_top_right:

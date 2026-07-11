@@ -17,7 +17,15 @@ def get_upload_history(limit: int = 10) -> list[dict[str, object]]:
     with session_scope() as session:
         uploads = list_recent_uploads(session, limit=limit)
         return [
-            {"id": upload.get("id"), "candidate_id": upload.get("candidate_id"), "filename": upload.get("filename"), "status": upload.get("status"), "created_at": upload.get("created_at")}
+            {
+                "id": upload.get("id"),
+                "candidate_id": upload.get("candidate_id"),
+                "filename": upload.get("filename"),
+                "name": upload.get("name"),
+                "email": upload.get("email"),
+                "status": upload.get("status"),
+                "created_at": upload.get("created_at"),
+            }
             for upload in uploads
         ]
 

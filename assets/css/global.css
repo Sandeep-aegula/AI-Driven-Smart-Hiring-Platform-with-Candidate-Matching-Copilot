@@ -1,0 +1,277 @@
+/* ============================================================
+   HirePilot — Global CSS
+   Loaded ONCE via @st.cache_resource. Never injected twice.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+/* ── Root Variables ─────────────────────────────────────── */
+:root {
+  --color-bg:           #F8FAFC;
+  --color-surface:      #FFFFFF;
+  --color-border:       #E2E8F0;
+  --color-border-light: #F1F5F9;
+  --color-text-primary: #0F172A;
+  --color-text-muted:   #64748B;
+  --color-text-xmuted:  #94A3B8;
+  --color-indigo:       #6366F1;
+  --color-indigo-dark:  #4F46E5;
+  --color-indigo-bg:    #EEF2FF;
+  --color-green:        #10B981;
+  --color-amber:        #F59E0B;
+  --color-red:          #EF4444;
+  --color-pink:         #EC4899;
+  --color-purple:       #8B5CF6;
+  --sidebar-bg:         #0F172A;
+  --sidebar-border:     #1E293B;
+  --radius-sm:          8px;
+  --radius-md:          12px;
+  --radius-lg:          16px;
+  --radius-xl:          20px;
+  --shadow-card:        0 4px 20px 0 rgba(0,0,0,0.025), 0 1px 3px 0 rgba(0,0,0,0.04);
+  --shadow-hover:       0 12px 32px -6px rgba(0,0,0,0.08), 0 4px 12px -2px rgba(0,0,0,0.04);
+  --shadow-indigo:      0 4px 12px rgba(99,102,241,0.25);
+  --transition:         all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Base Typography ────────────────────────────────────── */
+html, body, [class*="css"], [class*="st-"] {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Streamlit Chrome Removal ───────────────────────────── */
+#MainMenu { visibility: hidden; }
+header { visibility: hidden; }
+footer { visibility: hidden; }
+.stApp [data-testid="stHeader"] { display: none; }
+[data-testid="stToolbar"] { display: none; }
+
+/* ── Kill Streamlit's built-in page navigation completely ── */
+/* Works across Streamlit 1.28+ regardless of hideSidebarNav  */
+[data-testid="stSidebarNav"],
+[data-testid="stSidebarNavItems"],
+[data-testid="stSidebarNavLink"],
+[data-testid="stSidebarNavSeparator"],
+[data-testid="stSidebarNavCollapseIcon"],
+[data-testid="stSidebarNavExpandIcon"],
+[data-testid="stSidebarNavViewButton"],
+nav[aria-label="Page navigation"],
+section[data-testid="stSidebar"] ul,
+section[data-testid="stSidebar"] nav {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* ── App Background ─────────────────────────────────────── */
+.stApp {
+  background-color: var(--color-bg) !important;
+}
+
+/* ── Main Block Padding ─────────────────────────────────── */
+.block-container {
+  padding-top: 1.2rem !important;
+  padding-bottom: 2.5rem !important;
+  padding-left: 2.5rem !important;
+  padding-right: 2.5rem !important;
+  max-width: 100% !important;
+}
+
+/* ── Sidebar Overrides ──────────────────────────────────── */
+section[data-testid="stSidebar"] {
+  background-color: var(--sidebar-bg) !important;
+  border-right: 1px solid var(--sidebar-border) !important;
+  min-width: 256px !important;
+  max-width: 256px !important;
+}
+
+section[data-testid="stSidebar"] > div {
+  padding: 0 !important;
+}
+
+/* Hide Streamlit's built-in sidebar nav completely */
+section[data-testid="stSidebar"] [data-testid="stSidebarNav"] {
+  display: none !important;
+}
+
+/* ── Custom Card ────────────────────────────────────────── */
+.custom-card-wrapper {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  margin-bottom: 20px;
+}
+
+/* ── KPI Cards ──────────────────────────────────────────── */
+.kpi-card {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  border-left: 5px solid var(--color-indigo);
+  transition: var(--transition);
+  cursor: default;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-left-width: 7px;
+}
+
+.kpi-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  background-color: var(--color-indigo-bg);
+  border-radius: 11px;
+  font-size: 18px;
+  color: var(--color-indigo);
+  margin-bottom: 14px;
+}
+
+.kpi-title {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  color: var(--color-text-primary);
+  font-weight: 800;
+  margin: 4px 0;
+  line-height: 1;
+}
+
+.kpi-growth {
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.growth-up  { color: var(--color-green); }
+.growth-down { color: var(--color-red); }
+
+/* ── Badges ─────────────────────────────────────────────── */
+.badge-strong {
+  background-color: #D1FAE5; color: #065F46;
+  padding: 3px 12px; border-radius: 9999px;
+  font-weight: 700; font-size: 0.7rem; display: inline-block;
+}
+.badge-moderate {
+  background-color: #FEF3C7; color: #92400E;
+  padding: 3px 12px; border-radius: 9999px;
+  font-weight: 700; font-size: 0.7rem; display: inline-block;
+}
+.badge-low {
+  background-color: #FEE2E2; color: #991B1B;
+  padding: 3px 12px; border-radius: 9999px;
+  font-weight: 700; font-size: 0.7rem; display: inline-block;
+}
+.badge-blue {
+  background-color: var(--color-indigo-bg); color: var(--color-indigo-dark);
+  padding: 3px 12px; border-radius: 9999px;
+  font-weight: 700; font-size: 0.7rem; display: inline-block;
+}
+
+/* ── Tags ───────────────────────────────────────────────── */
+.tag {
+  background-color: var(--color-indigo-bg);
+  color: var(--color-indigo-dark);
+  padding: 3px 11px; border-radius: 9999px;
+  font-size: 0.7rem; font-weight: 600;
+  display: inline-block;
+  margin-right: 5px; margin-bottom: 5px;
+  border: 1px solid #E0E7FF;
+}
+.tag-success {
+  background-color: #ECFDF5; color: #047857;
+  padding: 3px 11px; border-radius: 9999px;
+  font-size: 0.7rem; font-weight: 600;
+  display: inline-block;
+  margin-right: 5px; margin-bottom: 5px;
+  border: 1px solid #D1FAE5;
+}
+.tag-missing {
+  background-color: #FEF2F2; color: #B91C1C;
+  padding: 3px 11px; border-radius: 9999px;
+  font-size: 0.7rem; font-weight: 600;
+  display: inline-block;
+  margin-right: 5px; margin-bottom: 5px;
+  border: 1px solid #FEE2E2;
+}
+
+/* ── Tables ─────────────────────────────────────────────── */
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.custom-table th {
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #475569;
+  background-color: #F8FAFC;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.custom-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-border-light);
+  color: var(--color-text-primary);
+  vertical-align: middle;
+}
+
+.custom-table tr:last-child td { border-bottom: none; }
+
+/* ── Streamlit Column Equal Heights ─────────────────────── */
+div[data-testid="stHorizontalBlock"] { align-items: stretch !important; }
+div[data-testid="column"] { display: flex !important; flex-direction: column !important; }
+div[data-testid="column"] > div[data-testid="stVerticalBlock"] {
+  flex-grow: 1 !important; display: flex !important; flex-direction: column !important;
+}
+
+/* ── Streamlit Button Overrides ─────────────────────────── */
+.stButton > button {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600 !important;
+  font-size: 0.84rem !important;
+  transition: var(--transition) !important;
+}
+
+/* ── Streamlit Input Overrides ──────────────────────────── */
+.stTextInput > div > div > input,
+.stSelectbox > div > div,
+.stTextArea > div > div > textarea {
+  border-radius: var(--radius-sm) !important;
+  border-color: var(--color-border) !important;
+  font-size: 0.875rem !important;
+}
+
+/* ── Section Title ──────────────────────────────────────── */
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--color-border-light);
+  padding-bottom: 12px;
+}

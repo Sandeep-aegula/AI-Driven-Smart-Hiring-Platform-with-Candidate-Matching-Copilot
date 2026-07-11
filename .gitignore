@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Databases & local configs
+*.db
+storage.json
+.streamlit/
+
+# Local uploaded files
+uploads/
+frontend/uploads/
+reports/
+
+# OS/IDE configs
+.idea/
+.vscode/
+.gemini/
+.DS_Store
+Thumbs.db
