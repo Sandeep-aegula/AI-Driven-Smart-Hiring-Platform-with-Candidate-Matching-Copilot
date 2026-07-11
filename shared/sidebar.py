@@ -14,16 +14,16 @@ import streamlit as st
 
 # ── Navigation menu definition ───────────────────────────────────────────────
 _NAV_ITEMS = [
-    {"page": "Dashboard",      "icon": ":material/dashboard:",      "label": "Dashboard"},
-    {"page": "Jobs",           "icon": ":material/work:",           "label": "Jobs"},
-    {"page": "Candidates",     "icon": ":material/group:",          "label": "Candidates"},
-    {"page": "Resume Parser",  "icon": ":material/description:",    "label": "Resume Parser"},
-    {"page": "AI Screening",   "icon": ":material/psychology:",     "label": "AI Screening"},
-    {"page": "Interviews",     "icon": ":material/calendar_today:", "label": "Interviews"},
-    {"page": "Employees",      "icon": ":material/badge:",          "label": "Employees"},
-    {"page": "Analytics",      "icon": ":material/bar_chart:",      "label": "Analytics"},
-    {"page": "Reports",        "icon": ":material/assessment:",     "label": "Reports"},
-    {"page": "AI Copilot",     "icon": ":material/assistant:",      "label": "AI Copilot"},
+    {"page": "Dashboard",      "icon": "\uf015", "label": "Dashboard"},
+    {"page": "Jobs",           "icon": "\uf0b1", "label": "Jobs"},
+    {"page": "Candidates",     "icon": "\uf0c0", "label": "Candidates"},
+    {"page": "Resume Parser",  "icon": "\uf15c", "label": "Resume Parser"},
+    {"page": "AI Screening",   "icon": "\uf544", "label": "AI Screening"},
+    {"page": "Interviews",     "icon": "\uf133", "label": "Interviews"},
+    {"page": "Employees",      "icon": "\uf2c2", "label": "Employees"},
+    {"page": "Analytics",      "icon": "\uf201", "label": "Analytics"},
+    {"page": "Reports",        "icon": "\uf56c", "label": "Reports"},
+    {"page": "AI Copilot",     "icon": "\uf0d0", "label": "AI Copilot"},
 ]
 
 
@@ -111,8 +111,7 @@ def render_sidebar() -> None:
             col_pad, col_btn = st.columns([0.05, 0.95])
             with col_btn:
                 clicked = st.button(
-                    label,
-                    icon=icon,
+                    f"{icon}  {label}",
                     key=f"nav_{page}",
                     use_container_width=True,
                     type="secondary",

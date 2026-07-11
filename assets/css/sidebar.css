@@ -67,13 +67,14 @@
 /* ── Nav Item (Streamlit button override) ───────────────── */
 /* All nav buttons share this appearance */
 .hp-nav-item button {
+  font-family: 'Font Awesome 6 Free', 'Plus Jakarta Sans', sans-serif !important;
   background: transparent !important;
   color: #94A3B8 !important;
   border: none !important;
   border-radius: 8px !important;
   padding: 9px 12px !important;
   font-size: 0.875rem !important;
-  font-weight: 500 !important;
+  font-weight: 900 !important;
   text-align: left !important;
   width: 100% !important;
   display: flex !important;
