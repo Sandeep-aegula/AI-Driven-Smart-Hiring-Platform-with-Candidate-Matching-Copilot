@@ -6,8 +6,9 @@ import plotly.graph_objects as go
 # Setup path to import api_client
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
+project_root = os.path.dirname(parent_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from frontend.components import api_client
 from frontend.components.page_utils import setup_page, render_sidebar_footer
@@ -178,24 +179,11 @@ else:
 
         with col_bars:
             with st.container(border=True):
-                st.markdown("#### <i class='fa-solid fa-bars' style='color:#6366F1;'></i> Match Dimensions (Progress Bars)", unsafe_allow_html=True)
-                
-                # HTML progress bars for each dimension
-                dimensions_html = "<div style='display: flex; flex-direction: column; gap: 14px; height: 230px; justify-content: center;'>"
+                st.markdown("#### <i class='fa-solid fa-bars' style='color:#6366F1; margin-right:8px;'></i> Match Dimensions", unsafe_allow_html=True)
+                st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
                 for dim_name, val in radar_data.items():
-                    dimensions_html += f"""
-                    <div>
-                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 4px;">
-                            <span>{dim_name} Match</span>
-                            <span>{val}%</span>
-                        </div>
-                        <div style="background-color: #EEF2FF; border-radius: 9999px; height: 8px; width: 100%; overflow: hidden;">
-                            <div style="background-color: #6366F1; width: {val}%; height: 100%; border-radius: 9999px;"></div>
-                        </div>
-                    </div>
-                    """
-                dimensions_html += "</div>"
-                st.markdown(dimensions_html, unsafe_allow_html=True)
+                    st.markdown(f"**{dim_name} Match** — {val}%")
+                    st.progress(int(val) / 100)
 
         st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
 
@@ -291,19 +279,3 @@ else:
                     if res:
                         st.toast("Candidate Rejected.", icon="❌")
                         st.rerun()
-
-# Sidebar footer metadata
-with st.sidebar:
-    st.markdown("""
-    <div style="margin-top: 80px; padding: 16px 10px 0 10px; border-top: 1px solid #1E293B;">
-        <div style="display: flex; align-items: center; gap: 10px; opacity: 0.85;">
-            <div style="background-color: #1E293B; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6366F1;">
-                <i class="fa-solid fa-rocket"></i>
-            </div>
-            <div>
-                <div style="font-weight: 700; color: #E2E8F0; font-size: 0.78rem;">HirePilot v1.2</div>
-                <div style="font-size: 0.65rem; color: #64748B;">Plan: Enterprise</div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)

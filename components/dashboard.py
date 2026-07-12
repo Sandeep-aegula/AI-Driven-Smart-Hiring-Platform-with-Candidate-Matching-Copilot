@@ -26,7 +26,7 @@ def render_dashboard() -> None:
     greeting = "Good Morning" if hour < 12 else ("Good Afternoon" if hour < 18 else "Good Evening")
 
     st.markdown(f"""
-    <div class="custom-card-wrapper" style="
+    <div class="custom-card-wrapper dark-hero-banner" style="
         background: linear-gradient(135deg, #1E1B4B 0%, #312E81 100%);
         color: white; border: none; padding: 28px 32px;
         position: relative; overflow: hidden; margin-bottom: 24px;

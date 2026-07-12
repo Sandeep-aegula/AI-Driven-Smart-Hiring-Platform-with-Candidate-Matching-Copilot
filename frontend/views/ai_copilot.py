@@ -6,8 +6,9 @@ import time
 # Setup path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
+project_root = os.path.dirname(parent_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from frontend.components.page_utils import setup_page, render_sidebar_footer
 from frontend.services.ai_service import get_client as get_ollama_client
@@ -98,5 +99,3 @@ if user_input:
                 
     st.session_state.messages.append({"role": "assistant", "content": reply})
     st.rerun()
-
-# Sidebar footer is rendered by setup_page()

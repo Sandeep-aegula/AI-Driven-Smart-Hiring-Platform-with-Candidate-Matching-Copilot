@@ -6,8 +6,9 @@ import shutil
 # Setup path to import api_client
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
+project_root = os.path.dirname(parent_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from frontend.components import api_client
 from frontend.services.cache import get_uploads_cached, invalidate_uploads
@@ -151,16 +152,27 @@ if selected_resume:
                 st.markdown(f"**Name:** {parsed_data.get('name') or 'N/A'}")
                 st.markdown(f"**Email:** {parsed_data.get('email') or 'N/A'}")
                 st.markdown(f"**Phone:** {parsed_data.get('phone') or 'N/A'}")
-                st.markdown(f"**LinkedIn:** {parsed_data.get('linkedin') or 'N/A'}")
-                st.markdown(f"**GitHub:** {parsed_data.get('github') or 'N/A'}")
-                st.markdown(f"**Portfolio:** {parsed_data.get('portfolio') or 'N/A'}")
+                for label, key in [("LinkedIn", "linkedin"), ("GitHub", "github"), ("Portfolio", "portfolio")]:
+                    url = parsed_data.get(key) or ""
+                    if url.startswith(("https://", "http://")):
+                        st.link_button(f"{label} profile", url, width="content")
+                    else:
+                        st.markdown(f"**{label}:** N/A")
                 
             with parsed_tab_skills:
                 st.markdown("**Extracted Skills Tags:**")
                 skills = parsed_data.get("skills", [])
                 if skills:
-                    skills_html = "".join([f'<span class="tag" style="background-color:#EEF2FF; color:#4F46E5; border:1px solid #E0E7FF; font-size:0.75rem; padding:4px 10px; margin-right:5px; margin-bottom:5px; display:inline-block; border-radius:9999px;">{s}</span>' for s in skills])
-                    st.markdown(skills_html, unsafe_allow_html=True)
+                    st.pills(
+                        "Skills",
+                        skills,
+                        selection_mode="multi",
+                        default=skills,
+                        disabled=True,
+                        label_visibility="collapsed",
+                        width="stretch",
+                        key=f"parsed_skills_{selected_resume['id']}",
+                    )
                 else:
                     st.write("No skills tags extracted.")
                     
@@ -253,19 +265,3 @@ with st.container(border=True):
         st.markdown("</tbody></table>", unsafe_allow_html=True)
     else:
         st.write("No uploaded resumes found.")
-
-# Sidebar footer metadata
-with st.sidebar:
-    st.markdown("""
-    <div style="margin-top: 80px; padding: 16px 10px 0 10px; border-top: 1px solid #1E293B;">
-        <div style="display: flex; align-items: center; gap: 10px; opacity: 0.85;">
-            <div style="background-color: #1E293B; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6366F1;">
-                <i class="fa-solid fa-rocket"></i>
-            </div>
-            <div>
-                <div style="font-weight: 700; color: #E2E8F0; font-size: 0.78rem;">HirePilot v1.2</div>
-                <div style="font-size: 0.65rem; color: #64748B;">Plan: Enterprise</div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)

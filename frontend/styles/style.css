@@ -1,7 +1,7 @@
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-html, body, [class*="css"], [class*="st-"] {
+html, body, p, span, h1, h2, h3, h4, h5, h6, label, button, input, textarea, select {
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
@@ -26,14 +26,54 @@ footer {visibility: hidden;}
     padding-right: 3rem !important;
 }
 
+/* Ensure all main content text is always visible */
+.block-container p,
+.block-container span,
+.block-container label,
+.block-container h1, 
+.block-container h2, 
+.block-container h3, 
+.block-container h4 {
+    color: #0F172A;
+}
+
+/* Streamlit widget text colour fix - scoped to main content only */
+.block-container [data-testid="stMarkdownContainer"] p,
+.block-container [data-testid="stMarkdownContainer"] strong,
+.block-container [data-testid="stMarkdownContainer"] span {
+    color: #0F172A !important;
+}
+
+/* Dark hero banners — higher specificity beats stMarkdownContainer + Streamlit theme */
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner h1,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner h2,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner h3,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner h4,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner span,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner div,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner strong,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner i {
+    color: #FFFFFF !important;
+}
+
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner p {
+    color: #C7D2FE !important;
+}
+
 /* --- SIDEBAR OVERRIDES --- */
-section[data-testid="stSidebar"] {
+[data-testid="stSidebar"], 
+[data-testid="stSidebar"] > div, 
+section[data-testid="stSidebar"], 
+div[data-testid="stSidebarContent"],
+div[data-testid="stSidebarUserContent"] {
     background-color: #0F172A !important; /* Dark Navy Background */
     border-right: 1px solid #1E293B !important;
     min-width: 250px !important;
     max-width: 280px !important;
 }
 
+[data-testid="stSidebar"] [data-testid="stSidebarNav"],
 section[data-testid="stSidebar"] [data-testid="stSidebarNav"] {
     background-color: #0F172A !important;
     padding-top: 0.5rem !important;
@@ -84,18 +124,24 @@ section[data-testid="stSidebar"] [data-testid="stSidebarNav"] h2 {
 }
 
 /* Modern Streamlit Sidebar Navigation Link text color fix */
-[data-testid="stSidebarNavLink"] span {
+[data-testid="stSidebarNavLink"] span,
+[data-testid="stSidebarNavLink"] p,
+section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] span,
+section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
     color: #94A3B8 !important;
 }
 [data-testid="stSidebarNavLink"] {
     color: #94A3B8 !important;
 }
-[data-testid="stSidebarNavLink"][aria-current="page"] span {
+[data-testid="stSidebarNavLink"][aria-current="page"] span,
+[data-testid="stSidebarNavLink"][aria-current="page"] p {
     color: #FFFFFF !important;
 }
-[data-testid="stSidebarNavLink"]:hover span {
+[data-testid="stSidebarNavLink"]:hover span,
+[data-testid="stSidebarNavLink"]:hover p {
     color: #F8FAFC !important;
 }
+
 
 /* Custom Card Shadows */
 .custom-card-wrapper {
@@ -106,3 +152,56 @@ section[data-testid="stSidebar"] [data-testid="stSidebarNav"] h2 {
     border: 1px solid #E2E8F0;
     margin-bottom: 20px;
 }
+
+/* --- PREMIUM BUTTON STYLING OVERRIDES --- */
+/* Target all Streamlit buttons */
+div[data-testid="stButton"] button, 
+.stButton > button,
+button[role="tab"] {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 600 !important;
+    font-size: 0.88rem !important;
+    padding: 0.5rem 1.25rem !important;
+    border-radius: 10px !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Primary Button Override */
+div[data-testid="stButton"] button[kind="primary"],
+.stButton > button[kind="primary"] {
+    background-color: #6366F1 !important; /* Premium Indigo */
+    color: #FFFFFF !important;
+    border: 1px solid #4F46E5 !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2) !important;
+}
+
+div[data-testid="stButton"] button[kind="primary"]:hover,
+.stButton > button[kind="primary"]:hover {
+    background-color: #4F46E5 !important;
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3) !important;
+    transform: translateY(-1px);
+}
+
+/* Secondary Button Override */
+div[data-testid="stButton"] button[kind="secondary"],
+.stButton > button[kind="secondary"] {
+    background-color: #FFFFFF !important;
+    color: #334155 !important;
+    border: 1px solid #CBD5E1 !important;
+}
+
+div[data-testid="stButton"] button[kind="secondary"]:hover,
+.stButton > button[kind="secondary"]:hover {
+    background-color: #F8FAFC !important;
+    color: #0F172A !important;
+    border-color: #94A3B8 !important;
+    transform: translateY(-1px);
+}
+
+/* Make sure buttons in forms span properly and are easily clickable */
+div[data-testid="stForm"] div[data-testid="stButton"] button {
+    width: 100% !important;
+}
+

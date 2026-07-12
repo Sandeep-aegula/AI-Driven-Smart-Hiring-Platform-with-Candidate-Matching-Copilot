@@ -89,28 +89,18 @@ def render_header():
         """, unsafe_allow_html=True)
 
     with header_col2:
-        head_c1, head_c2 = st.columns([7, 3])
-        with head_c1:
-            st.session_state.search_query = st.text_input(
-                label="Search Box", 
-                placeholder="Search candidates, jobs, tags...", 
-                value=st.session_state.get("search_query", ""),
-                label_visibility="collapsed",
-                key="global_search_input"
-            )
-        with head_c2:
-            avatar_html = '<div style="width: 36px; height: 36px; border-radius: 50%; background-color: #EEF2FF; border: 1px solid #E0E7FF; display: flex; align-items: center; justify-content: center; color: #6366F1; font-size: 14px; font-weight: 700;">HP</div>'
-            st.markdown(f"""
-            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 14px; height: 38px;">
-                <div style="font-size: 18px; cursor: pointer; color: #64748B; position: relative;" title="Notifications">
-                    <i class="fa-regular fa-bell"></i>
-                    <span style="position: absolute; top: -2px; right: -2px; width: 6px; height: 6px; background-color: #EF4444; border-radius: 50%;"></span>
-                </div>
-                <div style="cursor: pointer;" title="User Profile">
-                    {avatar_html}
-                </div>
+        avatar_html = '<div style="width: 36px; height: 36px; border-radius: 50%; background-color: #EEF2FF; border: 1px solid #E0E7FF; display: flex; align-items: center; justify-content: center; color: #6366F1; font-size: 14px; font-weight: 700;">HP</div>'
+        st.markdown(f"""
+        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 14px; height: 38px;">
+            <div style="font-size: 18px; cursor: pointer; color: #64748B; position: relative;" title="Notifications">
+                <i class="fa-regular fa-bell"></i>
+                <span style="position: absolute; top: -2px; right: -2px; width: 6px; height: 6px; background-color: #EF4444; border-radius: 50%;"></span>
             </div>
-            """, unsafe_allow_html=True)
+            <div style="cursor: pointer;" title="User Profile">
+                {avatar_html}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
 render_header()
 st.markdown("<hr style='margin: 8px 0 20px 0; border-color: #F1F5F9;'>", unsafe_allow_html=True)
@@ -118,7 +108,7 @@ st.markdown("<hr style='margin: 8px 0 20px 0; border-color: #F1F5F9;'>", unsafe_
 # 5. Welcome Banner
 today_str = datetime.date.today().strftime("%B %d, %Y")
 st.markdown(f"""
-<div class="custom-card-wrapper" style="background: linear-gradient(135deg, #1E1B4B 0%, #312E81 100%); color: white; border: none; padding: 28px 32px; position: relative; overflow: hidden; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(49,46,129,0.15);">
+<div class="custom-card-wrapper dark-hero-banner" style="background: linear-gradient(135deg, #1E1B4B 0%, #312E81 100%); color: white; border: none; padding: 28px 32px; position: relative; overflow: hidden; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(49,46,129,0.15);">
     <div style="position: absolute; right: -40px; top: -40px; width: 180px; height: 180px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.03);"></div>
     <div style="position: absolute; right: 80px; bottom: -60px; width: 220px; height: 220px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.02);"></div>
     <div style="display: flex; justify-content: space-between; align-items: flex-start; z-index: 1; position: relative;">
@@ -320,9 +310,7 @@ with col_c3:
 
 with col_c4:
     with st.container(border=True):
-        st.markdown("<h4 style='font-size: 1.05rem; font-weight: 700; color: #0F172A; margin: 0 0 15px 0;'><i class='fa-solid fa-circle-nodes' style='color:#6366F1;'></i> Top Skills</h4>", unsafe_allow_html=True)
-        
-        # HTML progress bar widget
+        st.markdown("#### <i class='fa-solid fa-circle-nodes' style='color:#6366F1; margin-right:8px;'></i> Top Skills", unsafe_allow_html=True)
         skills_progress = [
             ("Python", 88),
             ("SQL & DB Admin", 74),
@@ -330,22 +318,9 @@ with col_c4:
             ("AWS & Cloud Infra", 50),
             ("FastAPI & Web APIs", 45)
         ]
-        
-        skills_html = "<div style='display: flex; flex-direction: column; gap: 12px; height:220px; overflow:hidden;'>"
         for skill_name, val in skills_progress:
-            skills_html += f"""
-            <div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 600; color: #334155; margin-bottom: 4px;">
-                    <span>{skill_name}</span>
-                    <span>{val}%</span>
-                </div>
-                <div style="background-color: #EEF2FF; border-radius: 9999px; height: 8px; width: 100%; overflow: hidden;">
-                    <div style="background-color: #6366F1; width: {val}%; height: 100%; border-radius: 9999px;"></div>
-                </div>
-            </div>
-            """
-        skills_html += "</div>"
-        st.markdown(skills_html, unsafe_allow_html=True)
+            st.markdown(f"**{skill_name}** — {val}%")
+            st.progress(val / 100)
 
 st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
 
@@ -354,86 +329,54 @@ col_l1, col_l2, col_l3 = st.columns([1, 1, 1])
 
 with col_l1:
     with st.container(border=True):
-        st.markdown("<h4 style='font-size: 1.05rem; font-weight: 700; color: #0F172A; margin: 0 0 12px 0;'><i class='fa-regular fa-calendar-check' style='color:#E29578;'></i> Upcoming Interviews</h4>", unsafe_allow_html=True)
-        
+        st.markdown("#### <i class='fa-regular fa-calendar-check' style='color:#E29578; margin-right:8px;'></i> Upcoming Interviews", unsafe_allow_html=True)
         interviews_timeline = [
             {"name": "John Doe", "time": "10:00 AM", "round": "Technical Round", "interviewer": "Ava Morgan"},
             {"name": "Alice Johnson", "time": "11:30 AM", "round": "HR Culture Screen", "interviewer": "Sophia Patel"},
             {"name": "Michael Smith", "time": "02:00 PM", "round": "System Architecture", "interviewer": "Ava Morgan"}
         ]
-        
-        interviews_html = "<div style='display: flex; flex-direction: column; gap: 12px;'>"
         for intv in interviews_timeline:
-            initials = "".join([part[0] for part in intv["name"].split()[:2]])
-            interviews_html += f"""
-            <div style="background-color: #FFFDF9; border: 1px solid #FEF3C7; border-radius: 12px; padding: 12px 14px; display: flex; gap: 12px; align-items: center;">
-                <div style="width: 36px; height: 36px; border-radius: 50%; background-color: #FEF3C7; color: #D97706; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px;">
-                    {initials}
-                </div>
-                <div style="flex-grow: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: 700; color: #0F172A; font-size: 0.85rem;">{intv['name']}</span>
-                        <span style="font-size: 0.72rem; color: #D97706; font-weight: 700; background-color: #FEF3C7; padding: 2px 8px; border-radius: 9999px;">{intv['time']}</span>
-                    </div>
-                    <div style="font-size: 0.76rem; color: #64748B; margin-top: 2px;">{intv['round']} • Lead: {intv['interviewer']}</div>
-                </div>
-            </div>
-            """
-        interviews_html += "</div>"
-        st.markdown(interviews_html, unsafe_allow_html=True)
+            with st.container(border=True):
+                c1, c2 = st.columns([3, 1])
+                with c1:
+                    st.markdown(f"**{intv['name']}**")
+                    st.caption(f"{intv['round']} • Lead: {intv['interviewer']}")
+                with c2:
+                    st.markdown(f"`{intv['time']}`")
 
 with col_l2:
     with st.container(border=True):
-        st.markdown("<h4 style='font-size: 1.05rem; font-weight: 700; color: #0F172A; margin: 0 0 12px 0;'><i class='fa-solid fa-clock-rotate-left' style='color:#6366F1;'></i> Recent Activities</h4>", unsafe_allow_html=True)
-        
+        st.markdown("#### <i class='fa-solid fa-clock-rotate-left' style='color:#6366F1; margin-right:8px;'></i> Recent Activities", unsafe_allow_html=True)
         timeline_events = [
-            {"icon": "fa-file-arrow-up", "title": "Resume Uploaded", "desc": "Sarah Jenkins - Senior Python Engineer", "time": "10m ago"},
-            {"icon": "fa-circle-check", "title": "Candidate Shortlisted", "desc": "David Chen - Data Scientist", "time": "2h ago"},
-            {"icon": "fa-calendar-days", "title": "Interview Scheduled", "desc": "Emily Taylor - Backend Developer", "time": "1d ago"}
+            {"icon": "fa-file-arrow-up", "color": "#6366F1", "title": "Resume Uploaded", "desc": "Sarah Jenkins - Senior Python Engineer", "time": "10m ago"},
+            {"icon": "fa-circle-check", "color": "#10B981", "title": "Candidate Shortlisted", "desc": "David Chen - Data Scientist", "time": "2h ago"},
+            {"icon": "fa-calendar-days", "color": "#3B82F6", "title": "Interview Scheduled", "desc": "Emily Taylor - Backend Developer", "time": "1d ago"}
         ]
-        
-        timeline_html = "<div style='display: flex; flex-direction: column; gap: 14px; padding-top: 4px;'>"
         for event in timeline_events:
-            timeline_html += f"""
-            <div style="display: flex; gap: 12px;">
-                <div style="width: 28px; height: 28px; border-radius: 50%; background-color: #EEF2FF; color: #6366F1; display: flex; align-items: center; justify-content: center; font-size: 11px; border: 1px solid #E0E7FF; flex-shrink: 0;">
-                    <i class="fa-solid {event['icon']}"></i>
-                </div>
-                <div style="flex-grow: 1; min-width: 0;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: 700; color: #0F172A; font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{event['title']}</span>
-                        <span style="font-size: 0.68rem; color: #94A3B8; font-weight: 500; flex-shrink: 0;">{event['time']}</span>
-                    </div>
-                    <p style="margin: 2px 0 0 0; color: #64748B; font-size: 0.76rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{event['desc']}</p>
-                </div>
-            </div>
-            """
-        timeline_html += "</div>"
-        st.markdown(timeline_html, unsafe_allow_html=True)
+            with st.container(border=True):
+                c1, c2 = st.columns([4, 1])
+                with c1:
+                    st.markdown(f"<i class='fa-solid {event['icon']}' style='color:{event['color']}; margin-right:8px;'></i> **{event['title']}**", unsafe_allow_html=True)
+                    st.caption(event['desc'])
+                with c2:
+                    st.caption(event['time'])
 
 with col_l3:
     with st.container(border=True):
-        st.markdown("<h4 style='font-size: 1.05rem; font-weight: 700; color: #0F172A; margin: 0 0 12px 0;'><i class='fa-solid fa-wand-magic-sparkles' style='color:#8B5CF6;'></i> AI Recommendations</h4>", unsafe_allow_html=True)
-        
+        st.markdown("#### <i class='fa-solid fa-wand-magic-sparkles' style='color:#8B5CF6; margin-right:8px;'></i> AI Recommendations", unsafe_allow_html=True)
         recommendations = [
             {"name": "Sarah Jenkins", "role": "Senior Full-Stack Engineer", "score": 91, "summary": "Strong technical alignment in FastAPI & React."},
             {"name": "David Chen", "role": "Data Scientist / AI Engineer", "score": 85, "summary": "Highly proficient in PyTorch CV workflows."}
         ]
-        
-        rec_html = "<div style='display: flex; flex-direction: column; gap: 10px;'>"
         for r in recommendations:
-            rec_html += f"""
-            <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 10px 14px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <span style="font-weight: 700; color: #0F172A; font-size: 0.82rem;">{r['name']}</span>
-                    <span class="badge-strong" style="background-color: #ECFDF5; color: #047857; font-size: 0.65rem; padding: 1px 8px;">{r['score']}% Match</span>
-                </div>
-                <div style="font-size: 0.72rem; color: #4F46E5; font-weight: 600; margin-bottom: 4px;">{r['role']}</div>
-                <p style="margin: 0; color: #64748B; font-size: 0.74rem; line-height: 1.3;">{r['summary']}</p>
-            </div>
-            """
-        rec_html += "</div>"
-        st.markdown(rec_html, unsafe_allow_html=True)
+            with st.container(border=True):
+                c1, c2 = st.columns([3, 1])
+                with c1:
+                    st.markdown(f"**{r['name']}**")
+                    st.caption(r['role'])
+                with c2:
+                    st.success(f"{r['score']}%")
+                st.caption(r['summary'])
 
 st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
 
@@ -458,12 +401,12 @@ with st.container(border=True):
             st.switch_page("pages/5_Interview_Management.py")
 
 # Footer metadata
-st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True)
-st.markdown("""
-<div style="text-align: center; color: #94A3B8; font-size: 0.78rem; font-weight: 500; border-top: 1px solid #F1F5F9; padding-top: 20px; padding-bottom: 20px;">
-    <span><i class="fa-solid fa-code" style="margin-right: 4px;"></i> HirePilot Dashboard • Plan: Enterprise SaaS • Connected to local Ollama (qwen2.5-coder:7b)</span>
-</div>
-""", unsafe_allow_html=True)
+# st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True)
+# st.markdown("""
+# <div style="text-align: center; color: #94A3B8; font-size: 0.78rem; font-weight: 500; border-top: 1px solid #F1F5F9; padding-top: 20px; padding-bottom: 20px;">
+#     <span><i class="fa-solid fa-code" style="margin-right: 4px;"></i> HirePilot Dashboard • Plan: Enterprise SaaS • Connected to local Ollama (qwen2.5-coder:7b)</span>
+# </div>
+# """, unsafe_allow_html=True)
 
 # Sidebar footer metadata
 with st.sidebar:

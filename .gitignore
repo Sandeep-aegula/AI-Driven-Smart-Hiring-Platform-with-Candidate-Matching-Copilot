@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+﻿# Byte-compiled / optimized / DLL files
 **/__pycache__/
 *.py[cod]
 *$py.class
@@ -19,3 +19,5 @@ reports/
 .gemini/
 .DS_Store
 Thumbs.db
+.env
+

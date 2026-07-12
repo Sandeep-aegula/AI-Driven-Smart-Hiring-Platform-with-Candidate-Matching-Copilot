@@ -74,6 +74,26 @@ def render_resume_parser() -> None:
                     st.session_state["selected_resume_id"] = None
                     st.rerun()
 
+            st.markdown("**Or paste resume text**")
+            pasted_resume_text = st.text_area(
+                "Resume text",
+                height=180,
+                placeholder="Paste the candidate's full resume text here...",
+                key="pasted_resume_text",
+            )
+            if st.button("Parse pasted resume", type="primary", width="stretch"):
+                if not pasted_resume_text.strip():
+                    st.error("Paste resume text before parsing.")
+                else:
+                    with st.spinner("Parsing resume text with Ollama AI..."):
+                        result = api_client.parse_resume_text(pasted_resume_text)
+                    if result:
+                        st.session_state["selected_resume_id"] = result["id"]
+                        st.success("Resume parsed successfully.")
+                        st.rerun()
+                    else:
+                        st.error("Unable to parse the pasted resume text.")
+
     with col_right:
         with st.container(border=True):
             st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>"
@@ -120,15 +140,28 @@ def render_resume_parser() -> None:
                 tabs = st.tabs(["👤 Identity","⚡ Skills","💼 Career","🎓 Education","🏆 Others"])
 
                 with tabs[0]:
-                    for lbl, key in [("Name","name"),("Email","email"),("Phone","phone"),
-                                     ("LinkedIn","linkedin"),("GitHub","github"),("Portfolio","portfolio")]:
+                    for lbl, key in [("Name","name"),("Email","email"),("Phone","phone")]:
                         st.markdown(f"**{lbl}:** {parsed.get(key) or 'N/A'}")
+                    for lbl, key in [("LinkedIn", "linkedin"), ("GitHub", "github"), ("Portfolio", "portfolio")]:
+                        url = parsed.get(key) or ""
+                        if url.startswith(("https://", "http://")):
+                            st.link_button(f"{lbl} profile", url, width="content")
+                        else:
+                            st.markdown(f"**{lbl}:** N/A")
 
                 with tabs[1]:
                     skills = parsed.get("skills",[])
                     if skills:
-                        html = "".join(f'<span class="tag">{s}</span>' for s in skills)
-                        st.markdown(html, unsafe_allow_html=True)
+                        st.pills(
+                            "Skills",
+                            skills,
+                            selection_mode="multi",
+                            default=skills,
+                            disabled=True,
+                            label_visibility="collapsed",
+                            width="stretch",
+                            key=f"parsed_skills_{selected['id']}",
+                        )
                     else:
                         st.write("No skills extracted.")
 

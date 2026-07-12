@@ -6,8 +6,9 @@ import datetime
 # Setup path to import api_client
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
+project_root = os.path.dirname(parent_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from frontend.components import api_client
 from frontend.services.cache import get_interviews_cached, get_candidates_cached, invalidate_interviews
@@ -103,34 +104,25 @@ with col_left:
 
     # 3. Timeline History
     st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
-    st.markdown("#### <i class='fa-solid fa-timeline' style='color:#6366F1;'></i> Timeline Activities", unsafe_allow_html=True)
+    st.markdown("#### <i class='fa-solid fa-timeline' style='color:#6366F1; margin-right:8px;'></i> Timeline Activities", unsafe_allow_html=True)
     activities = [
-        {"time": "Just now", "title": "Interview scheduled", "desc": "Technical Assessment scheduled with Sarah Jenkins."},
-        {"time": "2 hours ago", "title": "Feedback submitted", "desc": "Ava Morgan submitted feedback on candidate David Chen."},
-        {"time": "Yesterday", "title": "HR screening completed", "desc": "HR Culture Fit passed for Emily Taylor."}
+        {"time": "Just now",     "icon": "fa-calendar-days", "color": "#6366F1", "title": "Interview scheduled",       "desc": "Technical Assessment scheduled with Sarah Jenkins."},
+        {"time": "2 hours ago",  "icon": "fa-comment-dots",   "color": "#10B981", "title": "Feedback submitted",         "desc": "Ava Morgan submitted feedback on candidate David Chen."},
+        {"time": "Yesterday",    "icon": "fa-circle-check",  "color": "#3B82F6", "title": "HR screening completed",     "desc": "HR Culture Fit passed for Emily Taylor."}
     ]
-    timeline_html = "<div style='display: flex; flex-direction: column; gap: 12px; margin-top: 10px;'>"
     for event in activities:
-        timeline_html += f"""
-        <div style="display: flex; gap: 10px;">
-            <div style="display: flex; flex-direction: column; align-items: center;">
-                <div style="width: 14px; height: 14px; border-radius: 50%; background-color: #6366F1; border: 2.5px solid #EEF2FF;"></div>
-                <div style="width: 1.5px; flex-grow: 1; background-color: #E2E8F0; min-height: 20px;"></div>
-            </div>
-            <div>
-                <span style="font-weight: 700; color: #0F172A; font-size: 0.8rem;">{event['title']}</span>
-                <span style="font-size: 0.72rem; color: #64748B; margin-left: 8px;">{event['time']}</span>
-                <div style="font-size: 0.76rem; color: #475569; margin-top: 1px;">{event['desc']}</div>
-            </div>
-        </div>
-        """
-    timeline_html += "</div>"
-    st.markdown(timeline_html, unsafe_allow_html=True)
+        with st.container(border=True):
+            tc1, tc2 = st.columns([4, 1])
+            with tc1:
+                st.markdown(f"<i class='fa-solid {event['icon']}' style='color:{event['color']}; margin-right:8px;'></i> **{event['title']}**", unsafe_allow_html=True)
+                st.caption(event['desc'])
+            with tc2:
+                st.caption(event['time'])
 
 with col_right:
     # 1. Schedule Interview Form
     with st.container(border=True):
-        st.markdown("#### <i class='fa-solid fa-calendar-plus' style='color:#6366F1;'></i> Schedule Interview", unsafe_allow_html=True)
+        st.markdown("#### <i class='fa-solid fa-calendar-plus' style='color:#6366F1; margin-right:8px;'></i> Schedule Interview", unsafe_allow_html=True)
         
         if not candidates:
             st.warning("Please add candidates first.")
@@ -165,11 +157,11 @@ with col_right:
     # 2. Ollama AI Questions Generator
     st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
     with st.container(border=True):
-        st.markdown("#### <i class='fa-solid fa-wand-magic-sparkles' style='color:#6366F1;'></i> Generate Interview Questions", unsafe_allow_html=True)
+        st.markdown("#### <i class='fa-solid fa-wand-magic-sparkles' style='color:#6366F1; margin-right:8px;'></i> Generate Interview Questions", unsafe_allow_html=True)
         st.markdown("<p style='font-size:0.8rem; color:#64748B;'>Select category and generate questions based on the candidate's core skills.</p>", unsafe_allow_html=True)
         
         ai_stage = st.selectbox("Category", ["Technical", "Coding", "Behavioral", "HR"], key="ai_q_stage")
-        ai_skills = st.text_input("Candidate Skills (comma separated)", value="Python, FastAPI, SQL")
+        ai_skills = st.text_input("Candidate Skills (comma separated)", value="Python, FastAPI, SQL", label_visibility="visible")
         
         if st.button("Generate Questions with Ollama AI", type="secondary", use_container_width=True):
             with st.spinner("Ollama qwen2.5-coder:7b is writing questions..."):
@@ -195,7 +187,7 @@ with col_right:
         active_int = next((i for i in interviews if i.get("id") == st.session_state.selected_interview_id), None)
         if active_int:
             with st.container(border=True):
-                st.markdown(f"#### <i class='fa-solid fa-comment-medical' style='color:#6366F1;'></i> Log Feedback: {active_int.get('candidate_name')}", unsafe_allow_html=True)
+                st.markdown(f"#### <i class='fa-solid fa-comment-medical' style='color:#6366F1; margin-right:8px;'></i> Log Feedback: {active_int.get('candidate_name')}", unsafe_allow_html=True)
                 
                 feedback = st.text_area("Feedback Notes", value=active_int.get("feedback_notes", ""), placeholder="Enter candidate performance details...")
                 recommendation = st.selectbox("Recommendation", ["Select...", "Approve", "Shortlist", "Reject"], index=["Select...", "Approve", "Shortlist", "Reject"].index(active_int.get("recommendation", "Select...") or "Select..."))
@@ -215,19 +207,3 @@ with col_right:
                     if st.button("Cancel Log", use_container_width=True):
                         st.session_state.selected_interview_id = None
                         st.rerun()
-
-# Sidebar footer metadata
-with st.sidebar:
-    st.markdown("""
-    <div style="margin-top: 80px; padding: 16px 10px 0 10px; border-top: 1px solid #1E293B;">
-        <div style="display: flex; align-items: center; gap: 10px; opacity: 0.85;">
-            <div style="background-color: #1E293B; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6366F1;">
-                <i class="fa-solid fa-rocket"></i>
-            </div>
-            <div>
-                <div style="font-weight: 700; color: #E2E8F0; font-size: 0.78rem;">HirePilot v1.2</div>
-                <div style="font-size: 0.65rem; color: #64748B;">Plan: Enterprise</div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)

@@ -27,11 +27,15 @@ def render_candidates() -> None:
     # ── Filters ───────────────────────────────────────────────────────────
     cs, cst, ce, csk = st.columns([3.5, 2.1, 2.1, 2.1])
     with cs:  search    = st.text_input("Search", placeholder="Search by name, title…", label_visibility="collapsed")
-    with cst: status_f  = st.selectbox("Status",  ["All","Applied","Shortlisted","Interview Scheduled","Approved","Rejected"], label_visibility="collapsed")
-    with ce:  exp_f     = st.selectbox("Exp",     ["All","Junior (0-2 Yrs)","Mid-level (3-5 Yrs)","Senior (6+ Yrs)"], label_visibility="collapsed")
-    with csk: skill_f   = st.selectbox("Skill",   ["All","Python","SQL","FastAPI","React","Docker","Machine Learning"], label_visibility="collapsed")
+    with cst: status_f  = st.selectbox("Status",  ["All Statuses","Applied","Shortlisted","Interview Scheduled","Approved","Rejected"], label_visibility="collapsed")
+    with ce:  exp_f     = st.selectbox("Exp",     ["All Experience Levels","Junior (0-2 Yrs)","Mid-level (3-5 Yrs)","Senior (6+ Yrs)"], label_visibility="collapsed")
+    with csk: skill_f   = st.selectbox("Skill",   ["All Skills","Python","SQL","FastAPI","React","Docker","Machine Learning"], label_visibility="collapsed")
 
-    cands = api_client.get_candidates(search=search, status=status_f, skill=skill_f)
+    # Map friendly filter labels back to API-compatible "All"
+    status_api = "All" if status_f == "All Statuses" else status_f
+    skill_api = "All" if skill_f == "All Skills" else skill_f
+
+    cands = api_client.get_candidates(search=search, status=status_api, skill=skill_api)
     if "Junior"    in exp_f: cands = [c for c in cands if c.get("years_experience",0) <= 2]
     elif "Mid"     in exp_f: cands = [c for c in cands if 3 <= c.get("years_experience",0) <= 5]
     elif "Senior"  in exp_f: cands = [c for c in cands if c.get("years_experience",0) >= 6]

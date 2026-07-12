@@ -1,5 +1,7 @@
 /* Button styling overrides */
-button[data-testid="baseButton-primary"] {
+button[data-testid="stBaseButton-primary"],
+button[data-testid="baseButton-primary"],
+div[data-testid="stButton"] button[kind="primary"] {
     background-color: #2563EB !important;
     color: #FFFFFF !important;
     border-radius: 10px !important;
@@ -10,15 +12,19 @@ button[data-testid="baseButton-primary"] {
     box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2), 0 2px 4px -1px rgba(37, 99, 235, 0.1) !important;
 }
 
+button[data-testid="stBaseButton-primary"]:hover,
 button[data-testid="baseButton-primary"]:hover {
     background-color: #1D4ED8 !important;
     transform: translateY(-1.5px) !important;
     box-shadow: 0 8px 15px -3px rgba(37, 99, 235, 0.3), 0 4px 6px -2px rgba(37, 99, 235, 0.15) !important;
 }
 
-button[data-testid="baseButton-secondary"] {
+button[data-testid="stBaseButton-secondary"],
+button[data-testid="baseButton-secondary"],
+div[data-testid="stButton"] button[kind="secondary"],
+.stButton > button {
     background-color: #FFFFFF !important;
-    color: #475569 !important;
+    color: #0F172A !important;
     border-radius: 10px !important;
     border: 1px solid #D1D5DB !important;
     padding: 8px 20px !important;
@@ -26,7 +32,9 @@ button[data-testid="baseButton-secondary"] {
     transition: all 0.2s ease-in-out !important;
 }
 
-button[data-testid="baseButton-secondary"]:hover {
+button[data-testid="stBaseButton-secondary"]:hover,
+button[data-testid="baseButton-secondary"]:hover,
+.stButton > button:hover {
     background-color: #F8FAFC !important;
     color: #1E293B !important;
     border-color: #9CA3AF !important;
@@ -34,14 +42,19 @@ button[data-testid="baseButton-secondary"]:hover {
 }
 
 /* Custom styled search & text inputs */
-div[data-testid="stTextInput"] input {
+div[data-testid="stTextInput"] input,
+div[data-testid="stTextArea"] textarea,
+.stTextInput input,
+.stTextArea textarea {
     border-radius: 10px !important;
     border: 1px solid #E2E8F0 !important;
     padding: 10px 14px !important;
     background-color: #FFFFFF !important;
+    color: #0F172A !important;
 }
 
-div[data-testid="stTextInput"] input:focus {
+div[data-testid="stTextInput"] input:focus,
+div[data-testid="stTextArea"] textarea:focus {
     border-color: #2563EB !important;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
 }

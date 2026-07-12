@@ -8,8 +8,9 @@ import plotly.express as px
 # Setup path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
+project_root = os.path.dirname(parent_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from frontend.components.page_utils import setup_page, render_sidebar_footer
 from frontend.services.json_storage import get_dashboard_stats
@@ -278,19 +279,3 @@ with tab_recruiters:
             paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
         )
         st.plotly_chart(fig_recruiter, use_container_width=True, config={'displayModeBar': False})
-
-# Sidebar footer metadata
-with st.sidebar:
-    st.markdown("""
-    <div style="margin-top: 80px; padding: 16px 10px 0 10px; border-top: 1px solid #1E293B;">
-        <div style="display: flex; align-items: center; gap: 10px; opacity: 0.85;">
-            <div style="background-color: #1E293B; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6366F1;">
-                <i class="fa-solid fa-rocket"></i>
-            </div>
-            <div>
-                <div style="font-weight: 700; color: #E2E8F0; font-size: 0.78rem;">HirePilot v1.2</div>
-                <div style="font-size: 0.65rem; color: #64748B;">Plan: Enterprise</div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)

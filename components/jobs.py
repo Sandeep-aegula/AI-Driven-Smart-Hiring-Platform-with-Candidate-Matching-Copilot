@@ -49,7 +49,68 @@ def _go_to_list():
     st.session_state["job_action"] = "list"
     st.session_state["selected_job_id"] = None
     st.session_state["generated_jd_data"] = None
+    st.session_state.pop("job_form_key", None)
     st.rerun()
+
+
+def _seed_job_form(job_data: dict, generated: dict | None = None) -> None:
+    """Initialize keyed form widgets from existing job data and optional AI output."""
+    src = {**job_data, **(generated or {})}
+    dl = job_data.get("deadline")
+    st.session_state.update({
+        "jf_title": src.get("title", ""),
+        "jf_department": src.get("department", ""),
+        "jf_location": src.get("location", "Remote"),
+        "jf_hiring_manager": src.get("hiring_manager", ""),
+        "jf_employment_type": src.get("employment_type", "Full-time"),
+        "jf_exp_min": int(src.get("experience_min", 0)),
+        "jf_exp_max": int(src.get("experience_max", 0)),
+        "jf_sal_min": int(src.get("salary_min", 0)),
+        "jf_sal_max": int(src.get("salary_max", 0)),
+        "jf_deadline": (
+            datetime.datetime.strptime(dl, "%Y-%m-%d").date()
+            if dl else datetime.date.today() + datetime.timedelta(days=30)
+        ),
+        "jf_required_skills": "\n".join(src.get("requirements", [])),
+        "jf_description": src.get("description", ""),
+        "jf_responsibilities": "\n".join(src.get("responsibilities", [])),
+        "jf_preferred_skills": "\n".join(src.get("preferred_skills", [])),
+        "jf_benefits": "\n".join(src.get("benefits", [])),
+    })
+
+
+def _build_job_payload() -> dict:
+    """Collect all form widget values into an API-ready payload."""
+    requirements = [l.strip() for l in st.session_state.get("jf_required_skills", "").split("\n") if l.strip()]
+    return {
+        "title": st.session_state.get("jf_title", "").strip(),
+        "department": st.session_state.get("jf_department", "").strip(),
+        "location": st.session_state.get("jf_location", "Remote").strip(),
+        "experience_min": int(st.session_state.get("jf_exp_min", 0)),
+        "experience_max": int(st.session_state.get("jf_exp_max", 0)),
+        "salary_min": int(st.session_state.get("jf_sal_min", 0)),
+        "salary_max": int(st.session_state.get("jf_sal_max", 0)),
+        "employment_type": st.session_state.get("jf_employment_type", "Full-time"),
+        "hiring_manager": st.session_state.get("jf_hiring_manager", "").strip(),
+        "deadline": st.session_state.get("jf_deadline", datetime.date.today()).isoformat(),
+        "status": st.session_state.get("jf_status", "Active"),
+        "description": st.session_state.get("jf_description", "").strip(),
+        "responsibilities": [l.strip() for l in st.session_state.get("jf_responsibilities", "").split("\n") if l.strip()],
+        "requirements": requirements,
+        "preferred_skills": [l.strip() for l in st.session_state.get("jf_preferred_skills", "").split("\n") if l.strip()],
+        "nice_to_have_skills": [],
+        "benefits": [l.strip() for l in st.session_state.get("jf_benefits", "").split("\n") if l.strip()],
+    }
+
+
+def _apply_generated_jd(generated: dict) -> None:
+    """Merge AI-generated content into the form widgets."""
+    st.session_state["jf_description"] = generated.get("description", "")
+    st.session_state["jf_responsibilities"] = "\n".join(generated.get("responsibilities", []))
+    if generated.get("requirements"):
+        st.session_state["jf_required_skills"] = "\n".join(generated["requirements"])
+    st.session_state["jf_preferred_skills"] = "\n".join(generated.get("preferred_skills", []))
+    st.session_state["jf_benefits"] = "\n".join(generated.get("benefits", []))
 
 
 def _render_job_form():
@@ -59,95 +120,119 @@ def _render_job_form():
     if is_edit and job_id:
         job_data = api_client.get_job(job_id) or {}
 
-    st.markdown(f"### {'Edit Job Details' if is_edit else 'Create New Job Listing'}")
+    form_key = f"{'edit' if is_edit else 'create'}_{job_id or 'new'}"
+    if st.session_state.get("job_form_key") != form_key:
+        generated = st.session_state.get("generated_jd_data")
+        _seed_job_form(job_data, generated)
+        st.session_state["jf_status"] = job_data.get("status", "Active")
+        st.session_state["job_form_key"] = form_key
 
-    with st.expander("🪄 AI Job Description Assistant", expanded=True):
-        st.markdown("<p style='font-size:0.85rem;color:#475569;'>Provide basic fields below and click Generate. "
-                    "Our local Ollama model will construct a complete job description.</p>",
-                    unsafe_allow_html=True)
-        ai_title = st.text_input("Role Title",   value=job_data.get("title", ""), key="ai_title_input")
-        ai_dept  = st.text_input("Department",   value=job_data.get("department", "Engineering"), key="ai_dept_input")
-        ai_reqs  = st.text_area("Required Skills (comma separated)",
-                                value=", ".join(job_data.get("requirements", [])) or "Python, SQL",
-                                key="ai_reqs_input")
-        if st.button("Generate Job Description with Ollama AI", type="primary", use_container_width=True):
-            with st.spinner("AI is generating Job Description details… This may take up to 20 seconds…"):
-                payload = {
-                    "title": ai_title, "department": ai_dept, "location": "Remote",
-                    "experience_min": 3, "experience_max": 8,
-                    "salary_min": 100000, "salary_max": 150000,
-                    "employment_type": "Full-time", "hiring_manager": "",
-                    "deadline": "", "status": "Active", "description": "",
-                    "responsibilities": [], "requirements": [s.strip() for s in ai_reqs.split(",") if s.strip()],
-                    "preferred_skills": [], "nice_to_have_skills": [], "benefits": [],
-                }
+    if st.button("← Back to Job Openings", key="job_form_back"):
+        _go_to_list()
+
+    st.markdown(f"### {'Edit Job Details' if is_edit else 'Create New Job Listing'}")
+    st.markdown(
+        "<p style='font-size:0.85rem;color:#64748B;margin:0 0 16px 0;'>"
+        "Fill in all job details below, generate the description with AI, then save.</p>",
+        unsafe_allow_html=True,
+    )
+
+    # ── Step 1: Basic inputs ──────────────────────────────────────────────
+    st.markdown("**Step 1 — Job details**")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.text_input("Job Title *", key="jf_title", placeholder="e.g. Senior Python Engineer")
+        st.text_input("Department *", key="jf_department", placeholder="e.g. Engineering")
+        st.text_input("Location", key="jf_location", placeholder="e.g. Remote / New York")
+        st.selectbox("Employment Type", ["Full-time", "Part-time", "Contract", "Internship"], key="jf_employment_type")
+    with c2:
+        st.text_input("Hiring Manager", key="jf_hiring_manager", placeholder="e.g. Jane Smith")
+        st.date_input("Application Deadline", key="jf_deadline")
+        st.number_input("Min Experience (Yrs)", min_value=0, key="jf_exp_min")
+        st.number_input("Max Experience (Yrs)", min_value=0, key="jf_exp_max")
+
+    sal1, sal2 = st.columns(2)
+    with sal1:
+        st.number_input("Min Salary ($)", step=5000, key="jf_sal_min")
+    with sal2:
+        st.number_input("Max Salary ($)", step=5000, key="jf_sal_max")
+
+    st.text_area(
+        "Required Skills (one per line) *",
+        key="jf_required_skills",
+        height=100,
+        placeholder="Python\nFastAPI\nPostgreSQL",
+    )
+
+    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+
+    # ── Step 2: Generate description from all inputs ───────────────────────
+    if st.button("🪄 Generate Job Description with AI", type="primary", use_container_width=True, key="jf_generate_btn"):
+        title = st.session_state.get("jf_title", "").strip()
+        dept = st.session_state.get("jf_department", "").strip()
+        reqs = [l.strip() for l in st.session_state.get("jf_required_skills", "").split("\n") if l.strip()]
+        if not title or not dept:
+            st.error("Job Title and Department are required before generating.")
+        elif not reqs:
+            st.error("Add at least one required skill before generating.")
+        else:
+            with st.spinner("AI is generating the job description… This may take up to 20 seconds…"):
+                payload = _build_job_payload()
+                payload["description"] = ""
+                payload["responsibilities"] = []
+                payload["preferred_skills"] = []
+                payload["benefits"] = []
                 res = api_client.generate_jd(payload)
                 if res:
                     st.session_state["generated_jd_data"] = res
-                    st.success("Successfully generated! Pre-populated in form inputs below.")
+                    _apply_generated_jd(res)
+                    st.success("Job description generated! Review the content below, then save.")
+                    st.rerun()
                 else:
-                    st.error("Ollama generator failed. Ensure your Ollama server is running locally.")
+                    st.error("AI generation failed. Ensure the backend and Ollama are running.")
 
-    src = st.session_state.get("generated_jd_data") or job_data
+    if st.session_state.get("generated_jd_data"):
+        st.info("AI content generated — review and edit below before saving.")
 
-    with st.form("job_crud_form"):
-        c1, c2 = st.columns(2)
-        with c1:
-            title          = st.text_input("Job Title *",     value=src.get("title", job_data.get("title", "")))
-            department     = st.text_input("Department *",    value=src.get("department", job_data.get("department", "")))
-            location       = st.text_input("Location",        value=src.get("location", job_data.get("location", "Remote")))
-            emp_types      = ["Full-time", "Part-time", "Contract", "Internship"]
-            emp_type       = st.selectbox("Employment Type",  emp_types,
-                                          index=emp_types.index(job_data.get("employment_type", "Full-time")))
-            hiring_manager = st.text_input("Hiring Manager",  value=job_data.get("hiring_manager", ""))
-        with c2:
-            exp_min  = st.number_input("Min Experience (Yrs)",  value=job_data.get("experience_min", 0),  min_value=0)
-            exp_max  = st.number_input("Max Experience (Yrs)",  value=job_data.get("experience_max", 0),  min_value=0)
-            sal_min  = st.number_input("Min Salary ($)",         value=job_data.get("salary_min", 0),      step=5000)
-            sal_max  = st.number_input("Max Salary ($)",         value=job_data.get("salary_max", 0),      step=5000)
-            dl_raw   = job_data.get("deadline")
-            deadline = st.date_input("Application Deadline",
-                                     value=datetime.datetime.strptime(dl_raw, "%Y-%m-%d").date()
-                                     if dl_raw else datetime.date.today() + datetime.timedelta(days=30))
+    # ── Step 3: Generated / editable content ───────────────────────────────
+    st.markdown("**Step 2 — Job description & content**")
+    st.text_area("Job Description Summary", key="jf_description", height=120)
+    cc1, cc2 = st.columns(2)
+    with cc1:
+        st.text_area("Responsibilities (one per line)", key="jf_responsibilities", height=140)
+    with cc2:
+        st.text_area("Preferred Skills (one per line)", key="jf_preferred_skills", height=140)
+    st.text_area("Benefits Package (one per line)", key="jf_benefits", height=100)
 
-        description      = st.text_area("Job Description Summary",       value=src.get("description", ""))
-        responsibilities = st.text_area("Responsibilities (one per line)",value="\n".join(src.get("responsibilities", [])))
-        requirements     = st.text_area("Required Skills (one per line)", value="\n".join(src.get("requirements", [])))
-        opt_skills       = st.text_area("Preferred Skills (one per line)",value="\n".join(src.get("preferred_skills", [])))
-        benefits         = st.text_area("Benefits Package (one per line)",value="\n".join(src.get("benefits", [])))
+    st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
 
-        sc = st.columns([1.5, 1.5, 7])
-        with sc[0]: submitted = st.form_submit_button("Save Job Opening", type="primary", use_container_width=True)
-        with sc[1]: cancel    = st.form_submit_button("Cancel",           use_container_width=True)
-
-        if cancel:
-            _go_to_list()
-
-        if submitted:
-            if not title or not department:
+    # ── Step 4: Save ───────────────────────────────────────────────────────
+    sc1, sc2, _ = st.columns([1.5, 1.2, 6])
+    with sc1:
+        if st.button("💾 Save Job Opening", type="primary", use_container_width=True, key="jf_save_btn"):
+            payload = _build_job_payload()
+            if not payload["title"] or not payload["department"]:
                 st.error("Title and Department are required.")
+            elif not payload["description"]:
+                st.error("Generate or enter a job description before saving.")
             else:
-                payload = {
-                    "title": title, "department": department, "location": location,
-                    "experience_min": int(exp_min), "experience_max": int(exp_max),
-                    "salary_min": int(sal_min),     "salary_max": int(sal_max),
-                    "employment_type": emp_type,    "hiring_manager": hiring_manager,
-                    "deadline": deadline.isoformat(),
-                    "status": job_data.get("status", "Active"),
-                    "description": description,
-                    "responsibilities": [l.strip() for l in responsibilities.split("\n") if l.strip()],
-                    "requirements":     [l.strip() for l in requirements.split("\n")     if l.strip()],
-                    "preferred_skills": [l.strip() for l in opt_skills.split("\n")       if l.strip()],
-                    "nice_to_have_skills": [], "benefits": [l.strip() for l in benefits.split("\n") if l.strip()],
-                }
                 if is_edit:
                     res = api_client.update_job(job_id, payload)
-                    if res: st.toast("Job opening updated!", icon="✅"); _go_to_list()
-                    else:   st.error("Failed to update job.")
+                    if res:
+                        st.toast("Job opening updated!", icon="✅")
+                        _go_to_list()
+                    else:
+                        st.error("Failed to update job.")
                 else:
                     res = api_client.create_job(payload)
-                    if res: st.toast("Job opening created!", icon="🎉"); _go_to_list()
-                    else:   st.error("Failed to create job.")
+                    if res:
+                        st.toast("Job opening created!", icon="🎉")
+                        _go_to_list()
+                    else:
+                        st.error("Failed to create job.")
+    with sc2:
+        if st.button("Cancel", use_container_width=True, key="jf_cancel_btn"):
+            _go_to_list()
 
 
 def _render_job_detail():
@@ -227,18 +312,22 @@ def _render_job_list():
     # ── Filters ───────────────────────────────────────────────────────────
     cs, cd, cl, cst, ce, cb = st.columns([2.5, 1.8, 1.8, 1.8, 1.8, 1.5])
     with cs:  search     = st.text_input("Search", value="", placeholder="Search by title…", label_visibility="collapsed")
-    with cd:  department = st.selectbox("Dept",    ["All","Engineering","Sales","Marketing","HR","Finance","Analytics"], label_visibility="collapsed")
-    with cl:  location   = st.selectbox("Location",["All","Remote","On-site","Hybrid"],                                  label_visibility="collapsed")
-    with cst: status     = st.selectbox("Status",  ["All","Active","Paused","Archived"],                                  label_visibility="collapsed")
-    with ce:  exp_f      = st.selectbox("Exp",     ["All","Junior (0-2 Yrs)","Mid-level (3-5 Yrs)","Senior (6+ Yrs)"],   label_visibility="collapsed")
+    with cd:  department = st.selectbox("Dept",    ["All Departments","Engineering","Sales","Marketing","HR","Finance","Analytics"], label_visibility="collapsed")
+    with cl:  location   = st.selectbox("Location",["All Locations","Remote","On-site","Hybrid"],                                  label_visibility="collapsed")
+    with cst: status     = st.selectbox("Status",  ["All Statuses","Active","Paused","Archived"],                                  label_visibility="collapsed")
+    with ce:  exp_f      = st.selectbox("Exp",     ["All Experience Levels","Junior (0-2 Yrs)","Mid-level (3-5 Yrs)","Senior (6+ Yrs)"],   label_visibility="collapsed")
     with cb:
         if st.button("➕ Create Job", type="primary", use_container_width=True):
             st.session_state["job_action"] = "create"
             st.session_state["selected_job_id"] = None
             st.rerun()
 
-    all_jobs = api_client.get_jobs(search=search, department=department, status=status)
-    if location != "All":
+    # Map friendly filter labels back to API-compatible "All"
+    dept_api = "All" if department == "All Departments" else department
+    status_api = "All" if status == "All Statuses" else status
+
+    all_jobs = api_client.get_jobs(search=search, department=dept_api, status=status_api)
+    if location != "All Locations":
         all_jobs = [j for j in all_jobs if location.lower() in j.get("location","").lower()]
     if "Junior" in exp_f:
         all_jobs = [j for j in all_jobs if j.get("experience_min",0) <= 2]

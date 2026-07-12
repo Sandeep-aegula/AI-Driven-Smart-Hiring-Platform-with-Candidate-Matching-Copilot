@@ -27,16 +27,17 @@ def _get_css() -> str:
 def inject_css_once():
     """
     Inject CSS into the Streamlit page.
-    Uses __css_injected__ session flag to avoid re-injecting on every rerun.
+    NOTE: CSS must be re-injected on every page navigation because Streamlit
+    clears injected <style> tags when switching pages. The CSS string itself
+    is cached in memory (cache_resource) so no disk reads occur after the first.
     """
-    if not st.session_state.get("__css_injected__"):
-        css = _get_css()
-        st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
-        st.markdown(
-            '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">',
-            unsafe_allow_html=True,
-        )
-        st.session_state["__css_injected__"] = True
+    css = _get_css()
+    st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+    st.markdown(
+        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">',
+        unsafe_allow_html=True,
+    )
+
 
 
 # ---------------------------------------------------------------------------

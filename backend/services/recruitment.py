@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import logging
@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from backend.ai.ollama_client import OllamaClient
+from backend.services.emailer import send_recruiter_decision_email
 from backend.schemas.entities import (
     ApplicationCreate,
     CandidateCreate,
@@ -56,7 +57,7 @@ def _ensure_list(value: Any) -> list[str]:
     if isinstance(value, list):
         return [str(item).strip() for item in value if str(item).strip()]
     if isinstance(value, str) and value.strip():
-        return [part.strip() for part in re.split(r"[,\n•;]", value) if part.strip()]
+        return [part.strip() for part in re.split(r"[,\nâ€¢;]", value) if part.strip()]
     return []
 
 def get_seed_data() -> dict:
@@ -582,6 +583,13 @@ def update_candidate_status(session: Any = None, candidate_id: int = 1, status: 
     })
     storage["activities"] = activities
     save_storage(storage)
+
+    decision_statuses = {"Shortlisted", "Approved", "Rejected"}
+    if status in decision_statuses and candidate.get("decision_email_status") != status:
+        if send_recruiter_decision_email(candidate, status):
+            candidate["decision_email_status"] = status
+            save_storage(storage)
+
     return candidate
 
 def create_application_record(session: Any = None, payload: ApplicationCreate = None) -> dict:
@@ -614,7 +622,7 @@ def create_application_record(session: Any = None, payload: ApplicationCreate = 
 
 def list_recent_uploads(session: Any = None, limit: int = 10) -> list[dict]:
     storage = load_storage()
-    uploads = storage.get("resume_data", [])
+    uploads = [_normalize_resume_record(upload) for upload in storage.get("resume_data", [])]
     uploads.sort(key=lambda u: u.get("created_at", ""), reverse=True)
     return uploads[:limit]
 
@@ -751,12 +759,62 @@ def extract_resume_text(file_path: str) -> str:
         return "\n".join(paragraph.text for paragraph in document.paragraphs)
     raise ValueError(f"Unsupported file type: {suffix}")
 
+
+def _profile_url(raw_text: str, provider: str) -> str:
+    """Find a LinkedIn or GitHub profile even when a PDF omits the scheme."""
+    compact_text = re.sub(r"\s+", "", raw_text or "")
+    if provider == "linkedin":
+        pattern = r"(?:https?://)?(?:www\.)?linkedin\.com/in/[A-Za-z0-9_-]+?(?=[|#]?(?:https?://)?(?:www\.)?(?:github|linkedin)\.com|[|#]|$)"
+    else:
+        pattern = r"(?:https?://)?(?:www\.)?github\.com/[A-Za-z0-9_-]+?(?=ProfessionalSummary|Education|TechnicalSkills|WorkExperience|Projects|Certifications|Achievements|Languages|[|#]|$)"
+    match = re.search(pattern, compact_text, re.IGNORECASE)
+    if not match:
+        return ""
+    url = match.group(0).rstrip(".,;:)")
+    return url if url.lower().startswith(("http://", "https://")) else f"https://{url}"
+
+
+def _fallback_name(lines: list[str], raw_text: str) -> str:
+    if not lines:
+        return ""
+    first_line = lines[0]
+    boundaries = [match.start() for match in (
+        re.search(r"[\w.+-]+@[\w-]+\.[\w.-]+", first_line),
+        re.search(r"(?:https?://)?(?:www\.)?linkedin\.com", first_line, re.IGNORECASE),
+        re.search(r"(?:https?://)?(?:www\.)?github\.com", first_line, re.IGNORECASE),
+    ) if match]
+    return first_line[:min(boundaries)].strip(" -|#") if boundaries else first_line[:80]
+
+
+def _valid_name(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    compact = value.strip()
+    return bool(compact) and len(compact) <= 80 and "@" not in compact and ".com" not in compact.lower()
+
+
+def _normalize_resume_record(record: dict) -> dict:
+    """Repair legacy parsed fields using the stored raw text without rewriting data."""
+    normalized = dict(record)
+    raw_text = normalized.get("extracted_text", "")
+    parsed = dict(normalized.get("parsed_json") or {})
+    heuristic = heuristic_resume_parse(raw_text) if raw_text else ResumeParseResponse()
+
+    if not _valid_name(parsed.get("name")):
+        parsed["name"] = heuristic.name
+    for field in ("email", "phone", "education", "skills", "experience", "projects", "certifications", "languages", "achievements"):
+        if not parsed.get(field):
+            parsed[field] = getattr(heuristic, field)
+    for provider in ("linkedin", "github"):
+        parsed[provider] = _profile_url(parsed.get(provider, ""), provider) or _profile_url(raw_text, provider)
+    parsed["portfolio"] = parsed.get("portfolio") or heuristic.portfolio
+    normalized["parsed_json"] = parsed
+    return normalized
+
 def heuristic_resume_parse(raw_text: str) -> ResumeParseResponse:
     lines = [line.strip() for line in raw_text.splitlines() if line.strip()]
     email_match = re.search(r"[\w.+-]+@[\w-]+\.[\w.-]+", raw_text)
     phone_match = re.search(r"(?:\+?\d{1,3}[\s-]?)?(?:\(?\d{3}\)?[\s-]?)\d{3}[\s-]?\d{4}", raw_text)
-    linkedin_match = re.search(r"https?://(?:www\.)?linkedin\.com/[^\s]+", raw_text, re.IGNORECASE)
-    github_match = re.search(r"https?://(?:www\.)?github\.com/[^\s]+", raw_text, re.IGNORECASE)
     portfolio_match = re.search(r"https?://[^\s]+", raw_text, re.IGNORECASE)
 
     sections = {"education": [], "skills": [], "experience": [], "projects": [], "certifications": [], "languages": [], "achievements": []}
@@ -788,13 +846,13 @@ def heuristic_resume_parse(raw_text: str) -> ResumeParseResponse:
             sections[current].append(line)
 
     fallback_skills = [token for token in re.findall(r"\b[A-Za-z][A-Za-z0-9+.#/-]{1,}\b", raw_text) if token.lower() not in {"education", "experience", "projects", "skills", "resume"}]
-    name = lines[0] if lines else ""
+    name = _fallback_name(lines, raw_text)
     return ResumeParseResponse(
         name=name,
         email=email_match.group(0) if email_match else "",
         phone=phone_match.group(0) if phone_match else "",
-        linkedin=linkedin_match.group(0) if linkedin_match else "",
-        github=github_match.group(0) if github_match else "",
+        linkedin=_profile_url(raw_text, "linkedin"),
+        github=_profile_url(raw_text, "github"),
         portfolio=portfolio_match.group(0) if portfolio_match else "",
         education=_clean_list(sections["education"]),
         skills=_clean_list(sections["skills"] + fallback_skills)[:40],
@@ -836,11 +894,11 @@ Resume Text:
         heuristic = heuristic_resume_parse(raw_text)
         
         return ResumeParseResponse(
-            name=data.get("name", "").strip() or heuristic.name,
+            name=data.get("name", "").strip() if _valid_name(data.get("name")) else heuristic.name,
             email=data.get("email", "").strip() or heuristic.email,
             phone=data.get("phone", "").strip() or heuristic.phone,
-            linkedin=data.get("linkedin", "").strip() or heuristic.linkedin,
-            github=data.get("github", "").strip() or heuristic.github,
+            linkedin=_profile_url(data.get("linkedin", ""), "linkedin") or heuristic.linkedin,
+            github=_profile_url(data.get("github", ""), "github") or heuristic.github,
             portfolio=data.get("portfolio", "").strip() or heuristic.portfolio,
             education=_ensure_list(data.get("education")) or heuristic.education,
             skills=_ensure_list(data.get("skills")) or heuristic.skills,
@@ -855,30 +913,52 @@ Resume Text:
         logger.warning(f"Ollama resume parsing failed ({e}). Using heuristic parser fallback.")
         return heuristic_resume_parse(raw_text)
 
-def parse_resume_file(session: Any = None, file_path: str = "", candidate_id: int | None = None) -> Any:
-    raw_text = extract_resume_text(file_path)
+def _persist_parsed_resume(raw_text: str, filename: str, file_path: str = "", candidate_id: int | None = None) -> Any:
+    if not raw_text.strip():
+        raise ValueError("Resume text cannot be empty")
+
     parsed = ollama_resume_parse(raw_text)
-    filename = Path(file_path).name
-    
     storage = load_storage()
     if candidate_id:
         candidate = next((c for c in storage["candidates"] if c["id"] == candidate_id), None)
+        if not candidate:
+            raise ValueError("Candidate not found")
     else:
         candidate = upsert_candidate_from_resume(None, parsed, default_title="Applicant")
-        
-    store_resume_record(None, candidate["id"], filename, "application/octet-stream", file_path, parsed, raw_text)
-    
-    # Reload candidate
-    candidate = get_candidate(None, candidate["id"])
-    
+
+    record = store_resume_record(
+        None,
+        candidate["id"],
+        filename,
+        "text/plain" if not file_path else "application/octet-stream",
+        file_path,
+        parsed,
+        raw_text,
+    )
+
     class ResultWrapper:
-        def __init__(self, filename, mime_type, file_path, parsed):
+        def __init__(self, filename, mime_type, file_path, parsed, resume_id, candidate_id):
             self.filename = filename
             self.mime_type = mime_type
             self.file_path = file_path
             self.parsed = parsed
-            
-    return ResultWrapper(filename, "application/octet-stream", file_path, parsed)
+            self.resume_id = resume_id
+            self.candidate_id = candidate_id
+
+    return ResultWrapper(filename, record["mime_type"], file_path, parsed, record["id"], candidate["id"])
+
+
+def parse_resume_file(session: Any = None, file_path: str = "", candidate_id: int | None = None) -> Any:
+    return _persist_parsed_resume(
+        extract_resume_text(file_path),
+        Path(file_path).name,
+        file_path,
+        candidate_id,
+    )
+
+
+def parse_resume_text(session: Any = None, raw_text: str = "", filename: str = "pasted_resume.txt", candidate_id: int | None = None) -> Any:
+    return _persist_parsed_resume(raw_text, filename, "", candidate_id)
 
 def screen_resume_against_job(session: Any, candidate_id: int, job_id: int) -> ScreeningResponse:
     candidate = get_candidate(None, candidate_id)
@@ -1213,3 +1293,5 @@ def get_employee(session: Any = None, employee_id: int = 1) -> dict | None:
     storage = load_storage()
     employees = storage.get("employees", [])
     return next((e for e in employees if e["id"] == employee_id), None)
+
+

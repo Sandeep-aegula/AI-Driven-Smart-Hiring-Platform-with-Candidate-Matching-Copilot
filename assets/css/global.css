@@ -64,15 +64,34 @@ section[data-testid="stSidebar"] nav {
     overflow: hidden !important;
 }
 
-/* ── App Background ─────────────────────────────────────── */
+/* ── App Background & Layout ────────────────────────────── */
 .stApp {
   background-color: var(--color-bg) !important;
+}
+
+/* ── Fixed Global Footer ────────────────────────────────── */
+.hp-footer {
+  position: fixed;
+  bottom: 0;
+  left: 256px;
+  right: 0;
+  height: 48px;
+  background-color: var(--color-bg) !important;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 99; /* Below Streamlit's sidebar (9999) */
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #94A3B8;
 }
 
 /* ── Main Block Padding ─────────────────────────────────── */
 .block-container {
   padding-top: 1.2rem !important;
-  padding-bottom: 2.5rem !important;
+  padding-bottom: 5.5rem !important;
   padding-left: 2.5rem !important;
   padding-right: 2.5rem !important;
   max-width: 100% !important;
@@ -103,6 +122,23 @@ section[data-testid="stSidebar"] [data-testid="stSidebarNav"] {
   box-shadow: var(--shadow-card);
   border: 1px solid var(--color-border);
   margin-bottom: 20px;
+}
+
+/* Dark hero banners — beat Streamlit theme + markdown text overrides */
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner h1,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner h2,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner h3,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner h4,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner span,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner div,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner strong,
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner i {
+  color: #FFFFFF !important;
+}
+
+.block-container [data-testid="stMarkdownContainer"] .dark-hero-banner p {
+  color: #C7D2FE !important;
 }
 
 /* ── KPI Cards ──────────────────────────────────────────── */

@@ -199,6 +199,65 @@
           "category": "General"
         }
       ]
+    },
+    {
+      "id": 3,
+      "title": "Frontend",
+      "department": "R & D",
+      "location": "Remote",
+      "experience_min": 0,
+      "experience_max": 2,
+      "salary_min": 10000,
+      "salary_max": 300,
+      "employment_type": "Internship",
+      "hiring_manager": "Jai Sri Ram",
+      "deadline": "2026-08-11",
+      "status": "Active",
+      "description": "We are seeking a Frontend Intern to join our R&D team. This is an exciting opportunity for individuals who are passionate about web development and eager to learn and grow in a dynamic environment.",
+      "responsibilities": [
+        "Develop and maintain user interfaces using ReactJS",
+        "Collaborate with backend developers to ensure seamless integration of frontend components",
+        "Write clean, efficient, and well-documented code",
+        "Participate in code reviews and provide constructive feedback"
+      ],
+      "requirements": [
+        "python",
+        "java",
+        "javascript",
+        "reactjs"
+      ],
+      "preferred_skills": [
+        "Experience with CSS frameworks like Bootstrap or TailwindCSS",
+        "Knowledge of version control systems (Git)",
+        "Familiarity with agile methodologies"
+      ],
+      "nice_to_have_skills": [],
+      "benefits": [
+        "Competitive salary range: $10,000 - $30,000 per month",
+        "Flexible work schedule and remote working options",
+        "Opportunity for professional growth and development",
+        "Collaborative team environment with a focus on innovation"
+      ],
+      "applications_count": 0,
+      "created_at": "2026-07-12T13:09:22.628381",
+      "updated_at": "2026-07-12T13:09:22.628779",
+      "skills": [
+        {
+          "id": 14,
+          "name": "Experience with CSS frameworks like Bootstrap or TailwindCSS",
+          "category": "General"
+        },
+        {
+          "id": 15,
+          "name": "Knowledge of version control systems (Git)",
+          "category": "General"
+        },
+        {
+          "id": 16,
+          "name": "Familiarity with agile methodologies",
+          "category": "General"
+        }
+      ]
     }
   ],
   "candidates": [
@@ -229,7 +288,7 @@
       "avatar_url": "",
       "summary": "Senior engineer with strong product delivery and FastAPI experience.",
       "created_at": "2026-07-10T15:32:18.296138",
-      "updated_at": "2026-07-10T15:32:18.296150",
+      "updated_at": "2026-07-12T14:09:18.712183",
       "skills": [
         {
           "id": 1,
@@ -271,7 +330,8 @@
           "name": "TypeScript",
           "category": "General"
         }
-      ]
+      ],
+      "decision_email_status": "Shortlisted"
     },
     {
       "id": 2,
@@ -368,6 +428,160 @@
           "category": "General"
         }
       ]
+    },
+    {
+      "id": 4,
+      "name": "SANDEEP AEGULA",
+      "email": "aegulasandeep@gmail.com",
+      "phone": "+91 7416156814",
+      "linkedin": "linkedin.com/in/sandeep-aegula",
+      "github": "github.com/sandeep-aegula",
+      "portfolio": "",
+      "current_title": "Applicant",
+      "years_experience": 0,
+      "location": "Remote",
+      "status": "Approved",
+      "match_score": 75,
+      "tags": [
+        "Imported"
+      ],
+      "notes": [],
+      "avatar_url": "",
+      "summary": "Resume imported and parsed.",
+      "created_at": "2026-07-12T08:26:29.071351",
+      "updated_at": "2026-07-12T13:25:39.957959",
+      "skills": [
+        {
+          "id": 1,
+          "name": "Python",
+          "category": "General"
+        },
+        {
+          "id": 14,
+          "name": "Java",
+          "category": "General"
+        },
+        {
+          "id": 15,
+          "name": "JavaScript (ES6+)",
+          "category": "General"
+        },
+        {
+          "id": 3,
+          "name": "SQL",
+          "category": "General"
+        },
+        {
+          "id": 16,
+          "name": "C#",
+          "category": "General"
+        },
+        {
+          "id": 6,
+          "name": "Machine Learning",
+          "category": "General"
+        },
+        {
+          "id": 17,
+          "name": "Agentic AI",
+          "category": "General"
+        },
+        {
+          "id": 18,
+          "name": "RAG",
+          "category": "General"
+        },
+        {
+          "id": 19,
+          "name": "LLMs",
+          "category": "General"
+        },
+        {
+          "id": 20,
+          "name": "Vector Databases",
+          "category": "General"
+        },
+        {
+          "id": 21,
+          "name": "Data Analysis",
+          "category": "General"
+        },
+        {
+          "id": 22,
+          "name": "React.js",
+          "category": "General"
+        },
+        {
+          "id": 23,
+          "name": "Next.js",
+          "category": "General"
+        },
+        {
+          "id": 24,
+          "name": "Node.js",
+          "category": "General"
+        },
+        {
+          "id": 25,
+          "name": "Express.js",
+          "category": "General"
+        },
+        {
+          "id": 26,
+          "name": "REST APIs",
+          "category": "General"
+        },
+        {
+          "id": 27,
+          "name": "Socket.io",
+          "category": "General"
+        },
+        {
+          "id": 28,
+          "name": "AWS (EC2, S3, CloudWatch)",
+          "category": "General"
+        },
+        {
+          "id": 5,
+          "name": "Docker",
+          "category": "General"
+        },
+        {
+          "id": 29,
+          "name": "Git",
+          "category": "General"
+        },
+        {
+          "id": 30,
+          "name": "MongoDB",
+          "category": "General"
+        },
+        {
+          "id": 31,
+          "name": "MySQL",
+          "category": "General"
+        },
+        {
+          "id": 32,
+          "name": "Unity",
+          "category": "General"
+        },
+        {
+          "id": 33,
+          "name": "Postman",
+          "category": "General"
+        },
+        {
+          "id": 34,
+          "name": "VS Code",
+          "category": "General"
+        },
+        {
+          "id": 35,
+          "name": "n8n",
+          "category": "General"
+        }
+      ]
     }
   ],
   "applications": [
@@ -403,6 +617,17 @@
       "recruiter_notes": "",
       "created_at": "2026-07-10T15:32:18.296306",
       "updated_at": "2026-07-10T15:32:18.296321"
+    },
+    {
+      "id": 4,
+      "candidate_id": 4,
+      "job_id": 3,
+      "status": "Shortlist",
+      "match_score": 75,
+      "ai_summary": "Sandeep Aegula is a Computer Science undergraduate with practical experience in AI/ML, full-stack web development, and cloud platforms. He has built scalable AI-powered applications and data-driven solutions using Python, Java, JavaScript, React.js, Next.js, Node.js, Express.js, and AWS.",
+      "recruiter_notes": "",
+      "created_at": "2026-07-12T13:13:36.159908",
+      "updated_at": "2026-07-12T13:13:36.159925"
     }
   ],
   "resume_data": [
@@ -447,9 +672,391 @@
       ],
       "status": "Parsed",
       "created_at": "2026-07-10T15:32:18.296345"
+    },
+    {
+      "id": 2,
+      "candidate_id": 4,
+      "filename": "SANDEEP_AEGULA.pdf",
+      "mime_type": "application/octet-stream",
+      "file_path": "uploads\\SANDEEP_AEGULA.pdf",
+      "extracted_text": "SANDEEP AEGULA\n(cid:131) +91 7416156814 | # aegulasandeep@gmail.com | (cid:239) linkedin.com/in/sandeep-aegula | \u00a7 github.com/sandeep-aegula\nProfessional Summary\nComputer Science (AI/ML) undergraduate with practical experience in Agentic AI, Machine Learning, full-stack web\ndevelopment, and cloud platforms. Proven track record of building and deploying scalable AI-powered applications and\ndata-driven solutions. AWS Certified Cloud Practitioner and Unity Certified Associate with industry exposure at Intel.\nDedicated to technical mastery in Agentic AI and Full Stack web development looking to contribute to high-impact\nengineering teams.\nEducation\nMarri Laxman Reddy Institute of Technology and Management Hyderabad, India\nB.Tech in Computer Science \u2013 Artificial Intelligence & Machine Learning 2023 - Present\n\u2022 CGPA: 8.96 / 10.0\nTechnical Skills\nLanguages: Python, Java, JavaScript (ES6+), SQL, C#\nAI/ML: Machine Learning, Agentic AI, RAG, LLMs, Vector Databases, Data Analysis\nWeb Development: React.js, Next.js, Node.js, Express.js, REST APIs, Socket.io\nCloud/DevOps: AWS (EC2, S3, CloudWatch), Docker, Git\nDatabases: MongoDB, MySQL\nTools: Unity, Postman, VS Code , n8n\nCertifications: AWS Cloud Practitioner | Unity Associate Game Developer | IBM AI Foundations\nWork Experience\nIndustrial Trainee \u2013 AI & Network Security May 2025 \u2013 July 2025\nIntel Technology India Private Limited Remote\n\u2022 Built ML-based network traffic analysis system on 50K+ samples, improving detection accuracy by 15% and\nreducing processing latency by 20%.\n\u2022 Implemented input validation and sanitization layer, eliminating SQL injection vulnerabilities and improving\nsystem security compliance.\n\u2022 Developed phishing detection and malicious URL classification module, achieving 92% classification accuracy on\ntest data.\nProjects\nPRISM \u2013 Conversational Data Intelligence Next.js, FastAPI, Groq, Gemini API, Python Jan 2026\n\u2022 Built a full-stack dashboard using FastAPI and Groq to convert natural language into data scripts.\n\u2022 Created an AI interface for non-technical users to perform complex statistical analysis without code.\n\u2022 Reduced data exploration time by 90% through automated visualization and real-time CSV processing.(link)\nGoogle Arcade Points Calculator React.js, Node.js, Puppeteer, MongoDB Oct 2025\n\u2022 Engineered a Puppeteer scraper to automate real-time progress extraction from Google Cloud profiles.\n\u2022 Developed a MongoDB-backed system to synchronize badge counts, replacing tedious manual tracking.\n\u2022 Scaled to support 1,000+ global users with instant progress updates during high-traffic seasons.(link)\nAchievements & Leadership\nHackathon Winner \u2013 Cloud Quest Hyderabad, India\nAWS Cloud Challenge 2024\n\u2022 Engineered high-availability cloud infrastructure using AWS EC2 and S3 with real-time auto-scaling and\nmonitoring via CloudWatch, winning second place among competing teams.\nTechnical Speaker & Workshop Lead MLRITM ,Dundigal\nUnity Game Development & VR Workshop \u2013 50+ Students Trained 2025\n\u2022 Conducted hands-on workshops on Unity Game Development and Virtual Reality (VR) for 50+ students, covering\nC# scripting, immersive technology design, and practical application development.",
+      "parsed_json": {
+        "name": "SANDEEP AEGULA",
+        "email": "aegulasandeep@gmail.com",
+        "phone": "+91 7416156814",
+        "linkedin": "",
+        "github": "",
+        "portfolio": "",
+        "education": [
+          "Marri Laxman Reddy Institute of Technology and Management Hyderabad, India",
+          "B.Tech in Computer Science \u2013 Artificial Intelligence & Machine Learning 2023 - Present",
+          "\u2022 CGPA: 8.96 / 10.0"
+        ],
+        "skills": [
+          "SANDEEP",
+          "AEGULA",
+          "cid",
+          "aegulasandeep",
+          "gmail.com",
+          "linkedin.com/in/sandeep-aegula",
+          "github.com/sandeep-aegula",
+          "Professional",
+          "Summary",
+          "Computer",
+          "Science",
+          "AI/ML",
+          "undergraduate",
+          "with",
+          "practical",
+          "in",
+          "Agentic",
+          "AI",
+          "Machine",
+          "Learning",
+          "full-stack",
+          "web",
+          "development",
+          "and",
+          "cloud",
+          "platforms",
+          "Proven",
+          "track",
+          "record",
+          "of",
+          "building",
+          "deploying",
+          "scalable",
+          "AI-powered",
+          "applications",
+          "data-driven",
+          "solutions",
+          "AWS",
+          "Certified",
+          "Practitioner"
+        ],
+        "experience": [
+          "development, and cloud platforms. Proven track record of building and deploying scalable AI-powered applications and",
+          "data-driven solutions. AWS Certified Cloud Practitioner and Unity Certified Associate with industry exposure at Intel.",
+          "Dedicated to technical mastery in Agentic AI and Full Stack web development looking to contribute to high-impact",
+          "engineering teams.",
+          "Industrial Trainee \u2013 AI & Network Security May 2025 \u2013 July 2025",
+          "Intel Technology India Private Limited Remote",
+          "\u2022 Built ML-based network traffic analysis system on 50K+ samples, improving detection accuracy by 15% and",
+          "reducing processing latency by 20%.",
+          "\u2022 Implemented input validation and sanitization layer, eliminating SQL injection vulnerabilities and improving",
+          "system security compliance.",
+          "\u2022 Developed phishing detection and malicious URL classification module, achieving 92% classification accuracy on",
+          "test data."
+        ],
+        "projects": [
+          "PRISM \u2013 Conversational Data Intelligence Next.js, FastAPI, Groq, Gemini API, Python Jan 2026"
+        ],
+        "certifications": [],
+        "languages": [
+          "AI/ML: Machine Learning, Agentic AI, RAG, LLMs, Vector Databases, Data Analysis",
+          "Web Development: React.js, Next.js, Node.js, Express.js, REST APIs, Socket.io",
+          "Cloud/DevOps: AWS (EC2, S3, CloudWatch), Docker, Git",
+          "Databases: MongoDB, MySQL",
+          "Tools: Unity, Postman, VS Code , n8n",
+          "\u2022 Created an AI interface for non-technical users to perform complex statistical analysis without code.",
+          "\u2022 Reduced data exploration time by 90% through automated visualization and real-time CSV processing.(link)",
+          "Google Arcade Points Calculator React.js, Node.js, Puppeteer, MongoDB Oct 2025",
+          "\u2022 Engineered a Puppeteer scraper to automate real-time progress extraction from Google Cloud profiles.",
+          "\u2022 Developed a MongoDB-backed system to synchronize badge counts, replacing tedious manual tracking.",
+          "\u2022 Scaled to support 1,000+ global users with instant progress updates during high-traffic seasons.(link)"
+        ],
+        "achievements": [
+          "Hackathon Winner \u2013 Cloud Quest Hyderabad, India",
+          "AWS Cloud Challenge 2024",
+          "\u2022 Engineered high-availability cloud infrastructure using AWS EC2 and S3 with real-time auto-scaling and",
+          "monitoring via CloudWatch, winning second place among competing teams.",
+          "Technical Speaker & Workshop Lead MLRITM ,Dundigal",
+          "Unity Game Development & VR Workshop \u2013 50+ Students Trained 2025",
+          "\u2022 Conducted hands-on workshops on Unity Game Development and Virtual Reality (VR) for 50+ students, covering",
+          "C# scripting, immersive technology design, and practical application development."
+        ],
+        "extracted_text": "SANDEEP AEGULA\n(cid:131) +91 7416156814 | # aegulasandeep@gmail.com | (cid:239) linkedin.com/in/sandeep-aegula | \u00a7 github.com/sandeep-aegula\nProfessional Summary\nComputer Science (AI/ML) undergraduate with practical experience in Agentic AI, Machine Learning, full-stack web\ndevelopment, and cloud platforms. Proven track record of building and deploying scalable AI-powered applications and\ndata-driven solutions. AWS Certified Cloud Practitioner and Unity Certified Associate with industry exposure at Intel.\nDedicated to technical mastery in Agentic AI and Full Stack web development looking to contribute to high-impact\nengineering teams.\nEducation\nMarri Laxman Reddy Institute of Technology and Management Hyderabad, India\nB.Tech in Computer Science \u2013 Artificial Intelligence & Machine Learning 2023 - Present\n\u2022 CGPA: 8.96 / 10.0\nTechnical Skills\nLanguages: Python, Java, JavaScript (ES6+), SQL, C#\nAI/ML: Machine Learning, Agentic AI, RAG, LLMs, Vector Databases, Data Analysis\nWeb Development: React.js, Next.js, Node.js, Express.js, REST APIs, Socket.io\nCloud/DevOps: AWS (EC2, S3, CloudWatch), Docker, Git\nDatabases: MongoDB, MySQL\nTools: Unity, Postman, VS Code , n8n\nCertifications: AWS Cloud Practitioner | Unity Associate Game Developer | IBM AI Foundations\nWork Experience\nIndustrial Trainee \u2013 AI & Network Security May 2025 \u2013 July 2025\nIntel Technology India Private Limited Remote\n\u2022 Built ML-based network traffic analysis system on 50K+ samples, improving detection accuracy by 15% and\nreducing processing latency by 20%.\n\u2022 Implemented input validation and sanitization layer, eliminating SQL injection vulnerabilities and improving\nsystem security compliance.\n\u2022 Developed phishing detection and malicious URL classification module, achieving 92% classification accuracy on\ntest data.\nProjects\nPRISM \u2013 Conversational Data Intelligence Next.js, FastAPI, Groq, Gemini API, Python Jan 2026\n\u2022 Built a full-stack dashboard using FastAPI and Groq to convert natural language into data scripts.\n\u2022 Created an AI interface for non-technical users to perform complex statistical analysis without code.\n\u2022 Reduced data exploration time by 90% through automated visualization and real-time CSV processing.(link)\nGoogle Arcade Points Calculator React.js, Node.js, Puppeteer, MongoDB Oct 2025\n\u2022 Engineered a Puppeteer scraper to automate real-time progress extraction from Google Cloud profiles.\n\u2022 Developed a MongoDB-backed system to synchronize badge counts, replacing tedious manual tracking.\n\u2022 Scaled to support 1,000+ global users with instant progress updates during high-traffic seasons.(link)\nAchievements & Leadership\nHackathon Winner \u2013 Cloud Quest Hyderabad, India\nAWS Cloud Challenge 2024\n\u2022 Engineered high-availability cloud infrastructure using AWS EC2 and S3 with real-time auto-scaling and\nmonitoring via CloudWatch, winning second place among competing teams.\nTechnical Speaker & Workshop Lead MLRITM ,Dundigal\nUnity Game Development & VR Workshop \u2013 50+ Students Trained 2025\n\u2022 Conducted hands-on workshops on Unity Game Development and Virtual Reality (VR) for 50+ students, covering\nC# scripting, immersive technology design, and practical application development."
+      },
+      "name": "SANDEEP AEGULA",
+      "email": "aegulasandeep@gmail.com",
+      "phone": "+91 7416156814",
+      "linkedin": "",
+      "github": "",
+      "portfolio": "",
+      "education": [
+        "Marri Laxman Reddy Institute of Technology and Management Hyderabad, India",
+        "B.Tech in Computer Science \u2013 Artificial Intelligence & Machine Learning 2023 - Present",
+        "\u2022 CGPA: 8.96 / 10.0"
+      ],
+      "skills": [
+        "SANDEEP",
+        "AEGULA",
+        "cid",
+        "aegulasandeep",
+        "gmail.com",
+        "linkedin.com/in/sandeep-aegula",
+        "github.com/sandeep-aegula",
+        "Professional",
+        "Summary",
+        "Computer",
+        "Science",
+        "AI/ML",
+        "undergraduate",
+        "with",
+        "practical",
+        "in",
+        "Agentic",
+        "AI",
+        "Machine",
+        "Learning",
+        "full-stack",
+        "web",
+        "development",
+        "and",
+        "cloud",
+        "platforms",
+        "Proven",
+        "track",
+        "record",
+        "of",
+        "building",
+        "deploying",
+        "scalable",
+        "AI-powered",
+        "applications",
+        "data-driven",
+        "solutions",
+        "AWS",
+        "Certified",
+        "Practitioner"
+      ],
+      "experience": [
+        "development, and cloud platforms. Proven track record of building and deploying scalable AI-powered applications and",
+        "data-driven solutions. AWS Certified Cloud Practitioner and Unity Certified Associate with industry exposure at Intel.",
+        "Dedicated to technical mastery in Agentic AI and Full Stack web development looking to contribute to high-impact",
+        "engineering teams.",
+        "Industrial Trainee \u2013 AI & Network Security May 2025 \u2013 July 2025",
+        "Intel Technology India Private Limited Remote",
+        "\u2022 Built ML-based network traffic analysis system on 50K+ samples, improving detection accuracy by 15% and",
+        "reducing processing latency by 20%.",
+        "\u2022 Implemented input validation and sanitization layer, eliminating SQL injection vulnerabilities and improving",
+        "system security compliance.",
+        "\u2022 Developed phishing detection and malicious URL classification module, achieving 92% classification accuracy on",
+        "test data."
+      ],
+      "projects": [
+        "PRISM \u2013 Conversational Data Intelligence Next.js, FastAPI, Groq, Gemini API, Python Jan 2026"
+      ],
+      "certifications": [],
+      "languages": [
+        "AI/ML: Machine Learning, Agentic AI, RAG, LLMs, Vector Databases, Data Analysis",
+        "Web Development: React.js, Next.js, Node.js, Express.js, REST APIs, Socket.io",
+        "Cloud/DevOps: AWS (EC2, S3, CloudWatch), Docker, Git",
+        "Databases: MongoDB, MySQL",
+        "Tools: Unity, Postman, VS Code , n8n",
+        "\u2022 Created an AI interface for non-technical users to perform complex statistical analysis without code.",
+        "\u2022 Reduced data exploration time by 90% through automated visualization and real-time CSV processing.(link)",
+        "Google Arcade Points Calculator React.js, Node.js, Puppeteer, MongoDB Oct 2025",
+        "\u2022 Engineered a Puppeteer scraper to automate real-time progress extraction from Google Cloud profiles.",
+        "\u2022 Developed a MongoDB-backed system to synchronize badge counts, replacing tedious manual tracking.",
+        "\u2022 Scaled to support 1,000+ global users with instant progress updates during high-traffic seasons.(link)"
+      ],
+      "achievements": [
+        "Hackathon Winner \u2013 Cloud Quest Hyderabad, India",
+        "AWS Cloud Challenge 2024",
+        "\u2022 Engineered high-availability cloud infrastructure using AWS EC2 and S3 with real-time auto-scaling and",
+        "monitoring via CloudWatch, winning second place among competing teams.",
+        "Technical Speaker & Workshop Lead MLRITM ,Dundigal",
+        "Unity Game Development & VR Workshop \u2013 50+ Students Trained 2025",
+        "\u2022 Conducted hands-on workshops on Unity Game Development and Virtual Reality (VR) for 50+ students, covering",
+        "C# scripting, immersive technology design, and practical application development."
+      ],
+      "status": "Parsed",
+      "created_at": "2026-07-12T08:26:29.117036"
+    },
+    {
+      "id": 3,
+      "candidate_id": 4,
+      "filename": "SANDEEP_AEGULA.pdf",
+      "mime_type": "application/octet-stream",
+      "file_path": "uploads\\SANDEEP_AEGULA.pdf",
+      "extracted_text": "SANDEEP AEGULA\n(cid:131) +91 7416156814 | # aegulasandeep@gmail.com | (cid:239) linkedin.com/in/sandeep-aegula | \u00a7 github.com/sandeep-aegula\nProfessional Summary\nComputer Science (AI/ML) undergraduate with practical experience in Agentic AI, Machine Learning, full-stack web\ndevelopment, and cloud platforms. Proven track record of building and deploying scalable AI-powered applications and\ndata-driven solutions. AWS Certified Cloud Practitioner and Unity Certified Associate with industry exposure at Intel.\nDedicated to technical mastery in Agentic AI and Full Stack web development looking to contribute to high-impact\nengineering teams.\nEducation\nMarri Laxman Reddy Institute of Technology and Management Hyderabad, India\nB.Tech in Computer Science \u2013 Artificial Intelligence & Machine Learning 2023 - Present\n\u2022 CGPA: 8.96 / 10.0\nTechnical Skills\nLanguages: Python, Java, JavaScript (ES6+), SQL, C#\nAI/ML: Machine Learning, Agentic AI, RAG, LLMs, Vector Databases, Data Analysis\nWeb Development: React.js, Next.js, Node.js, Express.js, REST APIs, Socket.io\nCloud/DevOps: AWS (EC2, S3, CloudWatch), Docker, Git\nDatabases: MongoDB, MySQL\nTools: Unity, Postman, VS Code , n8n\nCertifications: AWS Cloud Practitioner | Unity Associate Game Developer | IBM AI Foundations\nWork Experience\nIndustrial Trainee \u2013 AI & Network Security May 2025 \u2013 July 2025\nIntel Technology India Private Limited Remote\n\u2022 Built ML-based network traffic analysis system on 50K+ samples, improving detection accuracy by 15% and\nreducing processing latency by 20%.\n\u2022 Implemented input validation and sanitization layer, eliminating SQL injection vulnerabilities and improving\nsystem security compliance.\n\u2022 Developed phishing detection and malicious URL classification module, achieving 92% classification accuracy on\ntest data.\nProjects\nPRISM \u2013 Conversational Data Intelligence Next.js, FastAPI, Groq, Gemini API, Python Jan 2026\n\u2022 Built a full-stack dashboard using FastAPI and Groq to convert natural language into data scripts.\n\u2022 Created an AI interface for non-technical users to perform complex statistical analysis without code.\n\u2022 Reduced data exploration time by 90% through automated visualization and real-time CSV processing.(link)\nGoogle Arcade Points Calculator React.js, Node.js, Puppeteer, MongoDB Oct 2025\n\u2022 Engineered a Puppeteer scraper to automate real-time progress extraction from Google Cloud profiles.\n\u2022 Developed a MongoDB-backed system to synchronize badge counts, replacing tedious manual tracking.\n\u2022 Scaled to support 1,000+ global users with instant progress updates during high-traffic seasons.(link)\nAchievements & Leadership\nHackathon Winner \u2013 Cloud Quest Hyderabad, India\nAWS Cloud Challenge 2024\n\u2022 Engineered high-availability cloud infrastructure using AWS EC2 and S3 with real-time auto-scaling and\nmonitoring via CloudWatch, winning second place among competing teams.\nTechnical Speaker & Workshop Lead MLRITM ,Dundigal\nUnity Game Development & VR Workshop \u2013 50+ Students Trained 2025\n\u2022 Conducted hands-on workshops on Unity Game Development and Virtual Reality (VR) for 50+ students, covering\nC# scripting, immersive technology design, and practical application development.",
+      "parsed_json": {
+        "name": "SANDEEP AEGULA",
+        "email": "aegulasandeep@gmail.com",
+        "phone": "+91 7416156814",
+        "linkedin": "linkedin.com/in/sandeep-aegula",
+        "github": "github.com/sandeep-aegula",
+        "portfolio": "",
+        "education": [
+          "B.Tech in Computer Science \u2013 Artificial Intelligence & Machine Learning, Marri Laxman Reddy Institute of Technology and Management Hyderabad, India, 2023 - Present"
+        ],
+        "skills": [
+          "Python",
+          "Java",
+          "JavaScript (ES6+)",
+          "SQL",
+          "C#",
+          "Machine Learning",
+          "Agentic AI",
+          "RAG",
+          "LLMs",
+          "Vector Databases",
+          "Data Analysis",
+          "React.js",
+          "Next.js",
+          "Node.js",
+          "Express.js",
+          "REST APIs",
+          "Socket.io",
+          "AWS (EC2, S3, CloudWatch)",
+          "Docker",
+          "Git",
+          "MongoDB",
+          "MySQL",
+          "Unity",
+          "Postman",
+          "VS Code",
+          "n8n"
+        ],
+        "experience": [
+          "Industrial Trainee \u2013 AI & Network Security, Intel Technology India Private Limited, Remote, May 2025 \u2013 July 2025"
+        ],
+        "projects": [
+          "PRISM \u2013 Conversational Data Intelligence, Next.js, FastAPI, Groq, Gemini API, Python, Jan 2026",
+          "Google Arcade Points Calculator, React.js, Node.js, Puppeteer, MongoDB, Oct 2025"
+        ],
+        "certifications": [
+          "AWS Cloud Practitioner",
+          "Unity Associate Game Developer",
+          "IBM AI Foundations"
+        ],
+        "languages": [
+          "AI/ML: Machine Learning, Agentic AI, RAG, LLMs, Vector Databases, Data Analysis",
+          "Web Development: React.js, Next.js, Node.js, Express.js, REST APIs, Socket.io",
+          "Cloud/DevOps: AWS (EC2, S3, CloudWatch), Docker, Git",
+          "Databases: MongoDB, MySQL",
+          "Tools: Unity, Postman, VS Code , n8n",
+          "\u2022 Created an AI interface for non-technical users to perform complex statistical analysis without code.",
+          "\u2022 Reduced data exploration time by 90% through automated visualization and real-time CSV processing.(link)",
+          "Google Arcade Points Calculator React.js, Node.js, Puppeteer, MongoDB Oct 2025",
+          "\u2022 Engineered a Puppeteer scraper to automate real-time progress extraction from Google Cloud profiles.",
+          "\u2022 Developed a MongoDB-backed system to synchronize badge counts, replacing tedious manual tracking.",
+          "\u2022 Scaled to support 1,000+ global users with instant progress updates during high-traffic seasons.(link)"
+        ],
+        "achievements": [
+          "Hackathon Winner \u2013 Cloud Quest Hyderabad, India",
+          "AWS Cloud Challenge 2024"
+        ],
+        "extracted_text": "SANDEEP AEGULA\n(cid:131) +91 7416156814 | # aegulasandeep@gmail.com | (cid:239) linkedin.com/in/sandeep-aegula | \u00a7 github.com/sandeep-aegula\nProfessional Summary\nComputer Science (AI/ML) undergraduate with practical experience in Agentic AI, Machine Learning, full-stack web\ndevelopment, and cloud platforms. Proven track record of building and deploying scalable AI-powered applications and\ndata-driven solutions. AWS Certified Cloud Practitioner and Unity Certified Associate with industry exposure at Intel.\nDedicated to technical mastery in Agentic AI and Full Stack web development looking to contribute to high-impact\nengineering teams.\nEducation\nMarri Laxman Reddy Institute of Technology and Management Hyderabad, India\nB.Tech in Computer Science \u2013 Artificial Intelligence & Machine Learning 2023 - Present\n\u2022 CGPA: 8.96 / 10.0\nTechnical Skills\nLanguages: Python, Java, JavaScript (ES6+), SQL, C#\nAI/ML: Machine Learning, Agentic AI, RAG, LLMs, Vector Databases, Data Analysis\nWeb Development: React.js, Next.js, Node.js, Express.js, REST APIs, Socket.io\nCloud/DevOps: AWS (EC2, S3, CloudWatch), Docker, Git\nDatabases: MongoDB, MySQL\nTools: Unity, Postman, VS Code , n8n\nCertifications: AWS Cloud Practitioner | Unity Associate Game Developer | IBM AI Foundations\nWork Experience\nIndustrial Trainee \u2013 AI & Network Security May 2025 \u2013 July 2025\nIntel Technology India Private Limited Remote\n\u2022 Built ML-based network traffic analysis system on 50K+ samples, improving detection accuracy by 15% and\nreducing processing latency by 20%.\n\u2022 Implemented input validation and sanitization layer, eliminating SQL injection vulnerabilities and improving\nsystem security compliance.\n\u2022 Developed phishing detection and malicious URL classification module, achieving 92% classification accuracy on\ntest data.\nProjects\nPRISM \u2013 Conversational Data Intelligence Next.js, FastAPI, Groq, Gemini API, Python Jan 2026\n\u2022 Built a full-stack dashboard using FastAPI and Groq to convert natural language into data scripts.\n\u2022 Created an AI interface for non-technical users to perform complex statistical analysis without code.\n\u2022 Reduced data exploration time by 90% through automated visualization and real-time CSV processing.(link)\nGoogle Arcade Points Calculator React.js, Node.js, Puppeteer, MongoDB Oct 2025\n\u2022 Engineered a Puppeteer scraper to automate real-time progress extraction from Google Cloud profiles.\n\u2022 Developed a MongoDB-backed system to synchronize badge counts, replacing tedious manual tracking.\n\u2022 Scaled to support 1,000+ global users with instant progress updates during high-traffic seasons.(link)\nAchievements & Leadership\nHackathon Winner \u2013 Cloud Quest Hyderabad, India\nAWS Cloud Challenge 2024\n\u2022 Engineered high-availability cloud infrastructure using AWS EC2 and S3 with real-time auto-scaling and\nmonitoring via CloudWatch, winning second place among competing teams.\nTechnical Speaker & Workshop Lead MLRITM ,Dundigal\nUnity Game Development & VR Workshop \u2013 50+ Students Trained 2025\n\u2022 Conducted hands-on workshops on Unity Game Development and Virtual Reality (VR) for 50+ students, covering\nC# scripting, immersive technology design, and practical application development."
+      },
+      "name": "SANDEEP AEGULA",
+      "email": "aegulasandeep@gmail.com",
+      "phone": "+91 7416156814",
+      "linkedin": "linkedin.com/in/sandeep-aegula",
+      "github": "github.com/sandeep-aegula",
+      "portfolio": "",
+      "education": [
+        "B.Tech in Computer Science \u2013 Artificial Intelligence & Machine Learning, Marri Laxman Reddy Institute of Technology and Management Hyderabad, India, 2023 - Present"
+      ],
+      "skills": [
+        "Python",
+        "Java",
+        "JavaScript (ES6+)",
+        "SQL",
+        "C#",
+        "Machine Learning",
+        "Agentic AI",
+        "RAG",
+        "LLMs",
+        "Vector Databases",
+        "Data Analysis",
+        "React.js",
+        "Next.js",
+        "Node.js",
+        "Express.js",
+        "REST APIs",
+        "Socket.io",
+        "AWS (EC2, S3, CloudWatch)",
+        "Docker",
+        "Git",
+        "MongoDB",
+        "MySQL",
+        "Unity",
+        "Postman",
+        "VS Code",
+        "n8n"
+      ],
+      "experience": [
+        "Industrial Trainee \u2013 AI & Network Security, Intel Technology India Private Limited, Remote, May 2025 \u2013 July 2025"
+      ],
+      "projects": [
+        "PRISM \u2013 Conversational Data Intelligence, Next.js, FastAPI, Groq, Gemini API, Python, Jan 2026",
+        "Google Arcade Points Calculator, React.js, Node.js, Puppeteer, MongoDB, Oct 2025"
+      ],
+      "certifications": [
+        "AWS Cloud Practitioner",
+        "Unity Associate Game Developer",
+        "IBM AI Foundations"
+      ],
+      "languages": [
+        "AI/ML: Machine Learning, Agentic AI, RAG, LLMs, Vector Databases, Data Analysis",
+        "Web Development: React.js, Next.js, Node.js, Express.js, REST APIs, Socket.io",
+        "Cloud/DevOps: AWS (EC2, S3, CloudWatch), Docker, Git",
+        "Databases: MongoDB, MySQL",
+        "Tools: Unity, Postman, VS Code , n8n",
+        "\u2022 Created an AI interface for non-technical users to perform complex statistical analysis without code.",
+        "\u2022 Reduced data exploration time by 90% through automated visualization and real-time CSV processing.(link)",
+        "Google Arcade Points Calculator React.js, Node.js, Puppeteer, MongoDB Oct 2025",
+        "\u2022 Engineered a Puppeteer scraper to automate real-time progress extraction from Google Cloud profiles.",
+        "\u2022 Developed a MongoDB-backed system to synchronize badge counts, replacing tedious manual tracking.",
+        "\u2022 Scaled to support 1,000+ global users with instant progress updates during high-traffic seasons.(link)"
+      ],
+      "achievements": [
+        "Hackathon Winner \u2013 Cloud Quest Hyderabad, India",
+        "AWS Cloud Challenge 2024"
+      ],
+      "status": "Parsed",
+      "created_at": "2026-07-12T08:27:39.077565"
     }
   ],
   "activities": [
+    {
+      "icon": "fa-circle-check",
+      "title": "Candidate Shortlisted",
+      "description": "Sarah Jenkins status updated to Shortlisted.",
+      "time": "Just now"
+    },
+    {
+      "icon": "fa-thumbs-up",
+      "title": "Candidate Approved",
+      "description": "SANDEEP AEGULA status updated to Approved.",
+      "time": "Just now"
+    },
+    {
+      "icon": "fa-thumbs-up",
+      "title": "Candidate Approved",
+      "description": "SANDEEP AEGULA status updated to Approved.",
+      "time": "Just now"
+    },
+    {
+      "icon": "fa-calendar-days",
+      "title": "Interview Scheduled",
+      "description": "Interview scheduled with SANDEEP AEGULA.",
+      "time": "Just now"
+    },
+    {
+      "icon": "fa-file-arrow-up",
+      "title": "Resume Uploaded",
+      "description": "Uploaded and parsed SANDEEP_AEGULA.pdf.",
+      "time": "Just now"
+    },
+    {
+      "icon": "fa-file-arrow-up",
+      "title": "Resume Uploaded",
+      "description": "Uploaded and parsed SANDEEP_AEGULA.pdf.",
+      "time": "Just now"
+    },
     {
       "icon": "fa-file-lines",
       "title": "Resume Uploaded",
@@ -497,6 +1104,20 @@
       "feedback_notes": "",
       "recommendation": "",
       "created_at": "2026-07-10T15:32:18.296390"
+    },
+    {
+      "id": 3,
+      "candidate_id": 4,
+      "candidate_name": "SANDEEP AEGULA",
+      "interviewer": "Ava Morgan",
+      "date": "2026-07-13",
+      "time": "11:00",
+      "stage": "Technical Assessment",
+      "meeting_link": "https://meet.google.com/abc-defg-hij",
+      "status": "Scheduled",
+      "feedback_notes": "",
+      "recommendation": "",
+      "created_at": "2026-07-12T13:11:51.783992"
     }
   ],
   "employees": [

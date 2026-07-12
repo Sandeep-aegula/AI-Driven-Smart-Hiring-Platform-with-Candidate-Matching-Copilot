@@ -22,12 +22,12 @@ def render_employees() -> None:
 
     cs, cd = st.columns([3, 1])
     with cs: search = st.text_input("Search", placeholder="Search by name, role…", label_visibility="collapsed")
-    with cd: dept_f = st.selectbox("Dept", ["All","Engineering","Analytics","HR","Sales","Design"], label_visibility="collapsed")
+    with cd: dept_f = st.selectbox("Dept", ["All Departments","Engineering","Analytics","HR","Sales","Design"], label_visibility="collapsed")
 
     employees = api_client.get_employees()
     if employees:
         if search: employees = [e for e in employees if search.lower() in e["name"].lower() or search.lower() in e["role"].lower()]
-        if dept_f != "All": employees = [e for e in employees if e["department"].lower() == dept_f.lower()]
+        if dept_f != "All Departments": employees = [e for e in employees if e["department"].lower() == dept_f.lower()]
 
     drawer_open = st.session_state["selected_employee_id"] is not None
     if drawer_open:

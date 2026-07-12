@@ -1,4 +1,4 @@
-import httpx
+﻿import httpx
 import logging
 
 logger = logging.getLogger(__name__)
@@ -109,6 +109,18 @@ def upload_resume(file_bytes, filename):
         logger.error(f"Error uploading resume: {e}")
         return None
 
+def parse_resume_text(text, filename="pasted_resume.txt"):
+    try:
+        resp = httpx.post(
+            f"{API_URL}/resume/parse-text",
+            json={"text": text, "filename": filename},
+            timeout=90.0,
+        )
+        return resp.json() if resp.status_code == 200 else None
+    except Exception as e:
+        logger.error(f"Error parsing pasted resume text: {e}")
+        return None
+
 def get_upload_history():
     try:
         resp = httpx.get(f"{API_URL}/resume/history")
@@ -185,7 +197,7 @@ def add_interview_feedback(interview_id, feedback_notes, recommendation):
 def generate_interview_questions(stage, skills):
     try:
         payload = {"stage": stage, "skills": skills}
-        resp = httpx.post(f"{API_URL}/interviews/generate-questions", json=payload)
+        resp = httpx.post(f"{API_URL}/interviews/generate-questions", json=payload, timeout=90.0)
         return resp.json() if resp.status_code == 200 else []
     except Exception as e:
         logger.error(f"Error generating questions: {e}")
@@ -206,3 +218,4 @@ def get_employee(employee_id):
     except Exception as e:
         logger.error(f"Error fetching employee: {e}")
         return None
+
