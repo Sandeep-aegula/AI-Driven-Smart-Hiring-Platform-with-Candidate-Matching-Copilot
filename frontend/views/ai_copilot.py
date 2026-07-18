@@ -26,76 +26,202 @@ setup_page("AI Copilot", "ChatGPT-style floating recruitment assistant powered b
 # Chat Session initialization
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Hello! I am HirePilot's AI Copilot, running locally on `qwen2.5-coder:7b`. Select a quick action below or ask me any recruitment questions."}
+        {"role": "assistant", "content": "Hello! I am HirePilot's AI Copilot, running locally on `qwen2.5-coder:7b`. Tap **+** for quick actions or ask me any recruitment question."}
     ]
 
-# --- QUICK PROMPT ROW ---
-st.markdown("##### Quick Prompts:")
-q_cols = st.columns(6)
-prompt_trigger = None
+# --- QUICK ACTIONS (live inside the "+" button on the input bar) ---
+QUICK_ACTIONS = {
+    "🪄 Generate JD": "Write a complete job description for a Lead React Frontend Developer role.",
+    "📄 Summarize Resume": "Summarize the key experience and technical strengths of a Python developer with 6 years experience.",
+    "👥 Compare Candidates": "Provide a checklist on how to compare technical candidates side-by-side.",
+    "🥇 Recommend Candidate": "Write a recommendation email advancing candidate 'Sarah Jenkins' to the final interview round.",
+    "❓ Generate Questions": "Generate 4 coding interview questions on FastAPI and Docker.",
+    "📈 Hiring Report": "Draft a summary recruitment metric report including application conversion numbers.",
+}
 
-with q_cols[0]:
-    if st.button("🪄 Generate JD", use_container_width=True):
-        prompt_trigger = "Write a complete job description for a Lead React Frontend Developer role."
-with q_cols[1]:
-    if st.button("📄 Summarize Resume", use_container_width=True):
-        prompt_trigger = "Summarize the key experience and technical strengths of a Python developer with 6 years experience."
-with q_cols[2]:
-    if st.button("👥 Compare Candidates", use_container_width=True):
-        prompt_trigger = "Provide a checklist on how to compare technical candidates side-by-side."
-with q_cols[3]:
-    if st.button("🥇 Recommend Candidate", use_container_width=True):
-        prompt_trigger = "Write an recommendation email advancing candidate 'Sarah Jenkins' to the final interview round."
-with q_cols[4]:
-    if st.button("❓ Generate Questions", use_container_width=True):
-        prompt_trigger = "Generate 4 coding interview questions on FastAPI and Docker."
-with q_cols[5]:
-    if st.button("📈 Hiring Report", use_container_width=True):
-        prompt_trigger = "Draft a summary recruitment metric report including application conversion numbers."
 
-st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+# =========================================================================
+# CUSTOM PILL-SHAPED CHAT INPUT (inlined — no separate component file)
+# =========================================================================
+def _inject_copilot_input_css():
+    st.markdown(
+        """
+        <style>
+        .copilot-input-wrapper {
+            position: sticky;
+            bottom: 0;
+            background: transparent;
+            padding: 8px 0 4px 0;
+        }
+        .copilot-input-wrapper [data-testid="stHorizontalBlock"] {
+            background-color: #1e1e1e;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            padding: 6px 10px;
+            align-items: center;
+            gap: 0px;
+        }
+        /* "+" quick-actions button */
+        .copilot-input-wrapper div[data-testid="stPopover"] button {
+            border-radius: 50% !important;
+            width: 34px !important;
+            height: 34px !important;
+            padding: 0 !important;
+            background-color: transparent !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-size: 18px !important;
+            line-height: 1 !important;
+        }
+        .copilot-input-wrapper div[data-testid="stPopover"] button:hover {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        /* Text input — borderless, transparent, sits in the middle */
+        .copilot-input-wrapper .stTextInput > div > div {
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .copilot-input-wrapper .stTextInput input {
+            background-color: transparent !important;
+            border: none !important;
+            color: #e6e6e6 !important;
+            font-size: 15px !important;
+            padding-left: 6px !important;
+        }
+        .copilot-input-wrapper .stTextInput input:focus {
+            box-shadow: none !important;
+            outline: none !important;
+        }
+        .copilot-input-wrapper .stTextInput input::placeholder {
+            color: rgba(255, 255, 255, 0.4) !important;
+        }
+        /* Send button — circular, accent color, dims when disabled */
+        .copilot-input-wrapper .send-btn button {
+            border-radius: 50% !important;
+            width: 34px !important;
+            height: 34px !important;
+            padding: 0 !important;
+            background-color: #ff6a3d !important;
+            border: none !important;
+            color: #ffffff !important;
+            font-size: 16px !important;
+        }
+        .copilot-input-wrapper .send-btn button:hover {
+            background-color: #ff7f57 !important;
+        }
+        .copilot-input-wrapper .send-btn button:disabled {
+            background-color: rgba(255, 106, 61, 0.35) !important;
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
-# Display chat history in clean container
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
 
-# Text Streaming Simulator for typing animations
+def render_copilot_chat_input(key: str, placeholder: str, quick_actions: dict) -> str | None:
+    """
+    Renders the dark pill-shaped chat input (+ button, borderless text field,
+    circular send arrow, no mic icon). Returns the submitted message text
+    (already resolved from a quick-action label if one was chosen), or None.
+    """
+    _inject_copilot_input_css()
+
+    text_key = f"{key}_text"
+    if text_key not in st.session_state:
+        st.session_state[text_key] = ""
+
+    st.markdown('<div class="copilot-input-wrapper">', unsafe_allow_html=True)
+    col_plus, col_input, col_send = st.columns([0.7, 6, 0.7], gap="small")
+
+    with col_plus:
+        with st.popover("+", use_container_width=True):
+            st.caption("Quick actions")
+            for label in quick_actions:
+                if st.button(label, key=f"{key}_qa_{label}", use_container_width=True):
+                    st.session_state[text_key] = label
+                    st.rerun()
+
+    with col_input:
+        st.text_input(
+            label="copilot_message",
+            key=text_key,
+            placeholder=placeholder,
+            label_visibility="collapsed",
+        )
+
+    submitted = False
+    with col_send:
+        st.markdown('<div class="send-btn">', unsafe_allow_html=True)
+        has_text = bool(st.session_state[text_key].strip())
+        if st.button("↑", key=f"{key}_send", disabled=not has_text, use_container_width=True):
+            submitted = True
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    if submitted:
+        raw = st.session_state[text_key].strip()
+        st.session_state[text_key] = ""
+        return quick_actions.get(raw, raw)  # resolve quick-action label -> full prompt
+
+    return None
+
+
+# =========================================================================
+# CHAT DISPLAY + AI HANDLING
+# =========================================================================
+chat_container = st.container()
+with chat_container:
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+
 def text_streamer(text):
     for token in text.split(" "):
         yield token + " "
         time.sleep(0.015)
 
-# Handle triggers
-user_input = st.chat_input("Message AI Copilot...")
 
-if prompt_trigger:
-    user_input = prompt_trigger
+def handle_user_message(user_input: str):
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    with chat_container:
+        with st.chat_message("user"):
+            st.markdown(user_input)
+
+        with st.chat_message("assistant"):
+            with st.spinner("AI is typing..."):
+                client = get_ollama_client()
+                try:
+                    reply = client.generate(
+                        user_input,
+                        system="You are HirePilot AI Copilot, a senior recruitment coordinator. Respond professionally using clean markdown formatting."
+                    )
+                except Exception:
+                    reply = (
+                        f"Ollama connection offline. Fallback preview response for: **{user_input}**\n\n"
+                        "I can help write job descriptions, design questions, and compare resumes once the "
+                        "Ollama local backend is active on port 11434."
+                    )
+
+                response_container = st.empty()
+                full_response = ""
+                for chunk in text_streamer(reply):
+                    full_response += chunk
+                    response_container.markdown(full_response)
+
+    st.session_state.messages.append({"role": "assistant", "content": reply})
+
+
+# --- RENDER THE CUSTOM INPUT AND HANDLE SUBMISSION ---
+user_input = render_copilot_chat_input(
+    key="copilot_input",
+    placeholder="Ask AI Copilot anything...",
+    quick_actions=QUICK_ACTIONS,
+)
 
 if user_input:
-    # Display user bubble
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    with st.chat_message("user"):
-        st.markdown(user_input)
-        
-    # Generate response
-    with st.chat_message("assistant"):
-        with st.spinner("AI is typing..."):
-            client = get_ollama_client()
-            try:
-                reply = client.generate(
-                    user_input, 
-                    system="You are HirePilot AI Copilot, a senior recruitment coordinator. Respond professionally using clean markdown formatting."
-                )
-            except Exception:
-                reply = f"Ollama connection offline. Fallback preview response for: **{user_input}**\n\nI can help write job descriptions, design questions, and compare resumes once the Ollama local backend is active on port 11434."
-            
-            # Stream response back
-            response_container = st.empty()
-            full_response = ""
-            for chunk in text_streamer(reply):
-                full_response += chunk
-                response_container.markdown(full_response)
-                
-    st.session_state.messages.append({"role": "assistant", "content": reply})
+    handle_user_message(user_input)
     st.rerun()

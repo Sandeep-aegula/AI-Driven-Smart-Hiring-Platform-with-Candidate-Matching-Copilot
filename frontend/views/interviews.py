@@ -28,19 +28,92 @@ setup_page("Interview Management", "Schedule and coordinate candidate interviews
 # State initialization
 if "selected_interview_id" not in st.session_state:
     st.session_state.selected_interview_id = None
-if "generated_questions" not in st.session_state:
-    st.session_state.generated_questions = None
+if "interview_question_sets" not in st.session_state:
+    st.session_state.interview_question_sets = {}
 
 # Load Candidates and Interviews
 candidates = api_client.get_candidates()
 interviews = api_client.get_interviews()
+job_titles = {job.get("id"): job.get("title") for job in api_client.get_jobs()}
+
+QUESTION_ROUNDS = ["HR", "Technical", "Coding", "Behavioral", "Managerial"]
+
+
+def _interview_label(interview: dict) -> str:
+    candidate = interview.get("candidate_name", "Unknown candidate")
+    job = interview.get("job_title") or job_titles.get(interview.get("job_id")) or "Unknown (N/A)"
+    round_name = interview.get("round") or interview.get("stage") or "Unspecified round"
+    return f"{candidate} — {job} — {round_name} — {interview.get('date', 'Unknown date')}"
+
+
+@st.fragment
+def render_question_generator(interview_options: list[dict]):
+    """Keep AI controls and generation isolated from the interview list above."""
+    st.markdown("#### AI Interview Question Generator")
+    if not interview_options:
+        st.info("Schedule an interview to generate interview questions.")
+        return
+
+    ordered = sorted(interview_options, key=lambda item: f"{item.get('date', '')} {item.get('time', '')}", reverse=True)
+    selected_id = st.selectbox(
+        "Interview",
+        options=[item.get("id") for item in ordered],
+        index=0,
+        format_func=lambda interview_id: _interview_label(next(item for item in ordered if item.get("id") == interview_id)),
+        key="ai_question_interview",
+    )
+    selected = next(item for item in ordered if item.get("id") == selected_id)
+    stored_round = selected.get("round")
+    round_index = QUESTION_ROUNDS.index(stored_round) if stored_round in QUESTION_ROUNDS else QUESTION_ROUNDS.index("Technical")
+
+    controls = st.columns(3)
+    with controls[0]:
+        round_type = st.selectbox("Round type", QUESTION_ROUNDS, index=round_index, key=f"ai_question_round_{selected_id}")
+    with controls[1]:
+        difficulty = st.selectbox("Difficulty", ["Easy", "Medium", "Hard"], index=1, key=f"ai_question_difficulty_{selected_id}")
+    with controls[2]:
+        count = st.number_input("Number of questions", min_value=1, max_value=15, value=5, step=1, key=f"ai_question_count_{selected_id}")
+
+    resolved_job_title = selected.get("job_title") or job_titles.get(selected.get("job_id"))
+    job_unresolved = not selected.get("job_id") or not resolved_job_title or resolved_job_title == "Unknown (N/A)"
+    if job_unresolved:
+        st.warning("This interview has an unresolved job (Unknown (N/A)). Link it to a job before generating role-specific questions.")
+
+    cache_key = (selected_id, round_type, difficulty, int(count))
+    actions = st.container(horizontal=True)
+    with actions:
+        generate_clicked = st.button("Generate Questions", type="primary", disabled=job_unresolved, key=f"generate_questions_{selected_id}")
+        regenerate_clicked = st.button("Regenerate", disabled=job_unresolved, key=f"regenerate_questions_{selected_id}")
+
+    if generate_clicked or regenerate_clicked:
+        with st.spinner("Qwen2.5-Coder is generating interview questions..."):
+            response = api_client.generate_interview_questions(
+                selected_id, round_type, difficulty, int(count), regenerate=regenerate_clicked
+            )
+        if response:
+            st.session_state.interview_question_sets[cache_key] = response
+        else:
+            st.error("Question generation could not be completed. Please try again.")
+
+    result = st.session_state.interview_question_sets.get(cache_key)
+    if result:
+        if result.get("warning"):
+            st.warning(result["warning"])
+        if result.get("cached"):
+            st.caption("Showing the saved question set for this interview configuration.")
+        for index, question in enumerate(result.get("questions", []), start=1):
+            with st.expander(f"{index}. {question.get('question', 'Interview question')}"):
+                st.markdown("**Model answer**")
+                st.write(question.get("model_answer", ""))
+                st.markdown("**Evaluation guideline**")
+                st.write(question.get("evaluation_guideline", ""))
 
 # Divide screen into Left list/calendar and Right forms/AI utilities
 col_left, col_right = st.columns([1.2, 0.8])
 
 with col_left:
     # 1. Today's & Upcoming Interviews
-    st.markdown("#### <i class='fa-solid fa-clipboard-list' style='color:#6366F1;'></i> Scheduled Sessions", unsafe_allow_html=True)
+    st.markdown("#### <i class='fa-solid fa-clipboard-list' style='color:#6366F1;'></i> Upcoming & Past Interviews", unsafe_allow_html=True)
     if not interviews:
         st.markdown("<p style='color:#64748B;'>No interviews scheduled.</p>", unsafe_allow_html=True)
     else:
@@ -72,6 +145,10 @@ with col_left:
                         st.rerun()
                         
             st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+
+    st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
+    with st.container(border=True):
+        render_question_generator(interviews)
 
     # 2. Calendar Widget Grid
     st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
@@ -154,32 +231,7 @@ with col_right:
                     st.toast("Interview successfully scheduled!", icon="🎉")
                     st.rerun()
 
-    # 2. Ollama AI Questions Generator
-    st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
-    with st.container(border=True):
-        st.markdown("#### <i class='fa-solid fa-wand-magic-sparkles' style='color:#6366F1; margin-right:8px;'></i> Generate Interview Questions", unsafe_allow_html=True)
-        st.markdown("<p style='font-size:0.8rem; color:#64748B;'>Select category and generate questions based on the candidate's core skills.</p>", unsafe_allow_html=True)
-        
-        ai_stage = st.selectbox("Category", ["Technical", "Coding", "Behavioral", "HR"], key="ai_q_stage")
-        ai_skills = st.text_input("Candidate Skills (comma separated)", value="Python, FastAPI, SQL", label_visibility="visible")
-        
-        if st.button("Generate Questions with Ollama AI", type="secondary", use_container_width=True):
-            with st.spinner("Ollama qwen2.5-coder:7b is writing questions..."):
-                skills_list = [s.strip() for s in ai_skills.split(",") if s.strip()]
-                res_q = api_client.generate_interview_questions(ai_stage, skills_list)
-                if res_q:
-                    st.session_state.generated_questions = res_q
-                    st.success("Successfully generated questions!")
-                else:
-                    st.error("Ollama questions generator failed to respond.")
-                    
-        if st.session_state.generated_questions:
-            st.markdown("<div style='margin-top:10px; background-color:#EEF2FF; border-left:3px solid #6366F1; padding:10px; border-radius:4px;'>", unsafe_allow_html=True)
-            for idx, q in enumerate(st.session_state.generated_questions):
-                st.markdown(f"**Q{idx+1}:** *{q}*")
-            st.markdown("</div>", unsafe_allow_html=True)
-
-    # 3. Log Feedback Notes & Recommendation
+    # 2. Log Feedback Notes & Recommendation
     if st.session_state.selected_interview_id:
         st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
         

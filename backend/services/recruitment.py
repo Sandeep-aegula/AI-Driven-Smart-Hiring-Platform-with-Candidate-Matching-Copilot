@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import logging
@@ -960,14 +960,14 @@ def parse_resume_file(session: Any = None, file_path: str = "", candidate_id: in
 def parse_resume_text(session: Any = None, raw_text: str = "", filename: str = "pasted_resume.txt", candidate_id: int | None = None) -> Any:
     return _persist_parsed_resume(raw_text, filename, "", candidate_id)
 
-def screen_resume_against_job(session: Any, candidate_id: int, job_id: int) -> ScreeningResponse:
-    candidate = get_candidate(None, candidate_id)
-    job = get_job(None, job_id)
+async def screen_resume_against_job(session: Any, candidate_id: int, job_id: int) -> ScreeningResponse:
+    from backend.database.data_store import data_store
+    candidate = await data_store.get_candidate(candidate_id)
+    job = await data_store.get_job(job_id)
     if not candidate or not job:
         raise ValueError("Candidate or job not found")
 
-    storage = load_storage()
-    resume = next((r for r in reversed(storage.get("resume_data", [])) if r["candidate_id"] == candidate_id), None)
+    resume = await data_store.get_latest_candidate_resume(candidate_id)
     
     resume_text = ""
     if resume:
@@ -1035,38 +1035,10 @@ Important: Output valid JSON only, without any markdown formatting or other expl
             else:
                 rec = "Reject"
 
-        # Update candidate status & match score in JSON
-        candidates = storage.get("candidates", [])
-        cand_record = next((c for c in candidates if c["id"] == candidate_id), None)
-        if cand_record:
-            status_map = {"Approve": "Approved", "Shortlist": "Shortlisted", "Reject": "Rejected"}
-            cand_record["status"] = status_map.get(rec, cand_record["status"])
-            cand_record["match_score"] = overall
-            cand_record["updated_at"] = datetime.utcnow().isoformat()
-            
-        # Update or create application status
-        applications = storage.get("applications", [])
-        app_record = next((a for a in applications if a["candidate_id"] == candidate_id and a["job_id"] == job_id), None)
-        if app_record:
-            app_record["status"] = rec
-            app_record["match_score"] = overall
-            app_record["ai_summary"] = data.get("resume_summary", "")
-            app_record["updated_at"] = datetime.utcnow().isoformat()
-        else:
-            app_record = {
-                "id": max([a["id"] for a in applications]) + 1 if applications else 1,
-                "candidate_id": candidate_id,
-                "job_id": job_id,
-                "status": rec,
-                "match_score": overall,
-                "ai_summary": data.get("resume_summary", ""),
-                "recruiter_notes": "",
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat()
-            }
-            applications.append(app_record)
-            
-        save_storage(storage)
+        status_map = {"Approve": "Approved", "Shortlist": "Shortlisted", "Reject": "Rejected"}
+        cand_status = status_map.get(rec, candidate.get("status", "New"))
+        await data_store.update_candidate_screening_result(candidate_id, cand_status, overall)
+        await data_store.upsert_application(candidate_id, job_id, rec, overall, data.get("resume_summary", ""))
 
         return ScreeningResponse(
             candidate_id=candidate_id,
@@ -1106,14 +1078,10 @@ Important: Output valid JSON only, without any markdown formatting or other expl
 
         explanation = f"Ollama screening offline. Fallback scoring matches {len(overlap)} core skills."
         
-        candidates = storage.get("candidates", [])
-        cand_record = next((c for c in candidates if c["id"] == candidate_id), None)
-        if cand_record:
-            cand_record["status"] = rec
-            cand_record["match_score"] = overall
-            cand_record["updated_at"] = datetime.utcnow().isoformat()
-            
-        save_storage(storage)
+        status_map = {"Approve": "Approved", "Shortlist": "Shortlisted", "Reject": "Rejected"}
+        cand_status = status_map.get(rec, candidate.get("status", "New"))
+        await data_store.update_candidate_screening_result(candidate_id, cand_status, overall)
+        await data_store.upsert_application(candidate_id, job_id, rec, overall, "Fallback heuristic summary")
 
         return ScreeningResponse(
             candidate_id=candidate_id,
@@ -1131,6 +1099,7 @@ Important: Output valid JSON only, without any markdown formatting or other expl
             explanation=explanation,
             radar={"Skills": skill_match, "Experience": experience_match, "Education": education_match, "Projects": projects_match},
         )
+
 
 def analytics_snapshot(session: Any = None) -> dict[str, Any]:
     storage = load_storage()

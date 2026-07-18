@@ -115,25 +115,13 @@ if st.session_state.job_action in ("create", "edit"):
 
     st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
-    # ── Hero Banner ──────────────────────────────────────────────────────────
+    # ── Hero Header ──────────────────────────────────────────────────────────
     action_label = "Edit Job Details" if is_edit else "Create New Job Listing"
     action_icon  = "✏️" if is_edit else "➕"
-    action_sub   = f"Editing: <strong>{job_data.get('title', '')}</strong>" if is_edit else "Fill in the details below to post a new job opening."
-    st.markdown(f"""
-    <div class="dark-hero-banner" style="background: linear-gradient(135deg, #1E1B4B 0%, #312E81 100%);
-                border-radius: 16px; padding: 24px 32px; margin-bottom: 20px;
-                box-shadow: 0 8px 24px rgba(49,46,129,0.2);">
-        <div style="display:flex; align-items:center; gap:16px;">
-            <div style="background:rgba(255,255,255,0.12); border-radius:12px;
-                        width:52px; height:52px; display:flex; align-items:center;
-                        justify-content:center; font-size:24px; flex-shrink:0;">{action_icon}</div>
-            <div>
-                <h2 style="margin:0; font-size:1.55rem; font-weight:800; color:#FFFFFF; letter-spacing:-0.01em;">{action_label}</h2>
-                <p style="margin:5px 0 0 0; font-size:0.88rem; color:#C7D2FE;">{action_sub}</p>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    action_sub   = f"Editing: {job_data.get('title', '')}" if is_edit else "Fill in the details below to post a new job opening."
+    
+    st.subheader(f"{action_icon} {action_label}")
+    st.write(action_sub)
 
     # ── Initialize form state ─────────────────────────────────────────────
     form_key = f"{'edit' if is_edit else 'create'}_{job_id or 'new'}"

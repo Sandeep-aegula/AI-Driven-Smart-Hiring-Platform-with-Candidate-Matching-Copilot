@@ -63,7 +63,7 @@ class AppState:
         "emp_dept": "All",
 
         # Theme
-        "theme": "dark",
+        "theme": "light",
 
         # AI responses cache
         "ai_responses": {},

@@ -4,7 +4,7 @@ components/ai_screening.py — HirePilot AI Screening Page
 import streamlit as st
 import plotly.graph_objects as go
 from frontend.components import api_client
-from services.cache import get_jobs_cached, get_candidates_cached
+from frontend.services.cache import get_jobs_cached, get_candidates_cached, get_job_cached, get_candidate_cached, invalidate_candidates, cached_screen, invalidate_screening
 
 
 def render_ai_screening() -> None:
@@ -66,7 +66,11 @@ def render_ai_screening() -> None:
     # ── Pre-load fallback result ──────────────────────────────────────────
     rkey = f"screen_{cand_id}_{job_id}"
     if rkey not in st.session_state:
-        c_obj = next((c for c in cands_list if c["id"] == cand_id), {})
+        cached_res = cached_screen(cand_id, job_id)
+        if cached_res:
+            st.session_state[rkey] = cached_res
+        else:
+            c_obj = next((c for c in cands_list if c["id"] == cand_id), {})
         if c_obj.get("match_score", 0) > 0:
             st.session_state[rkey] = {
                 "overall_match_percent": c_obj.get("match_score", 75),
@@ -189,8 +193,8 @@ def render_ai_screening() -> None:
 
     # ── Comparison Table ──────────────────────────────────────────────────
     with st.expander("📊 Compare Candidate vs Job Requirements", expanded=True):
-        job_d  = api_client.get_job(job_id) or {}
-        cand_d = api_client.get_candidate(cand_id) or {}
+        job_d  = get_job_cached(job_id) or {}
+        cand_d = get_candidate_cached(cand_id) or {}
         j_skl  = ", ".join(job_d.get("requirements",[]))
         c_skl  = ", ".join([s.get("name") if isinstance(s,dict) else s for s in cand_d.get("skills",[])])
         st.markdown(f"""
@@ -236,12 +240,18 @@ def render_ai_screening() -> None:
         with da1:
             if st.button("Shortlist Candidate", use_container_width=True, key="ai_short"):
                 if api_client.update_candidate_status(cand_id,"Shortlisted"):
-                    st.toast("Shortlisted!", icon="✅"); st.rerun()
+                    invalidate_candidates()
+                    st.toast("Shortlisted!", icon="✅")
+                    st.rerun()
         with da2:
             if st.button("Approve & Advance", type="primary", use_container_width=True, key="ai_appr"):
                 if api_client.update_candidate_status(cand_id,"Approved"):
-                    st.toast("Approved!", icon="🎉"); st.rerun()
+                    invalidate_candidates()
+                    st.toast("Approved!", icon="🎉")
+                    st.rerun()
         with da3:
             if st.button("Reject Candidate", use_container_width=True, key="ai_rej"):
                 if api_client.update_candidate_status(cand_id,"Rejected"):
-                    st.toast("Rejected.", icon="❌"); st.rerun()
+                    invalidate_candidates()
+                    st.toast("Rejected.", icon="❌")
+                    st.rerun()

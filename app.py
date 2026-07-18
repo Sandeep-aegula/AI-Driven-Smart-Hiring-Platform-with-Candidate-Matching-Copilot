@@ -14,6 +14,7 @@ if current_dir not in sys.path:
 
 from frontend.components.sidebar import render_sidebar
 from frontend.components.header import render_header
+from frontend.services.cache import inject_css_once
 
 # --- VIEW MAPPING ---
 # Maps the page name from the sidebar to the corresponding view module
@@ -54,20 +55,50 @@ def main():
     if "current_page" not in st.session_state:
         st.session_state.current_page = "Dashboard"
 
+    # --- LOAD APP STYLES AND FORCE SIDEBAR OPEN ---
+    inject_css_once()
+
     # --- RENDER LAYOUT ---
-    render_sidebar()
+    # render_sidebar()
     render_header()
 
-    # --- RENDER CURRENT VIEW ---
-    # current_view_module = VIEW_MAP.get(st.session_state.current_page)
-    # if current_view_module:
-    #     module = __import__(current_view_module, fromlist=['render'])
-    #     module.render()
-    # else:
-    #     st.error("View not found!")
+# --- RENDER CURRENT VIEW ---
+    page = st.session_state.current_page
+    
+    if page == "Dashboard":
+        from components.dashboard import render_dashboard
+        render_dashboard()
+    elif page == "Jobs":
+        from components.jobs import render_jobs
+        render_jobs()
+    elif page == "Candidates":
+        from components.candidates import render_candidates
+        render_candidates()
+    elif page == "Resume Parser":
+        from components.resume_management import render_resume_management
+        render_resume_management()
+    elif page == "AI Screening":
+        from components.ai_screening import render_ai_screening
+        render_ai_screening()
+    elif page == "Interviews":
+        from components.interview_management import render_interview_management
+        render_interview_management()
+    elif page == "Employees":
+        from components.employees import render_employees
+        render_employees()
+    elif page == "Analytics":
+        from components.analytics import render_analytics
+        render_analytics()
+    elif page == "Reports":
+        from components.reports import render_reports
+        render_reports()
+    elif page == "AI Copilot":
+        from components.ai_copilot import render_ai_copilot
+        render_ai_copilot()
+    else:
+        st.error(f"View not found! {page}")
 
-    st.info("Refactoring in progress. Views will be connected here.")
 
-
+# Light mode update and sidebar collapse fix
 if __name__ == "__main__":
     main()

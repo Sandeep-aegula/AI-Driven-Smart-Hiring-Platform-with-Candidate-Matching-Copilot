@@ -26,17 +26,11 @@ def _get_css() -> str:
 
 def inject_css_once():
     """
-    Inject CSS into the Streamlit page.
-    NOTE: CSS must be re-injected on every page navigation because Streamlit
-    clears injected <style> tags when switching pages. The CSS string itself
-    is cached in memory (cache_resource) so no disk reads occur after the first.
+    Inject minimal CSS into the page.
     """
     css = _get_css()
-    st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
-    st.markdown(
-        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">',
-        unsafe_allow_html=True,
-    )
+    if css:
+        st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
 
 
@@ -45,25 +39,25 @@ def inject_css_once():
 # ---------------------------------------------------------------------------
 
 _SIDEBAR_BRAND_HTML = """
-<div style="padding: 10px 10px 20px 10px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #1E293B; margin-bottom: 15px;">
+<div style="padding: 10px 10px 20px 10px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #E2E8F0; margin-bottom: 15px;">
     <div style="background: linear-gradient(135deg, #6366F1, #4F46E5); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: white; box-shadow: 0 4px 12px rgba(99,102,241,0.35);">
         <i class="fa-solid fa-paper-plane" style="transform: rotate(-10deg);"></i>
     </div>
     <div>
-        <div style="font-weight: 800; color: #F8FAFC; font-size: 1.25rem; letter-spacing: 0.02em; line-height: 1;">HirePilot</div>
-        <div style="font-size: 0.7rem; color: #94A3B8; font-weight: 600; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.05em;">AI RECRUITMENT</div>
+        <div style="font-weight: 800; color: #0F172A; font-size: 1.25rem; letter-spacing: 0.02em; line-height: 1;">HirePilot</div>
+        <div style="font-size: 0.7rem; color: #64748B; font-weight: 600; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.05em;">AI RECRUITMENT</div>
     </div>
 </div>
 """
 
 _SIDEBAR_FOOTER_HTML = """
-<div style="margin-top: 80px; padding: 16px 10px 0 10px; border-top: 1px solid #1E293B;">
+<div style="margin-top: 80px; padding: 16px 10px 0 10px; border-top: 1px solid #E2E8F0;">
     <div style="display: flex; align-items: center; gap: 10px; opacity: 0.85;">
-        <div style="background-color: #1E293B; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6366F1;">
+        <div style="background-color: #F1F5F9; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6366F1;">
             <i class="fa-solid fa-rocket"></i>
         </div>
         <div>
-            <div style="font-weight: 700; color: #E2E8F0; font-size: 0.78rem;">HirePilot v1.2</div>
+            <div style="font-weight: 700; color: #0F172A; font-size: 0.78rem;">HirePilot v1.2</div>
             <div style="font-size: 0.65rem; color: #64748B;">Plan: Enterprise</div>
         </div>
     </div>

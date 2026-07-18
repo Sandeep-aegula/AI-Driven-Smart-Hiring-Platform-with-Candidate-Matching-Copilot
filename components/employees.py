@@ -1,10 +1,7 @@
-"""
-components/employees.py — HirePilot Employee Roster Page
-"""
 import streamlit as st
+import pandas as pd
 import plotly.graph_objects as go
 from frontend.components import api_client
-
 
 def render_employees() -> None:
     if "selected_employee_id" not in st.session_state:
@@ -15,25 +12,32 @@ def render_employees() -> None:
         👨‍💼 Employee Roster
     </h1>
     <p style="font-size:0.85rem;color:#64748B;margin:0 0 20px 0;font-weight:500;">
-        Monitor employee progress and skill growth
+        Monitor employee progress, performance, and AI-driven talent insights.
     </p>
     <hr style="margin:0 0 20px 0;border:none;border-top:1px solid #F1F5F9;">
     """, unsafe_allow_html=True)
 
-    cs, cd = st.columns([3, 1])
-    with cs: search = st.text_input("Search", placeholder="Search by name, role…", label_visibility="collapsed")
-    with cd: dept_f = st.selectbox("Dept", ["All Departments","Engineering","Analytics","HR","Sales","Design"], label_visibility="collapsed")
+    cs, cd, cr = st.columns([3, 1.5, 1.5])
+    with cs: search = st.text_input("Search", placeholder="Search by name, email...", label_visibility="collapsed")
+    with cd: dept_f = st.selectbox("Department", ["All", "Engineering", "Analytics", "HR", "Sales", "Design"], label_visibility="collapsed")
+    with cr: stat_f = st.selectbox("Status", ["All", "Active", "On Leave", "Ex-Employee"], label_visibility="collapsed")
 
     employees = api_client.get_employees()
     if employees:
-        if search: employees = [e for e in employees if search.lower() in e["name"].lower() or search.lower() in e["role"].lower()]
-        if dept_f != "All Departments": employees = [e for e in employees if e["department"].lower() == dept_f.lower()]
+        if search:
+            like = search.lower()
+            employees = [e for e in employees if like in e.get("name", "").lower() or like in e.get("email", "").lower()]
+        if dept_f != "All":
+            employees = [e for e in employees if e.get("department") == dept_f]
+        if stat_f != "All":
+            employees = [e for e in employees if e.get("status") == stat_f]
 
     drawer_open = st.session_state["selected_employee_id"] is not None
     if drawer_open:
-        list_col, drawer_col = st.columns([1.1, 0.9])
+        list_col, drawer_col = st.columns([1.1, 1.3])
     else:
-        list_col = st.container(); drawer_col = None
+        list_col = st.container()
+        drawer_col = None
 
     with list_col:
         st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 12px 0;'>"
@@ -44,7 +48,7 @@ def render_employees() -> None:
                         unsafe_allow_html=True)
         else:
             for emp in employees:
-                ini = "".join(p[0] for p in emp.get("name","E").split()[:2])
+                ini = "".join(p[0] for p in emp.get("name","E").split()[:2]).upper()
                 with st.container(border=True):
                     ec1, ec2 = st.columns([4, 1.2])
                     with ec1:
@@ -57,10 +61,9 @@ def render_employees() -> None:
                             <div>
                                 <div style="font-weight:800;font-size:1rem;color:#0F172A;">{emp.get('name')}</div>
                                 <div style="font-size:0.8rem;color:#4F46E5;font-weight:600;">
-                                    {emp.get('role')} • {emp.get('department')}</div>
+                                    {emp.get('designation', 'Employee')} • {emp.get('department', 'Unassigned')}</div>
                                 <div style="font-size:0.72rem;color:#64748B;margin-top:2px;">
-                                    <strong>Manager:</strong> {emp.get('manager')} •
-                                    <strong>Joined:</strong> {emp.get('joining_date')}
+                                    <strong>Joined:</strong> {emp.get('joining_date', 'N/A')}
                                 </div>
                             </div>
                         </div>
@@ -68,8 +71,9 @@ def render_employees() -> None:
                     with ec2:
                         st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
                         if st.button("View Profile", key=f"vemp_{emp.get('id')}", use_container_width=True):
-                            st.session_state["selected_employee_id"] = emp.get("id"); st.rerun()
-                st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+                            st.session_state["selected_employee_id"] = emp.get("id")
+                            st.rerun()
+                st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
     # ── Drawer ────────────────────────────────────────────────────────────
     if drawer_col and st.session_state["selected_employee_id"]:
@@ -83,73 +87,118 @@ def render_employees() -> None:
                                     unsafe_allow_html=True)
                     with eh2:
                         if st.button("✕ Close", key="close_emp", use_container_width=True):
-                            st.session_state["selected_employee_id"] = None; st.rerun()
+                            st.session_state["selected_employee_id"] = None
+                            st.rerun()
 
                     st.markdown(f"""
                     <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:16px;margin-bottom:15px;">
                         <h4 style="margin:0;color:#0F172A;font-weight:800;">{emp.get('name')}</h4>
-                        <p style="margin:2px 0 0;font-size:0.8rem;color:#4F46E5;font-weight:600;">{emp.get('role')}</p>
+                        <p style="margin:2px 0 0;font-size:0.8rem;color:#4F46E5;font-weight:600;">{emp.get('designation', 'Employee')}</p>
                         <div style="font-size:0.75rem;color:#64748B;margin-top:6px;">
-                            Department: <strong>{emp.get('department')}</strong></div>
+                            Department: <strong>{emp.get('department', 'N/A')}</strong> | 
+                            Location: <strong>{emp.get('work_location', 'Remote')}</strong>
+                        </div>
                     </div>
                     """, unsafe_allow_html=True)
 
-                    t1, t2, t3 = st.tabs(["📈 Performance","⚡ Skills & Projects","📜 Promotions"])
+                    t1, t2, t3, t4 = st.tabs(["⚡ Skills & Projects", "📈 Performance", "🧠 AI Talent Insights", "⚙️ Actions"])
 
                     with t1:
-                        st.markdown(f"- **Reports to:** {emp.get('manager')}")
-                        st.markdown(f"- **Joining Date:** {emp.get('joining_date')}")
-                        st.markdown("<h5 style='text-align:center;margin-bottom:0;'>Performance Score</h5>",
-                                    unsafe_allow_html=True)
-                        perf = emp.get("performance_score", 80)
-                        fig = go.Figure(go.Indicator(
-                            mode="gauge+number", value=perf,
-                            gauge={"axis":{"range":[0,100]},"bar":{"color":"#6366F1"},
-                                   "bgcolor":"#EEF2FF","borderwidth":0,
-                                   "steps":[{"range":[0,60],"color":"#FEE2E2"},
-                                             {"range":[60,85],"color":"#FEF3C7"},
-                                             {"range":[85,100],"color":"#ECFDF5"}]},
-                            number={"suffix":"%","font":{"size":35,"color":"#0F172A"}}
-                        ))
-                        fig.update_layout(margin=dict(l=20,r=20,t=10,b=10), height=140,
-                                          paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-                        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar":False})
-
-                    with t2:
+                        st.markdown("**Skills:**")
                         skills = emp.get("skills", [])
                         if skills:
-                            html = "<div style='display:flex;flex-direction:column;gap:10px;margin-bottom:15px;'>"
+                            html = "<div style='display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;'>"
                             for sk in skills:
-                                name = sk.get("name"); prog = sk.get("progress", 75)
+                                name = sk.get("name")
+                                prog = sk.get("proficiency", 50)
                                 html += f"""
-                                <div>
-                                    <div style="display:flex;justify-content:space-between;font-size:0.78rem;
-                                                font-weight:600;color:#475569;margin-bottom:2px;">
-                                        <span>{name}</span><span>{prog}%</span></div>
-                                    <div style="background:#EEF2FF;border-radius:9999px;height:6px;overflow:hidden;">
-                                        <div style="background:#6366F1;width:{prog}%;height:100%;border-radius:9999px;"></div>
-                                    </div>
-                                </div>"""
-                            html += "</div>"
-                            st.markdown(html, unsafe_allow_html=True)
-                        st.markdown("**Assigned Projects:**")
-                        for p in emp.get("projects",[]): st.markdown(f"- **{p}**")
-
-                    with t3:
-                        promos = emp.get("promotions",[])
-                        if promos:
-                            html = "<div style='display:flex;flex-direction:column;gap:12px;margin-top:10px;'>"
-                            for i, p in enumerate(promos):
-                                html += f"""
-                                <div style="display:flex;gap:10px;">
-                                    <div style="display:flex;flex-direction:column;align-items:center;">
-                                        <div style="width:12px;height:12px;border-radius:50%;background:#6366F1;border:2.5px solid #EEF2FF;"></div>
-                                        {"<div style='width:1.5px;flex-grow:1;background:#E2E8F0;min-height:15px;'></div>" if i < len(promos)-1 else ""}
-                                    </div>
-                                    <div style="font-size:0.8rem;color:#334155;font-weight:600;padding-bottom:5px;">{p}</div>
+                                <div style="background:#EEF2FF;border:1px solid #C7D2FE;color:#4338CA;
+                                            padding:4px 10px;border-radius:16px;font-size:0.75rem;font-weight:600;">
+                                    {name} <span style="opacity:0.6;font-size:0.7rem;">({prog}%)</span>
                                 </div>"""
                             html += "</div>"
                             st.markdown(html, unsafe_allow_html=True)
                         else:
-                            st.markdown("<p style='font-size:0.8rem;color:#64748B;font-style:italic;'>No promotion records.</p>",
-                                        unsafe_allow_html=True)
+                            st.info("No skills recorded.")
+
+                        st.markdown("**Assigned Projects:**")
+                        projects = emp.get("projects", [])
+                        if projects:
+                            for p in projects:
+                                st.markdown(f"""
+                                <div style="background:#FFF;border:1px solid #E2E8F0;padding:12px;border-radius:8px;margin-bottom:10px;">
+                                    <div style="font-weight:700;font-size:0.9rem;">{p.get('name')}</div>
+                                    <div style="font-size:0.8rem;color:#64748B;margin-top:4px;">
+                                        Role: {p.get('role')} | Client: {p.get('client', 'Internal')}
+                                    </div>
+                                    <div style="font-size:0.8rem;color:#475569;margin-top:6px;">{p.get('description', '')}</div>
+                                </div>
+                                """, unsafe_allow_html=True)
+                        else:
+                            st.info("No projects assigned.")
+
+                    with t2:
+                        perf_summary = api_client.get_employee_performance_summary(emp.get("id"))
+                        if perf_summary and perf_summary.get("history"):
+                            hist = perf_summary["history"]
+                            score = perf_summary.get("overall_score", 0)
+                            
+                            st.markdown(f"<h5 style='text-align:center;'>Average KPI Score: {score}/100</h5>", unsafe_allow_html=True)
+                            
+                            # Trend chart
+                            df = pd.DataFrame(hist)
+                            df["period"] = df["month"] + " " + df["year"].astype(str)
+                            fig = go.Figure()
+                            fig.add_trace(go.Scatter(x=df["period"], y=df["kpi_score"], mode="lines+markers", name="KPI Score",
+                                                     line=dict(color="#6366F1", width=3)))
+                            fig.update_layout(margin=dict(l=10,r=10,t=30,b=20), height=200, yaxis=dict(range=[0,100]))
+                            st.plotly_chart(fig, use_container_width=True)
+                        else:
+                            st.info("No performance data available.")
+
+                    with t3:
+                        st.markdown("**AI-Driven Talent Insights**")
+                        st.write("Deep analysis of technical growth, leadership potential, and productivity.")
+                        
+                        insights = emp.get("talent_insights", {})
+                        if not insights:
+                            st.warning("No insights available. Click the button below to generate them.")
+                        else:
+                            st.markdown(f"""
+                            <div style="background:#F0FDF4;border:1px solid #BBF7D0;padding:12px;border-radius:8px;margin-bottom:12px;">
+                                <strong><i class="fa-solid fa-star" style="color:#22C55E;"></i> Overall Rating:</strong> {insights.get('rating', 'N/A')}
+                                (Score: {insights.get('overall_talent_score', 'N/A')}/100)
+                            </div>
+                            <div style="font-size:0.85rem;">
+                                <strong>Executive Summary:</strong> {insights.get('executive_summary', 'N/A')}<br><br>
+                                <strong>Technical:</strong> {insights.get('technical_assessment', 'N/A')}<br><br>
+                                <strong>Leadership:</strong> {insights.get('leadership_assessment', 'N/A')}<br><br>
+                                <strong>Career Growth:</strong> 
+                                Promotion Readiness: {insights.get('career_growth', {}).get('promotion_readiness', 'N/A')} | 
+                                Next Role: {insights.get('career_growth', {}).get('suggested_next_role', 'N/A')}
+                            </div>
+                            """, unsafe_allow_html=True)
+
+                        if st.button("🔄 Refresh Insights", use_container_width=True):
+                            with st.spinner("Generating deep AI insights..."):
+                                res = api_client.generate_talent_insights(emp.get("id"))
+                                if res:
+                                    st.success("Insights updated successfully!")
+                                    st.rerun()
+
+                    with t4:
+                        st.markdown("**Management Actions**")
+                        # Basic stubs for actions
+                        act_col1, act_col2 = st.columns(2)
+                        with act_col1:
+                            if st.button("Assign Project", use_container_width=True):
+                                st.info("Stub: Open Project Assignment Modal")
+                        with act_col2:
+                            if st.button("Log Performance", use_container_width=True):
+                                st.info("Stub: Open Performance Logging Modal")
+                        
+                        st.markdown("<hr>", unsafe_allow_html=True)
+                        # Export stub
+                        if st.button("📥 Download Employee Report (PDF)", use_container_width=True):
+                            report = api_client.get_employee_performance_summary(emp.get("id")) # We'll replace with export API
+                            st.success(f"Report would be downloaded for {emp.get('name')}")

@@ -18,35 +18,39 @@ import streamlit as st
 # ---------------------------------------------------------------------------
 
 @st.cache_resource(show_spinner=False)
-def _load_css_files() -> str:
-    """Read all CSS files from disk ONCE and cache the combined string."""
-    styles_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "styles"
-    )
-    css_files = ["style.css", "cards.css", "forms.css", "tables.css", "animations.css"]
+def _load_css_files(css_revision: float = 0) -> str:
+    """Read ALL CSS files from assets/css/ once per server process."""
+    _ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+    _ASSETS_CSS = os.path.join(_ROOT, "assets", "css")
+    files = ["global.css", "sidebar.css", "header.css", "cards.css", "forms.css", "tables.css", "animations.css"]
     combined = ""
-    for filename in css_files:
-        filepath = os.path.join(styles_dir, filename)
-        if os.path.exists(filepath):
-            with open(filepath, "r", encoding="utf-8") as f:
-                combined += f"\n/* --- {filename} --- */\n" + f.read()
+    for name in files:
+        path = os.path.join(_ASSETS_CSS, name)
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                combined += f"\n/* ── {name} ── */\n" + f.read()
     return combined
 
 
 def inject_css_once():
     """
-    Inject CSS into the page. Uses session_state to avoid re-injecting on
-    every rerun of the SAME page, and cache_resource to avoid disk I/O.
+    Inject the combined CSS bundle into the page on every rerun.
     """
-    if not st.session_state.get("__css_injected__"):
-        css = _load_css_files()
+    css_dir = os.path.normpath(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "css")
+    )
+    css_revision = max(
+        (os.path.getmtime(os.path.join(css_dir, name)) for name in os.listdir(css_dir)),
+        default=0,
+    )
+    css = _load_css_files(css_revision)
+    if css:
         st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
-        st.markdown(
-            '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">',
-            unsafe_allow_html=True,
-        )
-        st.session_state["__css_injected__"] = True
+    st.markdown(
+        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">',
+        unsafe_allow_html=True
+    )
+
 
 
 # ---------------------------------------------------------------------------
@@ -135,14 +139,64 @@ def get_uploads_cached():
         return []
 
 
+@st.cache_data(ttl=30, show_spinner=False)
+def get_job_cached(job_id):
+    """Cached single job retrieval. Refreshes every 30 seconds."""
+    try:
+        import httpx
+        resp = httpx.get(f"http://localhost:8000/jobs/{job_id}", timeout=5.0)
+        return resp.json() if resp.status_code == 200 else None
+    except Exception:
+        return None
+
+
+@st.cache_data(ttl=30, show_spinner=False)
+def get_candidate_cached(candidate_id):
+    """Cached single candidate retrieval. Refreshes every 30 seconds."""
+    try:
+        import httpx
+        resp = httpx.get(f"http://localhost:8000/candidates/{candidate_id}", timeout=5.0)
+        return resp.json() if resp.status_code == 200 else None
+    except Exception:
+        return None
+
+
+@st.cache_data(ttl=30, show_spinner=False)
+def get_employee_cached(employee_id):
+    """Cached single employee retrieval. Refreshes every 30 seconds."""
+    try:
+        import httpx
+        resp = httpx.get(f"http://localhost:8000/employees/{employee_id}", timeout=5.0)
+        return resp.json() if resp.status_code == 200 else None
+    except Exception:
+        return None
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def cached_screen(candidate_id: str, job_id: str):
+    """Cache AI screening result for (candidate_id, job_id) pairs. TTL=5 min."""
+    try:
+        import httpx
+        resp = httpx.get(
+            "http://localhost:8000/ai-screening",
+            params={"candidate_id": candidate_id, "job_id": job_id},
+            timeout=120.0,
+        )
+        return resp.json() if resp.status_code == 200 else None
+    except Exception:
+        return None
+
+
 def invalidate_jobs():
     """Call after any write operation to jobs to bust the cache."""
     get_jobs_cached.clear()
+    get_job_cached.clear()
 
 
 def invalidate_candidates():
     """Call after any write operation to candidates to bust the cache."""
     get_candidates_cached.clear()
+    get_candidate_cached.clear()
 
 
 def invalidate_interviews():
@@ -151,7 +205,13 @@ def invalidate_interviews():
 
 def invalidate_employees():
     get_employees_cached.clear()
+    get_employee_cached.clear()
 
 
 def invalidate_uploads():
     get_uploads_cached.clear()
+
+
+def invalidate_screening():
+    cached_screen.clear()
+

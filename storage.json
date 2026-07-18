@@ -64,6 +64,166 @@
       "id": 13,
       "name": "Kubernetes",
       "category": "General"
+    },
+    {
+      "id": 14,
+      "name": "React js",
+      "category": "General"
+    },
+    {
+      "id": 15,
+      "name": "NextJs",
+      "category": "General"
+    },
+    {
+      "id": 16,
+      "name": "Expressjs",
+      "category": "General"
+    },
+    {
+      "id": 17,
+      "name": "NodeJs",
+      "category": "General"
+    },
+    {
+      "id": 18,
+      "name": "MongoDB",
+      "category": "General"
+    },
+    {
+      "id": 19,
+      "name": "spoken english",
+      "category": "General"
+    },
+    {
+      "id": 20,
+      "name": "colloboration with team",
+      "category": "General"
+    },
+    {
+      "id": 21,
+      "name": "Java",
+      "category": "General"
+    },
+    {
+      "id": 22,
+      "name": "JavaScript (ES6+)",
+      "category": "General"
+    },
+    {
+      "id": 23,
+      "name": "C#",
+      "category": "General"
+    },
+    {
+      "id": 24,
+      "name": "Agentic AI",
+      "category": "General"
+    },
+    {
+      "id": 25,
+      "name": "RAG",
+      "category": "General"
+    },
+    {
+      "id": 26,
+      "name": "LLMs",
+      "category": "General"
+    },
+    {
+      "id": 27,
+      "name": "Vector Databases",
+      "category": "General"
+    },
+    {
+      "id": 28,
+      "name": "Data Analysis",
+      "category": "General"
+    },
+    {
+      "id": 29,
+      "name": "React.js",
+      "category": "General"
+    },
+    {
+      "id": 30,
+      "name": "Next.js",
+      "category": "General"
+    },
+    {
+      "id": 31,
+      "name": "Node.js",
+      "category": "General"
+    },
+    {
+      "id": 32,
+      "name": "Express.js",
+      "category": "General"
+    },
+    {
+      "id": 33,
+      "name": "REST APIs",
+      "category": "General"
+    },
+    {
+      "id": 34,
+      "name": "Socket.io",
+      "category": "General"
+    },
+    {
+      "id": 35,
+      "name": "AWS (EC2, S3, CloudWatch)",
+      "category": "General"
+    },
+    {
+      "id": 36,
+      "name": "Git",
+      "category": "General"
+    },
+    {
+      "id": 37,
+      "name": "MySQL",
+      "category": "General"
+    },
+    {
+      "id": 38,
+      "name": "Ms excel",
+      "category": "General"
+    },
+    {
+      "id": 39,
+      "name": "Ms word",
+      "category": "General"
+    },
+    {
+      "id": 40,
+      "name": "Tally",
+      "category": "General"
+    },
+    {
+      "id": 41,
+      "name": "Autocad",
+      "category": "General"
+    },
+    {
+      "id": 42,
+      "name": "Unity",
+      "category": "General"
+    },
+    {
+      "id": 43,
+      "name": "Postman",
+      "category": "General"
+    },
+    {
+      "id": 44,
+      "name": "VS Code",
+      "category": "General"
+    },
+    {
+      "id": 45,
+      "name": "n8n",
+      "category": "General"
     }
   ],
   "jobs": [
@@ -258,6 +418,78 @@
           "category": "General"
         }
       ]
+    },
+    {
+      "id": 4,
+      "title": "Frontend Developer",
+      "department": "Development",
+      "location": "",
+      "experience_min": 0,
+      "experience_max": 0,
+      "salary_min": 0,
+      "salary_max": 0,
+      "employment_type": "Full-time",
+      "hiring_manager": "",
+      "deadline": "2026-07-16",
+      "status": "Active",
+      "description": "We are seeking a Frontend Developer to join our dynamic development team. As a Frontend Developer, you will be responsible for building and maintaining user-friendly web applications using the latest frontend technologies.",
+      "responsibilities": [
+        "Develop and maintain high-quality, scalable, and responsive web applications",
+        "Collaborate with backend developers to ensure seamless integration of frontend components",
+        "Write clean, efficient, and well-documented code",
+        "Conduct code reviews and provide constructive feedback to team members",
+        "Stay up-to-date with the latest frontend technologies and trends"
+      ],
+      "requirements": [],
+      "preferred_skills": [
+        "React js",
+        "NextJs",
+        "Expressjs",
+        "NodeJs",
+        "MongoDB"
+      ],
+      "nice_to_have_skills": [],
+      "benefits": [],
+      "applications_count": 0,
+      "created_at": "2026-07-16T15:26:51.305117",
+      "updated_at": "2026-07-16T15:26:51.305134",
+      "skills": [
+        {
+          "id": 14,
+          "name": "React js",
+          "category": "General"
+        },
+        {
+          "id": 15,
+          "name": "NextJs",
+          "category": "General"
+        },
+        {
+          "id": 16,
+          "name": "Expressjs",
+          "category": "General"
+        },
+        {
+          "id": 17,
+          "name": "NodeJs",
+          "category": "General"
+        },
+        {
+          "id": 18,
+          "name": "MongoDB",
+          "category": "General"
+        },
+        {
+          "id": 19,
+          "name": "spoken english",
+          "category": "General"
+        },
+        {
+          "id": 20,
+          "name": "colloboration with team",
+          "category": "General"
+        }
+      ]
     }
   ],
   "candidates": [
@@ -272,8 +504,8 @@
       "current_title": "Senior Full-Stack Engineer",
       "years_experience": 8,
       "location": "New York, NY",
-      "status": "Shortlisted",
-      "match_score": 91,
+      "status": "Interviewing",
+      "match_score": 30,
       "tags": [
         "Full-stack",
         "Cloud"
@@ -288,7 +520,7 @@
       "avatar_url": "",
       "summary": "Senior engineer with strong product delivery and FastAPI experience.",
       "created_at": "2026-07-10T15:32:18.296138",
-      "updated_at": "2026-07-12T14:09:18.712183",
+      "updated_at": "2026-07-17T14:20:51.750279",
       "skills": [
         {
           "id": 1,
@@ -344,8 +576,8 @@
       "current_title": "Data Scientist",
       "years_experience": 4,
       "location": "San Francisco, CA",
-      "status": "Interview Scheduled",
-      "match_score": 84,
+      "status": "Rejected",
+      "match_score": 20,
       "tags": [
         "ML",
         "NLP"
@@ -360,7 +592,7 @@
       "avatar_url": "",
       "summary": "Machine learning specialist with applied analytics experience.",
       "created_at": "2026-07-10T15:32:18.296183",
-      "updated_at": "2026-07-10T15:32:18.296195",
+      "updated_at": "2026-07-16T15:03:04.536373",
       "skills": [
         {
           "id": 1,
@@ -390,8 +622,8 @@
       "current_title": "Backend Developer",
       "years_experience": 5,
       "location": "Austin, TX",
-      "status": "Applied",
-      "match_score": 78,
+      "status": "Rejected",
+      "match_score": 20,
       "tags": [
         "API",
         "Databases"
@@ -400,7 +632,7 @@
       "avatar_url": "",
       "summary": "Backend specialist with strong API design and PostgreSQL experience.",
       "created_at": "2026-07-10T15:32:18.296214",
-      "updated_at": "2026-07-10T15:32:18.296228",
+      "updated_at": "2026-07-16T15:03:47.679079",
       "skills": [
         {
           "id": 1,
@@ -434,14 +666,14 @@
       "name": "SANDEEP AEGULA",
       "email": "aegulasandeep@gmail.com",
       "phone": "+91 7416156814",
-      "linkedin": "linkedin.com/in/sandeep-aegula",
-      "github": "github.com/sandeep-aegula",
+      "linkedin": "sandeep-aegula",
+      "github": "sandeep-aegula",
       "portfolio": "",
       "current_title": "Applicant",
       "years_experience": 0,
       "location": "Remote",
-      "status": "Approved",
-      "match_score": 75,
+      "status": "Rejected",
+      "match_score": 50,
       "tags": [
         "Imported"
       ],
@@ -449,7 +681,7 @@
       "avatar_url": "",
       "summary": "Resume imported and parsed.",
       "created_at": "2026-07-12T08:26:29.071351",
-      "updated_at": "2026-07-12T13:25:39.957959",
+      "updated_at": "2026-07-17T14:02:49.234105",
       "skills": [
         {
           "id": 1,
@@ -457,12 +689,12 @@
           "category": "General"
         },
         {
-          "id": 14,
+          "id": 21,
           "name": "Java",
           "category": "General"
         },
         {
-          "id": 15,
+          "id": 22,
           "name": "JavaScript (ES6+)",
           "category": "General"
         },
@@ -472,7 +704,7 @@
           "category": "General"
         },
         {
-          "id": 16,
+          "id": 23,
           "name": "C#",
           "category": "General"
         },
@@ -482,62 +714,62 @@
           "category": "General"
         },
         {
-          "id": 17,
+          "id": 24,
           "name": "Agentic AI",
           "category": "General"
         },
         {
-          "id": 18,
+          "id": 25,
           "name": "RAG",
           "category": "General"
         },
         {
-          "id": 19,
+          "id": 26,
           "name": "LLMs",
           "category": "General"
         },
         {
-          "id": 20,
+          "id": 27,
           "name": "Vector Databases",
           "category": "General"
         },
         {
-          "id": 21,
+          "id": 28,
           "name": "Data Analysis",
           "category": "General"
         },
         {
-          "id": 22,
+          "id": 29,
           "name": "React.js",
           "category": "General"
         },
         {
-          "id": 23,
+          "id": 30,
           "name": "Next.js",
           "category": "General"
         },
         {
-          "id": 24,
+          "id": 31,
           "name": "Node.js",
           "category": "General"
         },
         {
-          "id": 25,
+          "id": 32,
           "name": "Express.js",
           "category": "General"
         },
         {
-          "id": 26,
+          "id": 33,
           "name": "REST APIs",
           "category": "General"
         },
         {
-          "id": 27,
+          "id": 34,
           "name": "Socket.io",
           "category": "General"
         },
         {
-          "id": 28,
+          "id": 35,
           "name": "AWS (EC2, S3, CloudWatch)",
           "category": "General"
         },
@@ -547,41 +779,249 @@
           "category": "General"
         },
         {
-          "id": 29,
+          "id": 36,
           "name": "Git",
           "category": "General"
         },
         {
-          "id": 30,
+          "id": 18,
           "name": "MongoDB",
           "category": "General"
         },
         {
-          "id": 31,
+          "id": 37,
           "name": "MySQL",
           "category": "General"
         },
         {
-          "id": 32,
+          "id": 42,
           "name": "Unity",
           "category": "General"
         },
         {
-          "id": 33,
+          "id": 43,
           "name": "Postman",
           "category": "General"
         },
         {
-          "id": 34,
+          "id": 44,
           "name": "VS Code",
           "category": "General"
         },
         {
-          "id": 35,
+          "id": 45,
           "name": "n8n",
           "category": "General"
         }
+      ],
+      "email_history": [
+        {
+          "id": 1,
+          "subject": "Congratulations on Your Interview Invitation!",
+          "body": "Dear Sandeep Aegula,\n\nWe are thrilled to inform you that you have been selected for an interview with [Company Name] as a Frontend Developer. We appreciate your interest in our organization and are excited to learn more about your background and how you can contribute to our team.\nThe interview will take place on [Date], at [Time], via [Zoom/Video Call]. Please ensure you have a stable internet connection and appropriate attire for the meeting.\nWe look forward to speaking with you soon. Should you have any questions in the meantime, please don't hesitate to reach out to [Interviewer's Name] at [Interviewer's Email/Phone Number].\nBest regards,\n[Your Name]\n[Your Title]\n[Company Name]\n[Signature]",
+          "status": "Sent",
+          "sent_at": "2026-07-16T17:15:52.033380",
+          "email_type": "Interview Invitation",
+          "decision": "Shortlisted",
+          "interview_id": null,
+          "job_id": 3,
+          "job_title": "Frontend",
+          "round_name": "",
+          "sender_name": "HR",
+          "reply_to_email": "",
+          "draft_saved": false
+        },
+        {
+          "id": 2,
+          "subject": "Congratulations on Your Interview Invitation!",
+          "body": "Dear Sandeep Aegula,\n\nWe are thrilled to inform you that you have been selected for an interview with [Company Name] as a Frontend Developer. We appreciate your interest in our organization and are excited to learn more about your background and how you can contribute to our team.\nThe interview will take place on [Date], at [Time], via [Zoom/Video Call]. Please ensure you have a stable internet connection and appropriate attire for the meeting.\nWe look forward to speaking with you soon. Should you have any questions in the meantime, please don't hesitate to reach out to [Interviewer's Name] at [Interviewer's Email/Phone Number].\nBest regards,\n[Your Name]\n[Your Title]\n[Company Name]\n[Signature]",
+          "status": "Draft",
+          "sent_at": "2026-07-16T17:16:09.630293",
+          "email_type": "Interview Invitation",
+          "decision": "Shortlisted",
+          "interview_id": null,
+          "job_id": 3,
+          "job_title": "Frontend",
+          "round_name": "",
+          "sender_name": "HR",
+          "reply_to_email": "",
+          "draft_saved": true
+        },
+        {
+          "id": 3,
+          "subject": "Congratulations on Your Interview Invitation!",
+          "body": "Dear Sandeep Aegula,\n\nWe are thrilled to inform you that you have been selected for an interview with [Company Name] as a Frontend Developer. We appreciate your interest in our organization and are excited to learn more about your background and how you can contribute to our team.\nThe interview will take place on [Date], at [Time], via [Zoom/Video Call]. Please ensure you have a stable internet connection and appropriate attire for the meeting.\nWe look forward to speaking with you soon. Should you have any questions in the meantime, please don't hesitate to reach out to [Interviewer's Name] at [Interviewer's Email/Phone Number].\nBest regards,\n[Your Name]\n[Your Title]\n[Company Name]\n[Signature]",
+          "status": "Sent",
+          "sent_at": "2026-07-16T17:17:18.324358",
+          "email_type": "Interview Invitation",
+          "decision": "Shortlisted",
+          "interview_id": null,
+          "job_id": 3,
+          "job_title": "Frontend",
+          "round_name": "",
+          "sender_name": "HR",
+          "reply_to_email": "",
+          "draft_saved": false
+        },
+        {
+          "id": 4,
+          "subject": "Join us for the Next Round of Interview!",
+          "body": "Dear Sandeep Aegula,\n\nI hope this message finds you well! After carefully reviewing your application, we are excited to invite you to the next round of our interview process.\n\nYour match score of 75% indicates that your profile aligns very well with our requirements for the Frontend role. We believe your skills and experience will make a significant contribution to our team.\n\nPlease find below the details for the next step:\n- **Interview Date:** [Insert Date]\n- **Time:** [Insert Time]\n- **Mode of Interview:** [Insert Mode e.g., Online/Offline]\n- **Link/Details:** [Provide any necessary links or additional details]\n\nWe look forward to speaking with you soon and learning more about your background and how you can contribute to our team.\n\nBest regards,\n[Your Name]\n[Sender's Position]\n[Company Name]\n[Reply-to Email]\n[Phone Number]",
+          "status": "Sent",
+          "sent_at": "2026-07-16T17:19:04.180899",
+          "email_type": "Next Round Invitation",
+          "decision": "Shortlisted",
+          "interview_id": null,
+          "job_id": 3,
+          "job_title": "Frontend",
+          "round_name": "",
+          "sender_name": "HR",
+          "reply_to_email": "",
+          "draft_saved": false
+        }
+      ],
+      "ranking_explanation": "Sandeep Aegula is a strong candidate for the Frontend Intern position as he possesses multiple programming languages and technologies relevant to the role, including Python, Java, JavaScript (ES6+), and React.js. However, his lack of specific experience in CSS frameworks like Bootstrap or TailwindCSS, and knowledge of version control systems such as Git, may make him a poor fit for the job."
+    },
+    {
+      "name": "Sandeep Aegula",
+      "email": "aegulasandeep@gmail.com",
+      "phone": "+91 7416156814",
+      "linkedin": "sandeep-aegula",
+      "github": "sandeep-aegula",
+      "portfolio": "",
+      "current_title": "",
+      "years_experience": 0,
+      "location": "",
+      "status": "Shortlisted",
+      "match_score": 60,
+      "skill_match_breakdown": {},
+      "hire_recommendation": "",
+      "tags": [],
+      "summary": "Sandeep Aegula is a skilled frontend developer with expertise in React.js, Next.js, Express.js, Node.js, and MongoDB. He is currently pursuing a B.Tech degree in Computer Science with a focus on Artificial Intelligence & Machine Learning.",
+      "id": 5,
+      "notes": [],
+      "avatar_url": "",
+      "created_at": "2026-07-16T15:27:44.503245",
+      "updated_at": "2026-07-16T16:24:42.948644",
+      "skills": []
+    },
+    {
+      "id": 6,
+      "name": "GUMMADI ABHINASH",
+      "email": "abhiabinash02@gmail.com",
+      "phone": "8008581208",
+      "linkedin": "",
+      "github": "",
+      "portfolio": "",
+      "current_title": "Applicant",
+      "years_experience": 0,
+      "location": "Remote",
+      "status": "Applied",
+      "match_score": 0,
+      "tags": [
+        "Imported"
+      ],
+      "notes": [],
+      "avatar_url": "",
+      "summary": "Resume imported and parsed.",
+      "created_at": "2026-07-17T14:02:42.056494",
+      "updated_at": "2026-07-17T14:02:42.056507",
+      "skills": [
+        {
+          "id": 1,
+          "name": "Python",
+          "category": "General"
+        },
+        {
+          "id": 38,
+          "name": "Ms excel",
+          "category": "General"
+        },
+        {
+          "id": 39,
+          "name": "Ms word",
+          "category": "General"
+        },
+        {
+          "id": 40,
+          "name": "Tally",
+          "category": "General"
+        },
+        {
+          "id": 41,
+          "name": "Autocad",
+          "category": "General"
+        }
       ]
+    },
+    {
+      "name": "GUMMADI ABHINASH",
+      "email": "abhiabinash02@gmail.com",
+      "phone": "8008581208",
+      "linkedin": "",
+      "github": "",
+      "portfolio": "",
+      "current_title": "",
+      "years_experience": 0,
+      "location": "",
+      "status": "Rejected",
+      "match_score": 40,
+      "skill_match_breakdown": {
+        "matched_skills": [
+          "Python",
+          "Ms excel"
+        ],
+        "missing_skills": [
+          "React js",
+          "NextJs",
+          "Expressjs",
+          "NodeJs",
+          "MongoDB"
+        ],
+        "match_percentage": 7
+      },
+      "hire_recommendation": "Hold",
+      "tags": [],
+      "summary": "Abhinnash Gummadi is a recent graduate with experience in software-related tasks, including experience in Tally and AutoCAD.",
+      "id": 7,
+      "notes": [],
+      "avatar_url": "",
+      "created_at": "2026-07-17T14:02:42.060806",
+      "updated_at": "2026-07-17T14:07:51.011063",
+      "skills": []
+    },
+    {
+      "name": "SANDEEP AEGULA",
+      "email": "aegulasandeep@gmail.com",
+      "phone": "+91 7416156814",
+      "linkedin": "sandeep-aegula",
+      "github": "sandeep-aegula",
+      "portfolio": "",
+      "current_title": "",
+      "years_experience": 0,
+      "location": "",
+      "status": "Shortlisted",
+      "match_score": 50,
+      "skill_match_breakdown": {
+        "matched_skills": [
+          "React.js",
+          "Next.js",
+          "Express.js",
+          "Node.js",
+          "MongoDB"
+        ],
+        "missing_skills": [],
+        "match_percentage": 100
+      },
+      "hire_recommendation": "Strong Hire",
+      "tags": [],
+      "summary": "Sandeep Aegula is a talented software developer with expertise in frontend technologies such as React.js, Next.js, Express.js, Node.js, and MongoDB. He is currently working on projects that involve advanced AI and machine learning tools, showcasing his ability to handle complex technical challenges.",
+      "id": 8,
+      "notes": [],
+      "avatar_url": "",
+      "created_at": "2026-07-17T14:02:49.236940",
+      "updated_at": "2026-07-17T14:07:35.475903",
+      "skills": []
     }
   ],
   "applications": [
@@ -628,6 +1068,105 @@
       "recruiter_notes": "",
       "created_at": "2026-07-12T13:13:36.159908",
       "updated_at": "2026-07-12T13:13:36.159925"
+    },
+    {
+      "id": 5,
+      "candidate_id": 1,
+      "job_id": 3,
+      "status": "Shortlist",
+      "match_score": 65,
+      "ai_summary": "Sarah Jenkins is a recent graduate with experience in web development and a passion for frontend technologies. She has worked on several projects related to ReactJS and has knowledge of CSS frameworks like Bootstrap.",
+      "recruiter_notes": "",
+      "created_at": "2026-07-15T17:54:42.277129",
+      "updated_at": "2026-07-15T17:54:42.277139"
+    },
+    {
+      "id": 6,
+      "candidate_id": 2,
+      "job_id": 3,
+      "status": "Reject",
+      "match_score": 20,
+      "ai_summary": "David Chen is a machine learning specialist with applied analytics experience.",
+      "recruiter_notes": "",
+      "created_at": "2026-07-16T15:03:04.576845",
+      "updated_at": "2026-07-16T15:03:04.577243"
+    },
+    {
+      "id": 7,
+      "candidate_id": 3,
+      "job_id": 3,
+      "status": "Reject",
+      "match_score": 20,
+      "ai_summary": "Emily Taylor is a backend specialist with experience in Python, FastAPI, SQL, PostgreSQL, and Docker. She has a strong background in API design and database management.",
+      "recruiter_notes": "",
+      "created_at": "2026-07-16T15:03:47.717614",
+      "updated_at": "2026-07-16T15:03:47.717727"
+    },
+    {
+      "id": 8,
+      "candidate_id": 5,
+      "job_id": 4,
+      "status": "Shortlist",
+      "match_score": 60,
+      "ai_summary": "Sandeep Aegula is a Computer Science undergraduate with practical experience in AI/ML, full-stack web development, and cloud platforms. He has built scalable AI-powered applications and data-driven solutions using technologies like React.js, Next.js, Node.js, Express.js, MongoDB, and AWS.",
+      "recruiter_notes": "",
+      "created_at": "2026-07-16T15:28:42.158222",
+      "updated_at": "2026-07-16T16:24:42.955239"
+    },
+    {
+      "id": 9,
+      "candidate_id": 4,
+      "job_id": 4,
+      "status": "Reject",
+      "match_score": 50,
+      "ai_summary": "Sandeep Aegula is a Computer Science undergraduate with practical experience in Machine Learning, full-stack web development, and cloud platforms. He has built scalable AI-powered applications and data-driven solutions.",
+      "recruiter_notes": "",
+      "created_at": "2026-07-16T16:25:48.819042",
+      "updated_at": "2026-07-17T13:28:35.084021"
+    },
+    {
+      "id": 10,
+      "candidate_id": 1,
+      "job_id": 4,
+      "status": "Reject",
+      "match_score": 30,
+      "ai_summary": "Sarah Jenkins is a recent graduate with no work experience in frontend development.",
+      "recruiter_notes": "",
+      "created_at": "2026-07-17T13:40:34.711156",
+      "updated_at": "2026-07-17T13:40:34.713592"
+    },
+    {
+      "id": 11,
+      "candidate_id": 8,
+      "job_id": 4,
+      "status": "Shortlist",
+      "match_score": 65,
+      "ai_summary": "Sandeep Aegula is a Computer Science undergraduate with practical experience in AI/ML, full-stack web development, and cloud platforms. He has built scalable AI-powered applications and data-driven solutions using technologies like React.js, Next.js, Node.js, Express.js, MongoDB, and AWS.",
+      "recruiter_notes": "",
+      "created_at": "2026-07-17T14:07:51.032344",
+      "updated_at": "2026-07-17T14:07:51.032354"
+    },
+    {
+      "id": 12,
+      "candidate_id": 7,
+      "job_id": 3,
+      "status": "Reject",
+      "match_score": 40,
+      "ai_summary": "Abhiniash Gummadi is a Computer Science Engineering student with a strong foundation in design, thermodynamics, and material science. He has experience in Python, Ms Excel, Ms Word, Tally, and AutoCAD. He is seeking to apply his technical skills and problem-solving abilities in a dynamic engineering environment.",
+      "recruiter_notes": "",
+      "created_at": "2026-07-17T14:07:51.035149",
+      "updated_at": "2026-07-17T14:07:51.038733"
+    },
+    {
+      "id": 13,
+      "candidate_id": 8,
+      "job_id": 3,
+      "status": "Shortlist",
+      "match_score": 50,
+      "ai_summary": "Sandeep Aegula is a Computer Science undergraduate with practical experience in AI/ML, full-stack web development, and cloud platforms. He has built scalable AI-powered applications and data-driven solutions. Relevant skills include Python, Java, JavaScript (ES6+), SQL, C#, React.js, Next.js, Node.js, Express.js, REST APIs, Socket.io, AWS, Docker, Git, MongoDB, MySQL, Unity, Postman, VS Code, and n8n.",
+      "recruiter_notes": "",
+      "created_at": "2026-07-17T14:07:51.037005",
+      "updated_at": "2026-07-17T14:07:51.037014"
     }
   ],
   "resume_data": [
@@ -1018,9 +1557,281 @@
       ],
       "status": "Parsed",
       "created_at": "2026-07-12T08:27:39.077565"
+    },
+    {
+      "id": 4,
+      "candidate_id": 5,
+      "filename": "Sandeep_Aegula.pdf",
+      "mime_type": "application/octet-stream",
+      "file_path": "",
+      "extracted_text": "SANDEEP AEGULA\n(cid:131) +91 7416156814 | # aegulasandeep@gmail.com | (cid:239) linkedin.com/in/sandeep-aegula | \u00a7 github.com/sandeep-aegula\nProfessional Summary\nComputer Science (AI/ML) undergraduate with practical experience in Agentic AI, Machine Learning, full-stack web\ndevelopment, and cloud platforms. Proven track record of building and deploying scalable AI-powered applications and\ndata-driven solutions. AWS Certified Cloud Practitioner and Unity Certified Associate with industry exposure at Intel.\nDedicated to technical mastery in Agentic AI and Full Stack web development looking to contribute to high-impact\nengineering teams.\nEducation\nMarri Laxman Reddy Institute of Technology and Management Hyderabad, India\nB.Tech in Computer Science \u2013 Artificial Intelligence & Machine Learning 2023 - Present\n\u2022 CGPA: 8.96 / 10.0\nTechnical Skills\nLanguages: Python, Java, JavaScript (ES6+), SQL, C#\nAI/ML: Machine Learning, Agentic AI, RAG, LLMs, Vector Databases, Data Analysis\nWeb Development: React.js, Next.js, Node.js, Express.js, REST APIs, Socket.io\nCloud/DevOps: AWS (EC2, S3, CloudWatch), Docker, Git\nDatabases: MongoDB, MySQL\nTools: Unity, Postman, VS Code , n8n\nCertifications: AWS Cloud Practitioner | Unity Associate Game Developer | IBM AI Foundations\nWork Experience\nIndustrial Trainee \u2013 AI & Network Security May 2025 \u2013 July 2025\nIntel Technology India Private Limited Remote\n\u2022 Built ML-based network traffic analysis system on 50K+ samples, improving detection accuracy by 15% and\nreducing processing latency by 20%.\n\u2022 Implemented input validation and sanitization layer, eliminating SQL injection vulnerabilities and improving\nsystem security compliance.\n\u2022 Developed phishing detection and malicious URL classification module, achieving 92% classification accuracy on\ntest data.\nProjects\nPRISM \u2013 Conversational Data Intelligence Next.js, FastAPI, Groq, Gemini API, Python Jan 2026\n\u2022 Built a full-stack dashboard using FastAPI and Groq to convert natural language into data scripts.\n\u2022 Created an AI interface for non-technical users to perform complex statistical analysis without code.\n\u2022 Reduced data exploration time by 90% through automated visualization and real-time CSV processing.(link)\nGoogle Arcade Points Calculator React.js, Node.js, Puppeteer, MongoDB Oct 2025\n\u2022 Engineered a Puppeteer scraper to automate real-time progress extraction from Google Cloud profiles.\n\u2022 Developed a MongoDB-backed system to synchronize badge counts, replacing tedious manual tracking.\n\u2022 Scaled to support 1,000+ global users with instant progress updates during high-traffic seasons.(link)\nAchievements & Leadership\nHackathon Winner \u2013 Cloud Quest Hyderabad, India\nAWS Cloud Challenge 2024\n\u2022 Engineered high-availability cloud infrastructure using AWS EC2 and S3 with real-time auto-scaling and\nmonitoring via CloudWatch, winning second place among competing teams.\nTechnical Speaker & Workshop Lead MLRITM ,Dundigal\nUnity Game Development & VR Workshop \u2013 50+ Students Trained 2025\n\u2022 Conducted hands-on workshops on Unity Game Development and Virtual Reality (VR) for 50+ students, covering\nC# scripting, immersive technology design, and practical application development.",
+      "parsed_json": {
+        "name": "Sandeep Aegula",
+        "email": "aegulasandeep@gmail.com",
+        "phone": "+91 7416156814",
+        "github": "sandeep-aegula",
+        "linkedin": "sandeep-aegula",
+        "portfolio": "",
+        "skills": [
+          "Python",
+          "Java",
+          "JavaScript (ES6+)",
+          "SQL",
+          "C#",
+          "Machine Learning",
+          "Agentic AI",
+          "RAG",
+          "LLMs",
+          "Vector Databases",
+          "Data Analysis",
+          "React.js",
+          "Next.js",
+          "Node.js",
+          "Express.js",
+          "REST APIs",
+          "Socket.io",
+          "AWS (EC2, S3, CloudWatch)",
+          "Docker",
+          "Git",
+          "MongoDB",
+          "MySQL"
+        ],
+        "experience": [
+          "Intel Technology India Private Limited - Industrial Trainee - May 2025 \u2013 July 2025"
+        ],
+        "education": [
+          "B.Tech in Computer Science \u2013 Artificial Intelligence & Machine Learning - Marri Laxman Reddy Institute of Technology and Management Hyderabad, India - 2023 - Present"
+        ],
+        "projects": [
+          "PRISM \u2013 Conversational Data Intelligence: Built a full-stack dashboard using FastAPI and Groq to convert natural language into data scripts.",
+          "Google Arcade Points Calculator: Engineered a Puppeteer scraper to automate real-time progress extraction from Google Cloud profiles."
+        ],
+        "certifications": [
+          "AWS Cloud Practitioner",
+          "Unity Associate Game Developer",
+          "IBM AI Foundations"
+        ],
+        "languages": [],
+        "resume_summary": "Sandeep Aegula is a skilled frontend developer with expertise in React.js, Next.js, Express.js, Node.js, and MongoDB. He is currently pursuing a B.Tech degree in Computer Science with a focus on Artificial Intelligence & Machine Learning.",
+        "match_score": 85,
+        "skill_match_breakdown": {
+          "matched_skills": [
+            "React.js",
+            "Next.js"
+          ],
+          "missing_skills": [
+            "Express.js",
+            "Node.js"
+          ],
+          "match_percentage": 85
+        },
+        "hire_recommendation": "Strong Hire",
+        "reason": "Sandeep possesses strong skills in React.js and Next.js, which are essential for the frontend developer position. Despite missing Express.js and Node.js, his overall skill set aligns closely with the job requirements, making him a strong candidate."
+      },
+      "name": "",
+      "email": "",
+      "phone": "",
+      "linkedin": "",
+      "github": "",
+      "portfolio": "",
+      "education": [],
+      "skills": [],
+      "experience": [],
+      "projects": [],
+      "certifications": [],
+      "languages": [],
+      "achievements": [],
+      "status": "Parsed",
+      "created_at": "2026-07-16T15:27:44.506238"
+    },
+    {
+      "id": 5,
+      "candidate_id": 7,
+      "filename": "ABHINASH RESUME.docx",
+      "mime_type": "application/octet-stream",
+      "file_path": "",
+      "extracted_text": "GUMMADI ABHINASH\n abhiabinash02@gmail.com  8008581208\n\tH.NO:5-56/1, V&M: NARSAPUR Dist:Medak\n\nDetail-oriented and innovative Computer science Engineering student with a strong foundation in design,thermodynamics,and material science. Seeking to apply technical skills and problem- solving abilities in a dynamic engineeringenvironment to contribute to cutting edge projects.\n\n\n\nBachelor of Technology in CSE,\nDRK INSTITUTE OF TECHNOLOGY\nDIPLOMA\nRATNAPURI INSTITUTE OF TECHNOLOGY COLLEGE OF POLYTECHNIC\nPercentage: 73.9\nMATRICULATION\nTS MODEL SCHOOL\nGPA: 8.3\n2023 \u2013 present Bowrampet,\n2020 \u2013 2022\nTurkal Khanapur, \n\n2019\nJakkapally, India\n\n\n\nPython       Ms excel      Ms word      Tally      Autocad\n\n\n\nTelugu English\nHindi\n\n\n\nSOLAR GRASS CUTTER\n\nPlaying cricket\t Listening music\n\nI hereby declare that the information furnished above is true to the best of my knowledge.",
+      "parsed_json": {
+        "name": "GUMMADI ABHINASH",
+        "email": "abhiabinash02@gmail.com",
+        "phone": "8008581208",
+        "github": "",
+        "linkedin": "",
+        "portfolio": "",
+        "skills": [
+          "Python",
+          "Ms excel",
+          "Ms word",
+          "Tally",
+          "Autocad"
+        ],
+        "experience": [
+          "SOLAR GRASS CUTTER - Bowrampet, 2023 \u2013 present",
+          "Turkal Khanapur, 2020 \u2013 2022"
+        ],
+        "education": [
+          "Bachelor of Technology in CSE - DRK INSTITUTE OF TECHNOLOGY, 2019 \u2013 2023",
+          "DIPLOMA - RATNAPURI INSTITUTE OF TECHNOLOGY COLLEGE OF POLYTECHNIC",
+          "MATRICULATION - TS MODEL SCHOOL"
+        ],
+        "projects": [],
+        "certifications": [],
+        "languages": [
+          "Telugu",
+          "English",
+          "Hindi"
+        ],
+        "resume_summary": "Abhinnash Gummadi is a recent graduate with experience in software-related tasks, including experience in Tally and AutoCAD.",
+        "match_score": 35,
+        "skill_match_breakdown": {
+          "matched_skills": [
+            "Python",
+            "Ms excel"
+          ],
+          "missing_skills": [
+            "React js",
+            "NextJs",
+            "Expressjs",
+            "NodeJs",
+            "MongoDB"
+          ],
+          "match_percentage": 7
+        },
+        "hire_recommendation": "Hold",
+        "reason": "The candidate has no relevant experience or skills for a Frontend Developer position as per the job requirements. The match score is low, and additional training or experience would be necessary before considering this hire."
+      },
+      "name": "",
+      "email": "",
+      "phone": "",
+      "linkedin": "",
+      "github": "",
+      "portfolio": "",
+      "education": [],
+      "skills": [],
+      "experience": [],
+      "projects": [],
+      "certifications": [],
+      "languages": [],
+      "achievements": [],
+      "status": "Parsed",
+      "created_at": "2026-07-17T14:02:42.062767"
+    },
+    {
+      "id": 6,
+      "candidate_id": 8,
+      "filename": "Sandeep_Aegula.pdf",
+      "mime_type": "application/octet-stream",
+      "file_path": "",
+      "extracted_text": "SANDEEP AEGULA\n(cid:131) +91 7416156814 | # aegulasandeep@gmail.com | (cid:239) linkedin.com/in/sandeep-aegula | \u00a7 github.com/sandeep-aegula\nProfessional Summary\nComputer Science (AI/ML) undergraduate with practical experience in Agentic AI, Machine Learning, full-stack web\ndevelopment, and cloud platforms. Proven track record of building and deploying scalable AI-powered applications and\ndata-driven solutions. AWS Certified Cloud Practitioner and Unity Certified Associate with industry exposure at Intel.\nDedicated to technical mastery in Agentic AI and Full Stack web development looking to contribute to high-impact\nengineering teams.\nEducation\nMarri Laxman Reddy Institute of Technology and Management Hyderabad, India\nB.Tech in Computer Science \u2013 Artificial Intelligence & Machine Learning 2023 - Present\n\u2022 CGPA: 8.96 / 10.0\nTechnical Skills\nLanguages: Python, Java, JavaScript (ES6+), SQL, C#\nAI/ML: Machine Learning, Agentic AI, RAG, LLMs, Vector Databases, Data Analysis\nWeb Development: React.js, Next.js, Node.js, Express.js, REST APIs, Socket.io\nCloud/DevOps: AWS (EC2, S3, CloudWatch), Docker, Git\nDatabases: MongoDB, MySQL\nTools: Unity, Postman, VS Code , n8n\nCertifications: AWS Cloud Practitioner | Unity Associate Game Developer | IBM AI Foundations\nWork Experience\nIndustrial Trainee \u2013 AI & Network Security May 2025 \u2013 July 2025\nIntel Technology India Private Limited Remote\n\u2022 Built ML-based network traffic analysis system on 50K+ samples, improving detection accuracy by 15% and\nreducing processing latency by 20%.\n\u2022 Implemented input validation and sanitization layer, eliminating SQL injection vulnerabilities and improving\nsystem security compliance.\n\u2022 Developed phishing detection and malicious URL classification module, achieving 92% classification accuracy on\ntest data.\nProjects\nPRISM \u2013 Conversational Data Intelligence Next.js, FastAPI, Groq, Gemini API, Python Jan 2026\n\u2022 Built a full-stack dashboard using FastAPI and Groq to convert natural language into data scripts.\n\u2022 Created an AI interface for non-technical users to perform complex statistical analysis without code.\n\u2022 Reduced data exploration time by 90% through automated visualization and real-time CSV processing.(link)\nGoogle Arcade Points Calculator React.js, Node.js, Puppeteer, MongoDB Oct 2025\n\u2022 Engineered a Puppeteer scraper to automate real-time progress extraction from Google Cloud profiles.\n\u2022 Developed a MongoDB-backed system to synchronize badge counts, replacing tedious manual tracking.\n\u2022 Scaled to support 1,000+ global users with instant progress updates during high-traffic seasons.(link)\nAchievements & Leadership\nHackathon Winner \u2013 Cloud Quest Hyderabad, India\nAWS Cloud Challenge 2024\n\u2022 Engineered high-availability cloud infrastructure using AWS EC2 and S3 with real-time auto-scaling and\nmonitoring via CloudWatch, winning second place among competing teams.\nTechnical Speaker & Workshop Lead MLRITM ,Dundigal\nUnity Game Development & VR Workshop \u2013 50+ Students Trained 2025\n\u2022 Conducted hands-on workshops on Unity Game Development and Virtual Reality (VR) for 50+ students, covering\nC# scripting, immersive technology design, and practical application development.",
+      "parsed_json": {
+        "name": "SANDEEP AEGULA",
+        "email": "aegulasandeep@gmail.com",
+        "phone": "+91 7416156814",
+        "github": "sandeep-aegula",
+        "linkedin": "sandeep-aegula",
+        "portfolio": "",
+        "skills": [
+          "Python",
+          "Java",
+          "JavaScript (ES6+)",
+          "SQL",
+          "C#",
+          "Machine Learning",
+          "Agentic AI",
+          "RAG",
+          "LLMs",
+          "Vector Databases",
+          "Data Analysis",
+          "React.js",
+          "Next.js",
+          "Node.js",
+          "Express.js",
+          "REST APIs",
+          "Socket.io",
+          "AWS (EC2, S3, CloudWatch)",
+          "Docker",
+          "Git",
+          "MongoDB",
+          "MySQL",
+          "Unity",
+          "Postman",
+          "VS Code",
+          "n8n"
+        ],
+        "experience": [
+          "Industrial Trainee \u2013 AI & Network Security - Intel Technology India Private Limited - Remote - May 2025 \u2013 July 2025"
+        ],
+        "education": [
+          "B.Tech in Computer Science \u2013 Artificial Intelligence & Machine Learning - Marri Laxman Reddy Institute of Technology and Management Hyderabad, India - 2023 - Present"
+        ],
+        "projects": [
+          "PRISM \u2013 Conversational Data Intelligence - Next.js, FastAPI, Groq, Gemini API, Python - Jan 2026",
+          "Google Arcade Points Calculator - React.js, Node.js, Puppeteer, MongoDB - Oct 2025"
+        ],
+        "certifications": [
+          "AWS Cloud Practitioner",
+          "Unity Associate Game Developer",
+          "IBM AI Foundations"
+        ],
+        "languages": [],
+        "resume_summary": "Sandeep Aegula is a talented software developer with expertise in frontend technologies such as React.js, Next.js, Express.js, Node.js, and MongoDB. He is currently working on projects that involve advanced AI and machine learning tools, showcasing his ability to handle complex technical challenges.",
+        "match_score": 90,
+        "skill_match_breakdown": {
+          "matched_skills": [
+            "React.js",
+            "Next.js",
+            "Express.js",
+            "Node.js",
+            "MongoDB"
+          ],
+          "missing_skills": [],
+          "match_percentage": 100
+        },
+        "hire_recommendation": "Strong Hire",
+        "reason": "The candidate possesses all the preferred skills required for the Frontend Developer position and has additional relevant experience in backend technologies. His proficiency in MongoDB, a key requirement of the job, is particularly notable."
+      },
+      "name": "",
+      "email": "",
+      "phone": "",
+      "linkedin": "",
+      "github": "",
+      "portfolio": "",
+      "education": [],
+      "skills": [],
+      "experience": [],
+      "projects": [],
+      "certifications": [],
+      "languages": [],
+      "achievements": [],
+      "status": "Parsed",
+      "created_at": "2026-07-17T14:02:49.238797"
     }
   ],
   "activities": [
+    {
+      "icon": "fa-file-arrow-up",
+      "title": "Resume Uploaded",
+      "description": "Uploaded and parsed Sandeep_Aegula.pdf.",
+      "time": "Just now"
+    },
+    {
+      "icon": "fa-file-arrow-up",
+      "title": "Resume Uploaded",
+      "description": "Uploaded and parsed ABHINASH RESUME.docx.",
+      "time": "Just now"
+    },
+    {
+      "icon": "fa-user-pen",
+      "title": "Candidate Shortlisted",
+      "description": "Sandeep Aegula status updated to Shortlisted.",
+      "time": "Just now"
+    },
+    {
+      "icon": "fa-file-arrow-up",
+      "title": "Resume Uploaded",
+      "description": "Uploaded and parsed Sandeep_Aegula.pdf.",
+      "time": "Just now"
+    },
     {
       "icon": "fa-circle-check",
       "title": "Candidate Shortlisted",
@@ -1086,10 +1897,12 @@
       "time": "10:00",
       "stage": "Technical Assessment",
       "meeting_link": "https://meet.google.com/abc-defg-hij",
-      "status": "Scheduled",
+      "status": "Completed",
       "feedback_notes": "",
       "recommendation": "",
-      "created_at": "2026-07-10T15:32:18.296368"
+      "created_at": "2026-07-10T15:32:18.296368",
+      "decision": "Next Round",
+      "updated_at": "2026-07-17T14:20:51.750266"
     },
     {
       "id": 2,

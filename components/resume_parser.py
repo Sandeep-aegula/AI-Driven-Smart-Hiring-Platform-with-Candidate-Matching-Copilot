@@ -4,6 +4,7 @@ components/resume_parser.py — HirePilot Resume Parser Page
 import os
 import streamlit as st
 from frontend.components import api_client
+from frontend.services.cache import get_uploads_cached, invalidate_uploads, invalidate_candidates
 
 
 def render_resume_parser() -> None:
@@ -20,7 +21,7 @@ def render_resume_parser() -> None:
     <hr style="margin:0 0 20px 0;border:none;border-top:1px solid #F1F5F9;">
     """, unsafe_allow_html=True)
 
-    uploads_list = api_client.get_upload_history()
+    uploads_list = get_uploads_cached()
 
     if st.session_state["selected_resume_id"] is None and uploads_list:
         st.session_state["selected_resume_id"] = uploads_list[0]["id"]
@@ -70,6 +71,8 @@ def render_resume_parser() -> None:
 
                         progress_bar.progress(int(((idx+1)/len(uploaded_files))*100))
 
+                    invalidate_uploads()
+                    invalidate_candidates()
                     status_text.markdown(f"### 🎉 Parsed {success}/{len(uploaded_files)} resume(s)!")
                     st.session_state["selected_resume_id"] = None
                     st.rerun()
@@ -88,6 +91,8 @@ def render_resume_parser() -> None:
                     with st.spinner("Parsing resume text with Ollama AI..."):
                         result = api_client.parse_resume_text(pasted_resume_text)
                     if result:
+                        invalidate_uploads()
+                        invalidate_candidates()
                         st.session_state["selected_resume_id"] = result["id"]
                         st.success("Resume parsed successfully.")
                         st.rerun()

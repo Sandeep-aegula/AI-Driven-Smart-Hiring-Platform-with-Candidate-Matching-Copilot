@@ -18,6 +18,13 @@ footer {visibility: hidden;}
     display: none;
 }
 
+/* Hide only the close/collapse button inside the sidebar to keep it open,
+   but allow the expand button to be shown when the sidebar is collapsed. */
+[data-testid="stSidebar"] [data-testid="collapsedControl"],
+[data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"] {
+    display: none !important;
+}
+
 /* Main block padding */
 .block-container {
     padding-top: 1.5rem !important;

@@ -4,6 +4,7 @@ components/interviews.py — HirePilot Interview Management Page
 import datetime
 import streamlit as st
 from frontend.components import api_client
+from frontend.services.cache import get_candidates_cached, get_interviews_cached, invalidate_interviews, invalidate_candidates
 
 
 def render_interviews() -> None:
@@ -21,8 +22,8 @@ def render_interviews() -> None:
     <hr style="margin:0 0 20px 0;border:none;border-top:1px solid #F1F5F9;">
     """, unsafe_allow_html=True)
 
-    candidates = api_client.get_candidates()
-    interviews = api_client.get_interviews()
+    candidates = get_candidates_cached()
+    interviews = get_interviews_cached()
 
     col_left, col_right = st.columns([1.2, 0.8])
 
@@ -138,7 +139,10 @@ def render_interviews() -> None:
                                "date": date.isoformat(), "time": time.strftime("%H:%M"),
                                "stage": stage, "meeting_link": meet_link}
                     if api_client.schedule_interview(payload):
-                        st.toast("Interview scheduled!", icon="🎉"); st.rerun()
+                        invalidate_interviews()
+                        invalidate_candidates()
+                        st.toast("Interview scheduled!", icon="🎉")
+                        st.rerun()
 
         st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
 
@@ -190,6 +194,8 @@ def render_interviews() -> None:
                                 r = api_client.add_interview_feedback(
                                     st.session_state["selected_interview_id"], feedback, rec)
                                 if r:
+                                    invalidate_interviews()
+                                    invalidate_candidates()
                                     st.toast("Feedback saved!", icon="✅")
                                     st.session_state["selected_interview_id"] = None
                                     st.rerun()

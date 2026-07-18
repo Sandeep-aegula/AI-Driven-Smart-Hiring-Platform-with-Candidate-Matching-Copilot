@@ -1,239 +1,360 @@
-"""
-components/candidates.py — HirePilot Candidate Management Page
-===============================================================
-Renders the Candidates list with split-pane profile drawer.
-Navigation to AI Screening via session_state (no st.switch_page).
-"""
-
-import datetime
+import pandas as pd
 import streamlit as st
 from frontend.components import api_client
+from frontend.services.cache import get_jobs_cached
 
-
-def render_candidates() -> None:
-    if "selected_cand_id" not in st.session_state:
-        st.session_state["selected_cand_id"] = None
-
+def render_candidates():
     st.markdown("""
     <h1 style="font-size:1.6rem;font-weight:800;color:#0F172A;margin:0 0 4px 0;">
-        👥 Candidate Profiles
+        👥 Candidate Management
     </h1>
     <p style="font-size:0.85rem;color:#64748B;margin:0 0 20px 0;font-weight:500;">
-        Manage and screen applicants
+        Review, compare, and email candidates using AI.
     </p>
-    <hr style="margin:0 0 20px 0;border:none;border-top:1px solid #F1F5F9;">
     """, unsafe_allow_html=True)
+    
+    # Init state
+    if "selected_candidate_id" not in st.session_state:
+        st.session_state.selected_candidate_id = None
+        
+    if "compare_mode" not in st.session_state:
+        st.session_state.compare_mode = False
 
-    # ── Filters ───────────────────────────────────────────────────────────
-    cs, cst, ce, csk = st.columns([3.5, 2.1, 2.1, 2.1])
-    with cs:  search    = st.text_input("Search", placeholder="Search by name, title…", label_visibility="collapsed")
-    with cst: status_f  = st.selectbox("Status",  ["All Statuses","Applied","Shortlisted","Interview Scheduled","Approved","Rejected"], label_visibility="collapsed")
-    with ce:  exp_f     = st.selectbox("Exp",     ["All Experience Levels","Junior (0-2 Yrs)","Mid-level (3-5 Yrs)","Senior (6+ Yrs)"], label_visibility="collapsed")
-    with csk: skill_f   = st.selectbox("Skill",   ["All Skills","Python","SQL","FastAPI","React","Docker","Machine Learning"], label_visibility="collapsed")
-
-    # Map friendly filter labels back to API-compatible "All"
-    status_api = "All" if status_f == "All Statuses" else status_f
-    skill_api = "All" if skill_f == "All Skills" else skill_f
-
-    cands = api_client.get_candidates(search=search, status=status_api, skill=skill_api)
-    if "Junior"    in exp_f: cands = [c for c in cands if c.get("years_experience",0) <= 2]
-    elif "Mid"     in exp_f: cands = [c for c in cands if 3 <= c.get("years_experience",0) <= 5]
-    elif "Senior"  in exp_f: cands = [c for c in cands if c.get("years_experience",0) >= 6]
-
-    # ── Layout ────────────────────────────────────────────────────────────
-    drawer_open = st.session_state["selected_cand_id"] is not None
-    if drawer_open:
-        list_col, drawer_col = st.columns([1.1, 0.9])
+    # Route logic
+    if st.session_state.compare_mode:
+        _render_compare_view()
+    elif st.session_state.selected_candidate_id:
+        _render_candidate_profile(st.session_state.selected_candidate_id)
     else:
-        list_col  = st.container()
-        drawer_col = None
+        _render_candidates_list()
 
-    # ── List ──────────────────────────────────────────────────────────────
-    with list_col:
-        if not cands:
-            st.markdown("<p style='text-align:center;color:#64748B;padding:40px 0;'>No candidates match the criteria.</p>",
-                        unsafe_allow_html=True)
+
+def _render_candidates_list():
+    jobs = get_jobs_cached()
+    job_opts = {j["id"]: j["title"] for j in jobs}
+    job_opts[0] = "All Jobs"
+    
+    # Filters
+    cf1, cf2, cf3 = st.columns([2, 1.5, 2])
+    with cf1:
+        job_filter = st.selectbox("Job Filter", options=list(job_opts.keys()), format_func=lambda x: job_opts[x], index=list(job_opts.keys()).index(0))
+    with cf2:
+        status_filter = st.selectbox("Status", ["All", "Applied", "Under Review", "Shortlisted", "Interview Scheduled", "Interviewed", "Hired", "Rejected"])
+    with cf3:
+        min_score = st.slider("Minimum Match Score", 0, 100, 0)
+        
+    # Fetch data
+    job_id_param = None if job_filter == 0 else job_filter
+    candidates = api_client.get_candidates(status=status_filter, job_id=job_id_param, min_match_score=min_score)
+    
+    if not candidates:
+        st.info("No candidates match your criteria.")
+        return
+        
+    df_data = []
+    for c in candidates:
+        df_data.append({
+            "ID": c["id"],
+            "Match": f"{c.get('match_score', 0)}%",
+            "Name": c["name"],
+            "Status": c["status"],
+            "Experience": f"{c.get('years_experience', 0)} Yrs",
+            "Rec": c.get("hire_recommendation", "N/A"),
+            "Updated": c["updated_at"][:10]
+        })
+        
+    df = pd.DataFrame(df_data)
+    
+    # Ensure ID is the first column for selection
+    df = df[["ID", "Match", "Name", "Status", "Experience", "Rec", "Updated"]]
+    
+    event = st.dataframe(
+        df,
+        use_container_width=True,
+        hide_index=True,
+        on_select="rerun",
+        selection_mode="multi-row",
+        column_config={
+            "ID": st.column_config.NumberColumn(width="small"),
+            "Match": st.column_config.TextColumn(width="small"),
+            "Status": st.column_config.TextColumn(width="small"),
+        }
+    )
+    
+    selected_rows = event.selection.rows if hasattr(event, "selection") else []
+    
+    c1, c2, c3 = st.columns([2, 2, 6])
+    with c1:
+        if st.button("View Profile", type="primary", disabled=len(selected_rows) != 1):
+            st.session_state.selected_candidate_id = int(df.iloc[selected_rows[0]]["ID"])
+            st.rerun()
+    with c2:
+        if st.button("Compare Selected", disabled=len(selected_rows) < 2 or len(selected_rows) > 4):
+            if job_filter == 0:
+                st.error("Please select a specific Job Filter first to compare candidates.")
+            else:
+                st.session_state.compare_cands = [int(df.iloc[r]["ID"]) for r in selected_rows]
+                st.session_state.compare_job_id = job_filter
+                st.session_state.compare_mode = True
+                st.rerun()
+                
+    if len(selected_rows) > 4:
+        st.warning("Please select a maximum of 4 candidates to compare.")
+
+
+def _render_compare_view():
+    st.button("← Back to List", on_click=lambda: st.session_state.update({"compare_mode": False}))
+    st.markdown("### Candidate Comparison")
+    
+    with st.spinner("AI is analyzing and comparing candidates..."):
+        res = api_client.compare_candidates(st.session_state.compare_cands, st.session_state.compare_job_id)
+        
+    if not res:
+        st.error("Comparison failed.")
+        return
+        
+    table = res.get("comparison_table", [])
+    
+    cols = st.columns(len(table))
+    for i, col in enumerate(cols):
+        with col:
+            st.markdown(f"**{table[i].get('name')}**")
+            st.markdown("**Strengths:**\n" + table[i].get("strengths", ""))
+            st.markdown("**Weaknesses:**\n" + table[i].get("weaknesses", ""))
+            
+    st.info(f"**AI Recommendation:**\n{res.get('recommendation', '')}")
+
+
+def _render_candidate_profile(candidate_id: int):
+    st.button("← Back to List", on_click=lambda: st.session_state.update({"selected_candidate_id": None}))
+    
+    candidate = api_client.get_candidate(candidate_id)
+    if not candidate:
+        st.error("Candidate not found.")
+        return
+
+    resume_summary = candidate.get("resume_summary") or candidate.get("summary", "No resume summary available.")
+    skills = [s.get("name") if isinstance(s, dict) else str(s) for s in candidate.get("skills", [])]
+    experience_items = candidate.get("experience") if isinstance(candidate.get("experience"), list) else ([candidate.get("experience")] if candidate.get("experience") else [])
+    education_items = candidate.get("education") if isinstance(candidate.get("education"), list) else ([candidate.get("education")] if candidate.get("education") else [])
+    projects = candidate.get("projects") if isinstance(candidate.get("projects"), list) else ([candidate.get("projects")] if candidate.get("projects") else [])
+    certifications = candidate.get("certifications") if isinstance(candidate.get("certifications"), list) else ([candidate.get("certifications")] if candidate.get("certifications") else [])
+    skill_breakdown = candidate.get("skill_match_breakdown", {}) or {}
+    hire_rec = candidate.get("hire_recommendation") or (
+        "Strong Hire" if candidate.get("match_score", 0) >= 85 else
+        "Hire" if candidate.get("match_score", 0) >= 70 else
+        "Hold" if candidate.get("match_score", 0) >= 50 else
+        "Reject"
+    )
+    status = candidate.get("status", "N/A")
+    match_score = candidate.get("match_score", 0)
+    current_title = candidate.get("current_title", "")
+    location = candidate.get("location", "")
+
+    st.markdown(f"## {candidate['name']}")
+    st.markdown(f"**{current_title}** • {location}")
+
+    cards = st.columns([1.25, 1, 1, 1])
+    cards[0].metric("Match Score", f"{match_score}%", delta=hire_rec)
+    cards[1].metric("Status", status)
+    cards[2].metric("Recommendation", hire_rec)
+    cards[3].metric("Experience", f"{candidate.get('years_experience', 0)} yrs")
+
+    t1, t2, t3, t4, t5 = st.tabs(["Candidate Overview", "AI Ranking", "Skill Gap", "Recruiter Actions", "Email"])
+
+    with t1:
+        c1, c2 = st.columns([2, 1])
+        with c1:
+            st.markdown("#### Candidate Information")
+            st.write(f"**Email:** {candidate.get('email', 'N/A')}")
+            st.write(f"**Phone:** {candidate.get('phone', 'N/A')}")
+            st.write(f"**LinkedIn:** {candidate.get('linkedin', 'N/A')}")
+            st.write(f"**GitHub:** {candidate.get('github', 'N/A')}")
+            st.write(f"**Portfolio:** {candidate.get('portfolio', 'N/A')}")
+            st.write(f"**Current Title:** {current_title}")
+            st.write(f"**Location:** {location}")
+            st.write(f"**Status:** {status}")
+            st.write(f"**Tags:** {', '.join(candidate.get('tags', [])) or 'N/A'}")
+
+            st.markdown("#### Resume Overview")
+            st.write(resume_summary)
+
+        with c2:
+            st.markdown("#### Resume Matching")
+            st.write(f"**Overall Match Score:** {match_score}%")
+            st.write(f"**AI Recommendation:** {hire_rec}")
+            st.markdown("**Skill Match Breakdown**")
+            if skill_breakdown:
+                for key, value in skill_breakdown.items():
+                    st.write(f"- **{key.replace('_', ' ').title()}:** {value}")
+            else:
+                st.write("No breakdown available.")
+
+        st.markdown("#### Skills")
+        st.write(", ".join(skills) if skills else "No skills available.")
+
+        st.markdown("#### Experience")
+        if experience_items:
+            for item in experience_items:
+                st.write(f"- {item}")
         else:
-            for c in cands:
-                mc   = "#10B981" if c.get("match_score",0) >= 85 else ("#F59E0B" if c.get("match_score",0) >= 70 else "#EF4444")
-                tags = "".join(f'<span class="tag">{s.get("name") if isinstance(s,dict) else s}</span>'
-                               for s in c.get("skills",[])[:4])
-                if len(c.get("skills",[])) > 4:
-                    tags += f'<span class="tag">+{len(c.get("skills",[]))-4} more</span>'
+            st.write("No experience details available.")
 
-                c_det  = api_client.get_candidate(c["id"]) or {}
-                resumes = c_det.get("resumes", [])
-                has_res = len(resumes) > 0
-                res_lbl = f"📄 {resumes[-1]['filename']}" if has_res else "❌ No Resume Uploaded"
+        st.markdown("#### Education")
+        if education_items:
+            for item in education_items:
+                st.write(f"- {item}")
+        else:
+            st.write("No education details available.")
 
-                with st.container(border=True):
-                    ca, cb = st.columns([1, 6])
-                    with ca:
-                        ini = "".join(p[0] for p in c.get("name","C").split()[:2])
-                        st.markdown(f"""
-                        <div style="width:44px;height:44px;border-radius:50%;background:#EEF2FF;
-                                    border:1.5px solid #6366F1;display:flex;align-items:center;
-                                    justify-content:center;font-weight:800;color:#6366F1;
-                                    font-size:14px;margin:5px auto;">{ini}</div>
-                        """, unsafe_allow_html=True)
-                    with cb:
-                        st.markdown(f"""
-                        <div>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <span style="font-weight:800;font-size:1.1rem;color:#0F172A;">{c.get('name')}</span>
-                                <span style="background:#ECFDF5;color:#047857;font-size:0.65rem;
-                                             padding:2px 10px;border-radius:9999px;font-weight:600;">{c.get('status')}</span>
-                                <span style="background:{mc}10;color:{mc};font-size:0.65rem;
-                                             padding:2px 10px;border-radius:9999px;font-weight:600;">{c.get('match_score',0)}% Match</span>
-                            </div>
-                            <p style="font-size:0.8rem;color:#64748B;margin:2px 0 6px 0;">
-                                {c.get('current_title') or 'Applicant'} • {c.get('years_experience')} Yrs • {c.get('location')}
-                            </p>
-                            <div style="font-size:0.72rem;color:#475569;margin-bottom:8px;">
-                                <i class="fa-solid fa-file-contract"></i> <strong>Resume:</strong> {res_lbl}
-                            </div>
-                            <div>{tags}</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+        st.markdown("#### Projects")
+        if projects:
+            for item in projects:
+                st.write(f"- {item}")
+        else:
+            st.write("No project details available.")
 
-                    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-                    bc = st.columns(5)
-                    with bc[0]:
-                        if st.button("View Profile", key=f"vp_{c['id']}", use_container_width=True):
-                            st.session_state["selected_cand_id"] = c["id"]; st.rerun()
-                    with bc[1]:
-                        if st.button("AI Summary", key=f"as_{c['id']}", use_container_width=True, type="secondary"):
-                            st.session_state[f"ai_sum_open_{c['id']}"] = not st.session_state.get(f"ai_sum_open_{c['id']}", False)
-                            st.rerun()
-                    with bc[2]:
-                        if st.button("Compare", key=f"cmp_{c['id']}", use_container_width=True, type="secondary"):
-                            st.session_state["selected_eval_cand_id"] = c["id"]
-                            st.session_state["current_page"] = "AI Screening"
-                            st.rerun()
-                    with bc[3]:
-                        if st.button("Interview", key=f"iv_{c['id']}", use_container_width=True, type="secondary"):
-                            r = api_client.update_candidate_status(c["id"], "Interview Scheduled")
-                            if r: st.toast("Status updated!", icon="📅"); st.rerun()
-                    with bc[4]:
-                        if st.button("Resume", key=f"rv_{c['id']}", use_container_width=True, type="secondary"):
-                            st.session_state[f"res_prev_{c['id']}"] = not st.session_state.get(f"res_prev_{c['id']}", False)
-                            st.rerun()
+        st.markdown("#### Certifications")
+        if certifications:
+            for item in certifications:
+                st.write(f"- {item}")
+        else:
+            st.write("No certifications available.")
 
-                if st.session_state.get(f"ai_sum_open_{c['id']}", False):
-                    with st.container(border=True):
-                        st.markdown("**🤖 AI Summary:**")
-                        st.write(c.get("summary") or "AI summary parsed successfully.")
+    with t2:
+        st.markdown("#### Candidate Ranking & AI Suitability")
+        rank_res = {}
+        if "ranking_explanation" in candidate:
+            rank_res = {"ranking_explanation": candidate["ranking_explanation"]}
+        else:
+            with st.spinner("AI is evaluating candidate rank..."):
+                rank_res = api_client.get_candidate_rank(candidate_id)
+                if rank_res:
+                    api_client.clear_candidates_cache()
+        st.write(rank_res.get("ranking_explanation", "AI ranking is unavailable at this time."))
 
-                if st.session_state.get(f"res_prev_{c['id']}", False):
-                    with st.container(border=True):
-                        st.markdown("**📄 Parsed Resume Details:**")
-                        if has_res:
-                            r = resumes[-1]
-                            st.markdown(f"**Education:** {', '.join(r.get('education',[]))}")
-                            st.markdown(f"**Certifications:** {', '.join(r.get('certifications',[]))}")
-                            st.markdown(f"**Experience:** {', '.join(r.get('experience',[]))}")
+        st.markdown("#### Recommendation Summary")
+        st.write(f"**Final AI Decision:** {hire_rec}")
+        st.write(f"**Hiring Confidence:** {match_score}%")
+        st.write(f"**Candidate Strengths:** {candidate.get('summary', 'Not available.')}")
+        st.write(f"**Candidate Concerns:** {candidate.get('concerns', 'No concerns recorded.')}")
+
+    with t3:
+        st.markdown("#### Skill Gap Analysis")
+        gap_res = {}
+        if "skill_gap_analysis" in candidate:
+            gap_res = candidate["skill_gap_analysis"]
+        else:
+            with st.spinner("AI is analyzing skill gaps..."):
+                gap_res = api_client.get_candidate_skill_gap(candidate_id)
+                if gap_res and "error" not in gap_res:
+                    api_client.clear_candidates_cache()
+        if gap_res and "error" not in gap_res:
+            _render_skill_gap_ui(gap_res)
+            st.markdown("#### Skill Match Details")
+            st.write(f"**Required Skills:** {', '.join(gap_res.get('required_skills', [])) or 'N/A'}")
+            st.write(f"**Existing Skills:** {', '.join(gap_res.get('matched_skills', [])) or 'N/A'}")
+            st.write(f"**Missing Skills:** {', '.join(gap_res.get('missing_skills', [])) or 'N/A'}")
+            st.write(f"**Skill Match Percentage:** {gap_res.get('match_percentage', 0)}%")
+            st.write(f"**Learning Recommendations:** {gap_res.get('improvement_suggestions', 'No recommendations available.')}")
+        else:
+            st.error("Failed to generate skill gap analysis.")
+
+    with t4:
+        st.markdown("#### Recruiter Actions")
+        action_cols = st.columns(4)
+        with action_cols[0]:
+            if st.button("🌟 Shortlist", use_container_width=True):
+                api_client.update_candidate_status(candidate_id, "Shortlisted")
+                st.success("Candidate shortlisted.")
+                st.rerun()
+        with action_cols[1]:
+            if st.button("📅 Move to Interview", use_container_width=True):
+                api_client.update_candidate_status(candidate_id, "Interview Scheduled")
+                st.session_state["current_page"] = "Interviews"
+                st.session_state["interview_view"] = "Schedule"
+                st.session_state["schedule_candidate_id"] = candidate_id
+                st.rerun()
+        with action_cols[2]:
+            if st.button("❌ Reject", use_container_width=True):
+                api_client.update_candidate_status(candidate_id, "Rejected")
+                st.error("Candidate rejected.")
+                st.rerun()
+        with action_cols[3]:
+            if st.button("🎉 Hire", use_container_width=True):
+                api_client.update_candidate_status(candidate_id, "Hired")
+                st.toast("Candidate moved to hiring onboarding.", icon="🎉")
+                st.rerun()
+
+        st.markdown("---")
+        selected_decision = st.selectbox("Final AI Decision", ["Strong Hire", "Hire", "Hold", "Reject"], index=["Strong Hire", "Hire", "Hold", "Reject"].index(hire_rec) if hire_rec in ["Strong Hire", "Hire", "Hold", "Reject"] else 2)
+        confidence = st.slider("Hiring Confidence", 0, 100, match_score)
+        recruiter_note = st.text_area("Recruiter Notes", value="", placeholder="Add notes for the hiring team...")
+        if st.button("Save Decision & Note"):
+            api_client.add_candidate_note(candidate_id, f"Decision: {selected_decision}. Notes: {recruiter_note}")
+            st.success("Decision and note saved.")
+            st.rerun()
+
+        if candidate.get("notes"):
+            st.markdown("#### Past Recruiter Notes")
+            for note in candidate.get("notes", []):
+                st.info(f"**{note.get('author')}**: {note.get('note')} ({note.get('created_at', '')[:10]})")
+
+    with t5:
+        st.markdown("#### AI Email Generator")
+        apps = candidate.get("applications", [])
+        if not apps:
+            st.warning("Candidate must be tied to a job to generate context-aware emails.")
+        else:
+            job_id = apps[0].get("job_id")
+            c1, c2 = st.columns([1, 2])
+            with c1:
+                email_type = st.selectbox("Email Type", ["Interview Invitation", "Selection", "Rejection", "Additional Information Request", "Offer Letter"])
+                if st.button("Generate Draft", type="primary", use_container_width=True):
+                    with st.spinner("AI drafting email..."):
+                        res = api_client.generate_candidate_email(candidate_id, email_type, job_id)
+                        if res:
+                            st.session_state[f"email_subj_{candidate_id}"] = res.get("subject", "")
+                            st.session_state[f"email_body_{candidate_id}"] = res.get("body", "")
                         else:
-                            st.write("No parsed resume available.")
+                            st.error("Failed to generate draft.")
+            with c2:
+                subj_key = f"email_subj_{candidate_id}"
+                body_key = f"email_body_{candidate_id}"
+                if subj_key in st.session_state:
+                    subj = st.text_input("Subject", value=st.session_state[subj_key])
+                    body = st.text_area("Body", value=st.session_state[body_key], height=220)
+                    if st.button("Send Email", type="primary"):
+                        res = api_client.send_candidate_email(candidate_id, subj, body)
+                        if res:
+                            st.success("Email sent and saved to history.")
+                            st.session_state.pop(subj_key, None)
+                            st.session_state.pop(body_key, None)
+                            api_client.clear_candidates_cache()
+                            st.rerun()
 
-                st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+        st.markdown("---")
+        st.markdown("#### Email History")
+        history = api_client.get_candidate_email_history(candidate_id)
+        if not history:
+            st.write("No emails sent yet.")
+        for msg in history:
+            with st.expander(f"{msg.get('sent_at', '')[:10]} - {msg.get('subject', 'No Subject')} ({msg.get('status', '')})"):
+                st.write(msg.get('body', ''))
 
-    # ── Profile Drawer ────────────────────────────────────────────────────
-    if drawer_col and st.session_state["selected_cand_id"]:
-        cand    = api_client.get_candidate(st.session_state["selected_cand_id"])
-        resumes = cand.get("resumes", [])
-        has_res = len(resumes) > 0
 
-        with drawer_col:
-            with st.container(border=True):
-                hc1, hc2 = st.columns([8, 2])
-                with hc1:
-                    st.markdown("<h3><i class='fa-solid fa-user-tie' style='color:#6366F1;'></i> Profile Details</h3>",
-                                unsafe_allow_html=True)
-                with hc2:
-                    if st.button("✕ Close", key="close_drawer", use_container_width=True):
-                        st.session_state["selected_cand_id"] = None; st.rerun()
-
-                st.markdown(f"""
-                <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;
-                            padding:16px;margin-bottom:15px;">
-                    <h4 style="margin:0;color:#0F172A;font-weight:800;">{cand.get('name')}</h4>
-                    <p style="margin:2px 0 0;font-size:0.8rem;color:#4F46E5;font-weight:600;">
-                        {cand.get('current_title') or 'Applicant'}</p>
-                    <div style="font-size:0.75rem;color:#64748B;margin-top:6px;">
-                        Status: <strong>{cand.get('status')}</strong></div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                t1, t2, t3, t4 = st.tabs(["📝 Overview","📄 Resume","⏳ Timeline","💬 Notes"])
-
-                with t1:
-                    st.markdown("**Contact:**")
-                    st.markdown(f"- **Email:** {cand.get('email')}")
-                    st.markdown(f"- **Phone:** {cand.get('phone') or 'N/A'}")
-                    st.markdown(f"- **Location:** {cand.get('location') or 'Remote'}")
-                    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-                    li = f"[LinkedIn]({cand.get('linkedin')})" if cand.get("linkedin") else "LinkedIn (Not linked)"
-                    gh = f"[GitHub]({cand.get('github')})"   if cand.get("github")   else "GitHub (Not linked)"
-                    st.markdown(f"- <i class='fa-brands fa-linkedin' style='color:#0077b5;'></i> {li}", unsafe_allow_html=True)
-                    st.markdown(f"- <i class='fa-brands fa-github'></i> {gh}", unsafe_allow_html=True)
-                    if has_res:
-                        r = resumes[-1]
-                        st.markdown("**Education:**")
-                        for e in r.get("education",[]): st.markdown(f"- {e}")
-                        st.markdown("**Certifications:**")
-                        for cert in r.get("certifications",[]): st.markdown(f"- {cert}")
-
-                with t2:
-                    if has_res:
-                        r = resumes[-1]
-                        st.markdown("**Experience:**")
-                        for e in r.get("experience",[]): st.markdown(f"- {e}")
-                        st.markdown("**Projects:**")
-                        for p in r.get("projects",[]): st.markdown(f"- {p}")
-                        with st.expander("Raw extracted text"):
-                            st.text_area("", value=r.get("extracted_text",""), height=200, disabled=True, label_visibility="collapsed")
-                    else:
-                        st.write("No resume uploaded yet.")
-
-                with t3:
-                    timeline = [{"title":"Application Started","desc":"Profile registered.","time":cand.get("created_at")}]
-                    for note in cand.get("notes",[]):
-                        timeline.append({"title":f"Note by {note.get('author')}","desc":note.get("note"),"time":note.get("created_at")})
-                    timeline.sort(key=lambda t: t.get("time",""), reverse=True)
-                    html = "<div style='display:flex;flex-direction:column;gap:14px;margin-top:10px;'>"
-                    for idx, ev in enumerate(timeline):
-                        ts = datetime.datetime.fromisoformat(ev["time"]).strftime("%b %d, %H:%M") if ev.get("time") else "Just now"
-                        html += f"""
-                        <div style="display:flex;gap:10px;">
-                            <div style="display:flex;flex-direction:column;align-items:center;">
-                                <div style="width:18px;height:18px;border-radius:50%;background:#6366F1;border:3px solid #EEF2FF;"></div>
-                                {"<div style='width:2px;flex-grow:1;background:#E2E8F0;'></div>" if idx < len(timeline)-1 else ""}
-                            </div>
-                            <div style="padding-bottom:10px;">
-                                <div style="font-weight:700;color:#0F172A;font-size:0.8rem;">{ev['title']}</div>
-                                <div style="font-size:0.76rem;color:#64748B;">{ev['desc']}</div>
-                                <div style="font-size:0.68rem;color:#94A3B8;font-weight:500;">{ts}</div>
-                            </div>
-                        </div>"""
-                    html += "</div>"
-                    st.markdown(html, unsafe_allow_html=True)
-
-                with t4:
-                    new_note = st.text_area("Write note…", placeholder="Enter review remarks…", label_visibility="collapsed", key="drawer_note")
-                    if st.button("Save Note", type="primary", use_container_width=True):
-                        if new_note.strip():
-                            r = api_client.add_candidate_note(cand["id"], new_note.strip())
-                            if r: st.toast("Note saved!", icon="📝"); st.rerun()
-                    notes = cand.get("notes", [])
-                    if notes:
-                        html = "<div style='display:flex;flex-direction:column;gap:10px;margin-top:15px;max-height:200px;overflow-y:auto;'>"
-                        for n in notes:
-                            ts = datetime.datetime.fromisoformat(n["created_at"]).strftime("%b %d, %H:%M") if n.get("created_at") else "Just now"
-                            html += f"""
-                            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px 12px;">
-                                <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#64748B;font-weight:600;margin-bottom:4px;">
-                                    <span>{n.get('author','Recruiter')}</span><span>{ts}</span></div>
-                                <p style="margin:0;font-size:0.78rem;color:#334155;">{n.get('note')}</p>
-                            </div>"""
-                        html += "</div>"
-                        st.markdown(html, unsafe_allow_html=True)
+def _render_skill_gap_ui(gap: dict):
+    st.write(f"**Match Percentage:** {gap.get('match_percentage')}%")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("✅ **Matched Skills**")
+        for s in gap.get("matched_skills", []):
+            st.write(f"- {s}")
+    with col2:
+        st.markdown("❌ **Missing Skills**")
+        for s in gap.get("missing_skills", []):
+            st.write(f"- {s}")
+            
+    st.markdown("**Improvement Suggestions**")
+    st.info(gap.get("improvement_suggestions", "None"))

@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #0F172A;
+  background-color: #FFFFFF;
   padding: 0;
   overflow: hidden;
 }
@@ -19,7 +19,7 @@
   align-items: center;
   gap: 12px;
   padding: 20px 16px 18px 16px;
-  border-bottom: 1px solid #1E293B;
+  border-bottom: 1px solid #E2E8F0;
   flex-shrink: 0;
 }
 
@@ -39,7 +39,7 @@
 
 .hp-logo-text-primary {
   font-weight: 800;
-  color: #F8FAFC;
+  color: #0F172A;
   font-size: 1.18rem;
   letter-spacing: -0.01em;
   line-height: 1;
@@ -58,7 +58,7 @@
 .hp-nav-label {
   font-size: 0.62rem;
   font-weight: 700;
-  color: #334155;
+  color: #94A3B8;
   text-transform: uppercase;
   letter-spacing: 0.10em;
   padding: 14px 16px 6px 16px;
@@ -69,7 +69,7 @@
 .hp-nav-item button {
   font-family: 'Font Awesome 6 Free', 'Plus Jakarta Sans', sans-serif !important;
   background: transparent !important;
-  color: #94A3B8 !important;
+  color: #475569 !important;
   border: none !important;
   border-radius: 8px !important;
   padding: 9px 12px !important;
@@ -87,14 +87,14 @@
 }
 
 .hp-nav-item button:hover {
-  background: rgba(255,255,255,0.05) !important;
-  color: #F1F5F9 !important;
+  background: #F1F5F9 !important;
+  color: #0F172A !important;
 }
 
 /* Active nav item */
 .hp-nav-item-active button {
-  background: linear-gradient(135deg, rgba(99,102,241,0.20), rgba(79,70,229,0.15)) !important;
-  color: #FFFFFF !important;
+  background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(79,70,229,0.05)) !important;
+  color: #6366F1 !important;
   border-left: 3px solid #6366F1 !important;
   border-radius: 0 8px 8px 0 !important;
   font-weight: 700 !important;
@@ -102,13 +102,13 @@
 }
 
 .hp-nav-item-active button:hover {
-  background: linear-gradient(135deg, rgba(99,102,241,0.28), rgba(79,70,229,0.22)) !important;
+  background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(79,70,229,0.08)) !important;
 }
 
 /* ── Nav Divider ────────────────────────────────────────── */
 .hp-nav-divider {
   height: 1px;
-  background-color: #1E293B;
+  background-color: #E2E8F0;
   margin: 8px 16px;
 }
 
@@ -116,7 +116,7 @@
 .hp-profile-card {
   margin-top: auto;
   padding: 14px 16px;
-  border-top: 1px solid #1E293B;
+  border-top: 1px solid #E2E8F0;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -139,7 +139,7 @@
 
 .hp-profile-name {
   font-weight: 700;
-  color: #E2E8F0;
+  color: #1E293B;
   font-size: 0.82rem;
   line-height: 1;
 }
@@ -164,8 +164,8 @@
 .hp-version-badge {
   margin-left: auto;
   font-size: 0.6rem;
-  color: #475569;
-  background-color: #1E293B;
+  color: #64748B;
+  background-color: #F1F5F9;
   padding: 2px 8px;
   border-radius: 9999px;
   font-weight: 600;

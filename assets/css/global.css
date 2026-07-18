@@ -7,7 +7,7 @@
 
 /* ── Root Variables ─────────────────────────────────────── */
 :root {
-  --color-bg:           #F8FAFC;
+  --color-bg:           #FFFFFF;
   --color-surface:      #FFFFFF;
   --color-border:       #E2E8F0;
   --color-border-light: #F1F5F9;
@@ -22,8 +22,8 @@
   --color-red:          #EF4444;
   --color-pink:         #EC4899;
   --color-purple:       #8B5CF6;
-  --sidebar-bg:         #0F172A;
-  --sidebar-border:     #1E293B;
+  --sidebar-bg:         #FFFFFF;
+  --sidebar-border:     #E2E8F0;
   --radius-sm:          8px;
   --radius-md:          12px;
   --radius-lg:          16px;
@@ -35,7 +35,7 @@
 }
 
 /* ── Base Typography ────────────────────────────────────── */
-html, body, [class*="css"], [class*="st-"] {
+html, body, button, input, textarea, select {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
   -webkit-font-smoothing: antialiased;
 }
@@ -44,8 +44,18 @@ html, body, [class*="css"], [class*="st-"] {
 #MainMenu { visibility: hidden; }
 header { visibility: hidden; }
 footer { visibility: hidden; }
-.stApp [data-testid="stHeader"] { display: none; }
-[data-testid="stToolbar"] { display: none; }
+.stApp [data-testid="stHeader"] { display: none !important; }
+[data-testid="stToolbar"] { display: none !important; }
+
+/* The sidebar is fixed and always visible, so its collapse control is not needed. */
+[data-testid="stSidebar"] [data-testid="collapsedControl"],
+[data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"],
+[data-testid="stSidebar"] button[aria-label*="Collapse sidebar"],
+[data-testid="stSidebar"] button[aria-label*="Close sidebar"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
 
 /* ── Kill Streamlit's built-in page navigation completely ── */
 /* Works across Streamlit 1.28+ regardless of hideSidebarNav  */
@@ -67,6 +77,16 @@ section[data-testid="stSidebar"] nav {
 /* ── App Background & Layout ────────────────────────────── */
 .stApp {
   background-color: var(--color-bg) !important;
+  color: #0F172A !important;
+}
+
+/* Keep all standard Streamlit text readable in the light theme. */
+.stApp [data-testid="stMarkdownContainer"],
+.stApp [data-testid="stMarkdownContainer"] *,
+.stApp label,
+.stApp [data-testid="stMetricLabel"],
+.stApp [data-testid="stMetricValue"] {
+  color: #0F172A !important;
 }
 
 /* ── Fixed Global Footer ────────────────────────────────── */
@@ -90,27 +110,121 @@ section[data-testid="stSidebar"] nav {
 
 /* ── Main Block Padding ─────────────────────────────────── */
 .block-container {
-  padding-top: 1.2rem !important;
+  padding-top: 0rem !important; /* Reduced from 1.2rem to 0 to fix wasted space */
   padding-bottom: 5.5rem !important;
   padding-left: 2.5rem !important;
   padding-right: 2.5rem !important;
   max-width: 100% !important;
 }
 
+/* The fixed sidebar sits outside Streamlit's normal layout flow. */
+[data-testid="stMain"] {
+  margin-left: 256px !important;
+  width: calc(100% - 256px) !important;
+}
+
+/* Inputs: enforce white background and text across the app */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="password"],
+textarea,
+select,
+.stTextInput input,
+.stTextArea textarea,
+.stSelectbox select,
+.stNumberInput input {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.stTextInput input::placeholder,
+.stTextArea textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* BaseWeb powers Streamlit selectboxes and their popover menus. */
+div[data-baseweb="select"] > div,
+div[data-baseweb="popover"],
+ul[role="listbox"],
+[role="combobox"] {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+  border-color: #E2E8F0 !important;
+}
+
+div[data-baseweb="select"] *,
+div[data-baseweb="popover"] *,
+ul[role="listbox"] *,
+[role="option"] {
+  color: #0F172A !important;
+}
+
+/* Ensure selected dropdown items and the dropdown arrow text are visible. */
+div[data-baseweb="select"] [role="button"],
+[role="combobox"] > div,
+[role="combobox"] input,
+[role="option"],
+div[data-baseweb="select"] [role="option"] {
+  color: #0F172A !important;
+  background-color: #FFFFFF !important;
+}
+
+div[data-baseweb="select"] [role="button"] svg,
+[role="combobox"] svg {
+  color: #0F172A !important;
+}
+
 /* ── Sidebar Overrides ──────────────────────────────────── */
-section[data-testid="stSidebar"] {
+[data-testid="stSidebar"] {
   background-color: var(--sidebar-bg) !important;
   border-right: 1px solid var(--sidebar-border) !important;
   min-width: 256px !important;
   max-width: 256px !important;
+  width: 256px !important;
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  transform: translateX(0) !important;
+  visibility: visible !important;
 }
 
-section[data-testid="stSidebar"] > div {
-  padding: 0 !important;
+[data-testid="stSidebar"] > div {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-top: 1rem !important; /* Reduced to bring sidebar content up */
+}
+
+[data-testid="stSidebarUserContent"] {
+  padding-top: 0rem !important;
+}
+
+/* Streamlit sidebar controls do not inherit the page theme consistently. */
+[data-testid="stSidebar"],
+[data-testid="stSidebar"] * {
+  color: #0F172A !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stButton"] button {
+  width: 100% !important;
+  min-height: 2.5rem !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stButton"] button:hover,
+[data-testid="stSidebar"] [data-testid="stButton"] button:focus-visible {
+  background-color: #F1F5F9 !important;
+  border-color: #94A3B8 !important;
 }
 
 /* Hide Streamlit's built-in sidebar nav completely */
-section[data-testid="stSidebar"] [data-testid="stSidebarNav"] {
+[data-testid="stSidebar"] [data-testid="stSidebarNav"] {
   display: none !important;
 }
 
@@ -288,14 +402,27 @@ div[data-testid="column"] > div[data-testid="stVerticalBlock"] {
   font-weight: 600 !important;
   font-size: 0.84rem !important;
   transition: var(--transition) !important;
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.stButton > button:hover,
+.stButton > button:focus-visible {
+  background-color: #F8FAFC !important;
 }
 
 /* ── Streamlit Input Overrides ──────────────────────────── */
 .stTextInput > div > div > input,
 .stSelectbox > div > div,
-.stTextArea > div > div > textarea {
+.stTextArea > div > div > textarea,
+.stNumberInput > div > input,
+.stDateInput > div > div > input,
+.stTimeInput > div > div > input {
   border-radius: var(--radius-sm) !important;
   border-color: var(--color-border) !important;
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
   font-size: 0.875rem !important;
 }
 
@@ -310,4 +437,207 @@ div[data-testid="column"] > div[data-testid="stVerticalBlock"] {
   gap: 10px;
   border-bottom: 1px solid var(--color-border-light);
   padding-bottom: 12px;
+}
+
+/* ── Chat & AI Copilot Styles ──────────────────────────── */
+.ai-copilot-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.chat-header {
+  margin-bottom: 20px;
+}
+
+.quick-prompts-section {
+  margin-bottom: 24px;
+}
+
+.quick-prompts-section > div {
+  gap: 8px !important;
+}
+
+.quick-prompt-btn {
+  width: 100%;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #0F172A !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.quick-prompt-btn:hover {
+  background-color: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+}
+
+.chat-input-area {
+  background-color: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.file-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Chat message containers */
+.stChatMessage {
+  background-color: #FFFFFF !important;
+}
+
+/* Chat input styling */
+div[data-testid="stChatInputContainer"] {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+div[data-testid="stChatInputContainer"] input {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 8px !important;
+}
+
+div[data-testid="stChatInputContainer"] input:focus {
+  border-color: #6366F1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* File uploader styling */
+div[data-testid="stFileUploader"] {
+  border: 1px solid #E2E8F0 !important;
+  background-color: #FFFFFF !important;
+  border-radius: 8px !important;
+  padding: 8px !important;
+}
+
+div[data-testid="stFileUploader"] section {
+  padding: 0 !important;
+}
+
+/* Quick columns alignment */
+div[data-testid="stHorizontalBlock"] {
+  gap: 8px !important;
+  align-items: stretch !important;
+}
+
+/* Column spacing fix */
+div[data-testid="column"] {
+  flex-basis: auto !important;
+}
+
+/* ── Container & Layout ─────────────────────────────────── */
+.stContainer {
+  background-color: #FFFFFF !important;
+}
+
+[data-testid="stVerticalBlock"] {
+  background-color: transparent !important;
+}
+
+/* Hide audio input button from chat input */
+button[aria-label*="microphone"],
+button[aria-label*="record"],
+button[aria-label*="audio"],
+button[aria-label*="voice"],
+[data-testid="stChatInputContainer"] button[aria-label*="microphone"],
+[data-testid="stChatInputContainer"] button[aria-label*="record"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Ensure chat input is text-only */
+div[data-testid="stChatInputContainer"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* Unified Input Container Styling */
+.unified-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 6px 8px;
+  transition: all 0.2s ease;
+}
+
+.unified-input-container:focus-within {
+  border-color: #6366F1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.input-text-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.input-file-section {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* File uploader button styling for unified input */
+div[data-testid="stFileUploader"] {
+  border: none !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+}
+
+div[data-testid="stFileUploader"] section,
+div[data-testid="stFileUploader"] > div {
+  border: none !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+/* Style file uploader button like a "+" button */
+div[data-testid="stFileUploader"] button,
+div[data-testid="stFileUploader"] label {
+  background-color: transparent !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 6px !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px !important;
+  color: #64748B !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+div[data-testid="stFileUploader"] button:hover,
+div[data-testid="stFileUploader"] label:hover {
+  background-color: #F1F5F9 !important;
+  border-color: #94A3B8 !important;
+  color: #0F172A !important;
+}
+
+/* Hide file uploader text and dropzone */
+div[data-testid="stFileUploader"] > div > div:nth-child(2),
+div[data-testid="stFileUploader"] [role="button"],
+div[data-testid="stFileUploader"] p {
+  display: none !important;
 }
