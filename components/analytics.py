@@ -42,8 +42,8 @@ def render_analytics() -> None:
     st.markdown("<div style='height:24px;'></div>", unsafe_allow_html=True)
 
     tab_funnel, tab_trends, tab_talent, tab_recruiters = st.tabs([
-        "📊 Pipeline & Funnel", "📈 Trends & Departments",
-        "⚡ Talent & Channels",  "💼 Recruiter Analytics"
+        "Pipeline & Funnel", "Trends & Departments",
+        "Talent & Channels",  "Recruiter Analytics"
     ])
 
     with tab_funnel:

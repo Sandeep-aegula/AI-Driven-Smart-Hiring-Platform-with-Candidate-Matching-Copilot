@@ -1,79 +1,188 @@
+"""
+components/ai_assistant.py - HirePilot AI Assistant (Infosys Springboard Style)
+A modern, enterprise-grade AI Assistant chatbot with glassmorphism design.
+"""
+
 import time
 import uuid
 import json
 import streamlit as st
-from frontend.components.api_client import chat_with_copilot, confirm_copilot_action, get_copilot_suggestions
+from frontend.components import api_client
+from frontend.services.cache import get_candidates_cached, get_jobs_cached
 
-def render_ai_copilot() -> None:
-    if "copilot_session_id" not in st.session_state:
-        st.session_state["copilot_session_id"] = str(uuid.uuid4())
-        
-    if "messages" not in st.session_state or not st.session_state["messages"]:
-        st.session_state["messages"] = [{
-            "role": "assistant",
-            "content": ("Hello! I'm HirePilot's AI Copilot, running locally on "
-                        "`qwen2.5-coder:7b`. Select a quick action or ask anything "
-                        "about recruitment, resumes, or hiring strategy."),
-            "action": None
-        }]
 
-    if "show_typing" not in st.session_state:
-        st.session_state["show_typing"] = False
+def render_ai_assistant() -> None:
+    """Render the AI Assistant floating chat widget."""
+    
+    # Initialize session state for AI Assistant
+    if "ai_assistant_open" not in st.session_state:
+        st.session_state["ai_assistant_open"] = False
+    if "ai_assistant_messages" not in st.session_state:
+        st.session_state["ai_assistant_messages"] = []
+    if "ai_assistant_session_id" not in st.session_state:
+        st.session_state["ai_assistant_session_id"] = str(uuid.uuid4())
+    if "ai_assistant_typing" not in st.session_state:
+        st.session_state["ai_assistant_typing"] = False
+    if "ai_assistant_minimized" not in st.session_state:
+        st.session_state["ai_assistant_minimized"] = False
 
-    # ── Custom CSS for Premium Chat Experience ────────────────────────────
+    # ── Custom CSS for AI Assistant ────────────────────────────────────────
     st.markdown("""
     <style>
-        /* Chat Container */
-        .copilot-chat-container {
+        /* Floating AI Assistant Button */
+        .ai-assistant-float-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4), 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 9999;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: pulse 2s infinite;
+        }
+        
+        .ai-assistant-float-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5), 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .ai-assistant-float-btn:active {
+            transform: scale(0.95);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4), 0 2px 8px rgba(0,0,0,0.1); }
+            50% { box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5), 0 4px 12px rgba(0,0,0,0.15); }
+        }
+        
+        .ai-assistant-float-btn svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+        
+        /* Chat Panel */
+        .ai-assistant-panel {
+            position: fixed;
+            bottom: 90px;
+            right: 24px;
+            width: 400px;
+            height: 90vh;
+            max-height: 700px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.1);
+            z-index: 9998;
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 200px);
-            min-height: 600px;
-            background: #FFFFFF;
-            border-radius: 16px;
-            border: 1px solid #E2E8F0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
             overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
         }
         
         /* Header */
-        .copilot-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid #F1F5F9;
-            background: #FAFAFA;
-        }
-        .copilot-header h1 {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #0F172A;
+        .ai-assistant-header {
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-        .copilot-header p {
-            margin: 4px 0 0 0;
-            font-size: 0.8rem;
-            color: #64748B;
-            font-weight: 400;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+            color: white;
+            position: relative;
         }
         
-        /* Quick Prompts Bar */
-        .quick-prompts-bar {
+        .ai-assistant-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
             display: flex;
-            gap: 8px;
-            padding: 16px 24px;
-            border-bottom: 1px solid #F1F5F9;
-            background: #FAFAFA;
-            flex-wrap: wrap;
+            align-items: center;
             gap: 10px;
         }
+        
+        .ai-assistant-header .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10B981;
+            animation: pulse-green 2s infinite;
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .header-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .header-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Quick Prompts */
+        .quick-prompts {
+            padding: 16px;
+            border-bottom: 1px solid #F1F5F9;
+            background: #FAFAFA;
+        }
+        
+        .quick-prompts-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748B;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        
+        .quick-prompts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
         .quick-prompt-btn {
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 16px;
+            padding: 10px 12px;
             border-radius: 12px;
             background: #FFFFFF;
             border: 1px solid #E2E8F0;
@@ -82,29 +191,29 @@ def render_ai_copilot() -> None:
             font-weight: 500;
             cursor: pointer;
             transition: all 0.15s ease;
-            white-space: nowrap;
-            height: 36px;
+            text-align: left;
+            height: 44px;
         }
+        
         .quick-prompt-btn:hover {
             background: #F1F5F9;
             border-color: #CBD5E1;
             transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        .quick-prompt-btn:active {
-            transform: translateY(0);
-        }
+        
         .quick-prompt-btn svg {
             width: 16px;
             height: 16px;
             color: #6366F1;
+            flex-shrink: 0;
         }
         
-        /* Chat Messages Area */
-        .chat-messages-area {
+        /* Messages Area */
+        .messages-area {
             flex: 1;
             overflow-y: auto;
-            padding: 24px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 16px;
@@ -116,22 +225,23 @@ def render_ai_copilot() -> None:
             display: flex;
             gap: 10px;
             max-width: 85%;
-            animation: fadeInUp 0.25s ease;
+            animation: fadeInUp 0.3s ease;
         }
+        
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(8px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
         .message-row.assistant {
             align-self: flex-start;
         }
+        
         .message-row.user {
             align-self: flex-end;
             flex-direction: row-reverse;
         }
         
-        /* Avatar */
         .message-avatar {
             width: 32px;
             height: 32px;
@@ -142,16 +252,17 @@ def render_ai_copilot() -> None:
             flex-shrink: 0;
             font-size: 14px;
         }
+        
         .assistant-avatar {
             background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
             color: white;
         }
+        
         .user-avatar {
             background: linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%);
             color: white;
         }
         
-        /* Message Bubble */
         .message-bubble {
             max-width: 100%;
             padding: 12px 16px;
@@ -162,12 +273,14 @@ def render_ai_copilot() -> None:
             word-wrap: break-word;
             position: relative;
         }
+        
         .assistant-bubble {
             background: #FFFFFF;
             border: 1px solid #E2E8F0;
             border-radius: 18px 18px 18px 4px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 1px 1px rgba(0,0,0,0.02);
         }
+        
         .user-bubble {
             background: #EEF4FF;
             border: 1px solid #DBEAFE;
@@ -175,7 +288,6 @@ def render_ai_copilot() -> None:
             box-shadow: 0 1px 2px rgba(59, 130, 246, 0.08);
         }
         
-        /* Message Header */
         .message-header {
             display: flex;
             align-items: center;
@@ -185,6 +297,7 @@ def render_ai_copilot() -> None:
             color: #64748B;
             font-weight: 500;
         }
+        
         .user-header {
             justify-content: flex-end;
             text-align: right;
@@ -196,6 +309,7 @@ def render_ai_copilot() -> None:
             gap: 4px;
             padding: 12px 16px;
         }
+        
         .typing-dot {
             width: 8px;
             height: 8px;
@@ -203,8 +317,10 @@ def render_ai_copilot() -> None:
             background: #6366F1;
             animation: typingBounce 1.4s infinite ease-in-out;
         }
+        
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
         @keyframes typingBounce {
             0%, 60%, 100% { transform: translateY(0); }
             30% { transform: translateY(-6px); }
@@ -218,6 +334,7 @@ def render_ai_copilot() -> None:
             padding: 16px;
             margin-top: 12px;
         }
+        
         .action-card-header {
             display: flex;
             align-items: center;
@@ -227,6 +344,7 @@ def render_ai_copilot() -> None:
             margin-bottom: 8px;
             font-size: 0.85rem;
         }
+        
         .action-card pre {
             background: #FFF7ED;
             border: 1px solid #FED7CC;
@@ -239,10 +357,11 @@ def render_ai_copilot() -> None:
         
         /* Input Area */
         .input-area {
-            padding: 16px 24px;
+            padding: 16px 20px;
             border-top: 1px solid #F1F5F9;
             background: #FAFAFA;
         }
+        
         .input-container {
             display: flex;
             align-items: flex-end;
@@ -253,6 +372,7 @@ def render_ai_copilot() -> None:
             padding: 8px 16px;
             transition: all 0.2s ease;
         }
+        
         .input-container:focus-within {
             border-color: #6366F1;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
@@ -271,10 +391,12 @@ def render_ai_copilot() -> None:
             color: #64748B;
             transition: all 0.15s ease;
         }
+        
         .attachment-btn:hover {
             background: #E2E8F0;
             color: #334155;
         }
+        
         .attachment-btn svg {
             width: 18px;
             height: 18px;
@@ -294,6 +416,7 @@ def render_ai_copilot() -> None:
             font-family: inherit;
             padding: 8px 0;
         }
+        
         .chat-input::placeholder {
             color: #94A3B8;
         }
@@ -312,13 +435,16 @@ def render_ai_copilot() -> None:
             transition: all 0.15s ease;
             flex-shrink: 0;
         }
+        
         .send-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
+        
         .send-btn:active {
             transform: scale(0.98);
         }
+        
         .send-btn svg {
             width: 18px;
             height: 18px;
@@ -337,6 +463,7 @@ def render_ai_copilot() -> None:
             font-size: 0.8rem;
             color: #1E40AF;
         }
+        
         .file-preview button {
             background: none;
             border: none;
@@ -361,23 +488,24 @@ def render_ai_copilot() -> None:
             cursor: pointer;
             transition: all 0.15s ease;
         }
+        
         .clear-chat-btn:hover {
             background: #FEF2F2;
             border-color: #FCA5A5;
         }
         
         /* Scrollbar */
-        .chat-messages-area::-webkit-scrollbar {
+        .messages-area::-webkit-scrollbar {
             width: 6px;
         }
-        .chat-messages-area::-webkit-scrollbar-track {
+        .messages-area::-webkit-scrollbar-track {
             background: transparent;
         }
-        .chat-messages-area::-webkit-scrollbar-thumb {
+        .messages-area::-webkit-scrollbar-thumb {
             background: #CBD5E1;
             border-radius: 3px;
         }
-        .chat-messages-area::-webkit-scrollbar-thumb:hover {
+        .messages-area::-webkit-scrollbar-thumb:hover {
             background: #94A3B8;
         }
         
@@ -391,26 +519,39 @@ def render_ai_copilot() -> None:
     </style>
     """, unsafe_allow_html=True)
 
-    # ── Main Container ────────────────────────────────────────────────────
-    st.markdown('<div class="copilot-chat-container">', unsafe_allow_html=True)
+    # ── Floating Button ────────────────────────────────────────────────────
+    if not st.session_state["ai_assistant_open"]:
+        if st.button("🤖", key="ai_assistant_toggle", help="Open AI Assistant", 
+                     use_container_width=False):
+            st.session_state["ai_assistant_open"] = True
+            st.rerun()
+        return
+
+    # ── Main Chat Panel ────────────────────────────────────────────────────
+    st.markdown('<div class="ai-assistant-panel">', unsafe_allow_html=True)
     
-    # ── Header ────────────────────────────────────────────────────────────
+    # Header
     st.markdown("""
-    <div class="copilot-header">
-        <h1>🤖 HirePilot</h1>
-        <p>Context-aware recruitment assistant powered by local Ollama</p>
-    </div>
+    <div class="ai-assistant-header">
+        <h3>🤖 HirePilot</h3>
+        <div class="status-indicator"></div>
+        <div class="header-actions">
+            <button class="header-btn" title="Minimize" onclick="minimizeChat()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <button class="header-btn" title="Close" onclick="closeChat()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
     """, unsafe_allow_html=True)
     
-    # ── Quick Prompts Bar ────────────────────────────────────────────────
-    suggestions = get_copilot_suggestions()
-    if not suggestions:
-        suggestions = [
-            "How many open roles do we have?",
-            "Who are the top candidates for the Data Scientist role?",
-            "Draft a rejection email for candidate ID 1.",
-            "What is our current hiring velocity?"
-        ]
+    # Quick Prompts
+    suggestions = [
+        "How many open roles do we have?",
+        "Who are the top candidates for the Data Scientist role?",
+        "Draft a rejection email for candidate ID 1.",
+        "What is our current hiring velocity?"
+    ]
     
     prompt_icons = {
         "How many open roles do we have?": "📋",
@@ -419,20 +560,23 @@ def render_ai_copilot() -> None:
         "What is our current hiring velocity?": "📈"
     }
     
-    st.markdown('<div class="quick-prompts-bar">', unsafe_allow_html=True)
-    prompt_cols = st.columns(4, gap="small")
+    st.markdown('<div class="quick-prompts">', unsafe_allow_html=True)
+    st.markdown('<div class="quick-prompts-label">Quick Actions</div>', unsafe_allow_html=True)
+    st.markdown('<div class="quick-prompts-grid">', unsafe_allow_html=True)
+    
+    prompt_cols = st.columns(2, gap="small")
     prompt_trigger = None
     for i, label in enumerate(suggestions[:4]):
-        with prompt_cols[i]:
+        with prompt_cols[i % 2]:
             icon = prompt_icons.get(label, "💡")
             if st.button(f"{icon} {label}", key=f"qp_{i}", use_container_width=True):
                 prompt_trigger = label
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div></div>', unsafe_allow_html=True)
     
     # ── Chat Messages Area ───────────────────────────────────────────────
-    st.markdown('<div class="chat-messages-area" id="chat-messages">', unsafe_allow_html=True)
+    st.markdown('<div class="messages-area" id="chat-messages">', unsafe_allow_html=True)
     
-    for idx, message in enumerate(st.session_state["messages"]):
+    for idx, message in enumerate(st.session_state["ai_assistant_messages"]):
         role = message["role"]
         content = message["content"]
         action = message.get("action")
@@ -489,7 +633,7 @@ def render_ai_copilot() -> None:
             </div>
             ''', unsafe_allow_html=True)
     
-    # Typing indicator placeholder
+    # Typing indicator
     if st.session_state.get("show_typing", False):
         st.markdown('''
         <div class="message-row assistant">
@@ -526,14 +670,14 @@ def render_ai_copilot() -> None:
     uploaded_file = st.file_uploader(
         "", 
         type=["pdf", "docx", "doc", "txt", "xlsx", "csv"],
-        key="copilot_file_unified",
+        key="ai_assistant_file_upload",
         label_visibility="collapsed",
         accept_multiple_files=False,
-        help="Click to upload file (PDF, DOCX, TXT, XLSX, CSV)"
+        help="Upload Resume"
     )
     
     # Text input
-    user_input = st.chat_input("Ask HirePilot anything about candidates, jobs, interviews, resumes...", key="copilot_input_unified")
+    user_input = st.chat_input("Ask HirePilot anything about candidates, jobs, interviews, resumes...", key="ai_assistant_input")
     
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -554,24 +698,24 @@ def render_ai_copilot() -> None:
     
     if prompt_trigger:
         user_input = prompt_trigger
-
+    
     if user_input:
         # Include file message if file was uploaded
         full_message = user_input
         if file_message:
             full_message = f"{file_message}\n\n{user_input}"
         
-        st.session_state["messages"].append({"role":"user", "content":full_message, "action": None})
+        st.session_state["ai_assistant_messages"].append({"role": "user", "content": full_message, "action": None})
         
         # Show typing indicator
         st.session_state["show_typing"] = True
         st.rerun()
     
     # Handle AI response generation (when typing indicator is shown)
-    if st.session_state.get("show_typing", False) and st.session_state["messages"][-1]["role"] == "user":
+    if st.session_state.get("show_typing", False) and st.session_state["ai_assistant_messages"][-1]["role"] == "user":
         st.session_state["show_typing"] = False
         
-        last_user_message = st.session_state["messages"][-1]["content"]
+        last_user_message = st.session_state["ai_assistant_messages"][-1]["content"]
         
         with st.spinner("AI is thinking…"):
             response = chat_with_copilot(st.session_state["copilot_session_id"], last_user_message)
@@ -596,26 +740,26 @@ def render_ai_copilot() -> None:
             for chunk in _stream(reply_text):
                 full_response += chunk
                 response_container.markdown(full_response)
-                
+            
             if action_data:
                 st.info("Please confirm the action above to proceed.")
             
-            st.session_state["messages"].append({
-                "role":"assistant",
-                "content":reply_text,
+            st.session_state["ai_assistant_messages"].append({
+                "role": "assistant",
+                "content": reply_text,
                 "action": action_data
             })
             st.rerun()
 
-    # ── Clear Chat ────────────────────────────────────────────────────────
+    # ── Clear Chat ───────────────────────────────────────────────────────
     st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
-    if len(st.session_state["messages"]) > 1:
-        if st.button("🗑️ Clear Chat History", type="secondary"):
-            st.session_state["messages"] = [st.session_state["messages"][0]]
-            st.session_state["copilot_session_id"] = str(uuid.uuid4())
+    if len(st.session_state["ai_assistant_messages"]) > 1:
+        if st.button("🗑️ Clear Chat History", type="secondary", key="clear_chat"):
+            st.session_state["ai_assistant_messages"] = [st.session_state["ai_assistant_messages"][0]]
+            st.session_state["ai_assistant_session_id"] = str(uuid.uuid4())
             st.rerun()
 
-    st.markdown('</div>', unsafe_allow_html=True)  # Close copilot-chat-container
+    st.markdown('</div>', unsafe_allow_html=True)  # Close ai-assistant-panel
 
 
 def _stream(text: str):

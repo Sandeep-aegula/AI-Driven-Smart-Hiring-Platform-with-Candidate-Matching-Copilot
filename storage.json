@@ -224,6 +224,16 @@
       "id": 45,
       "name": "n8n",
       "category": "General"
+    },
+    {
+      "id": 46,
+      "name": "node js",
+      "category": "General"
+    },
+    {
+      "id": 47,
+      "name": "express js",
+      "category": "General"
     }
   ],
   "jobs": [
@@ -490,6 +500,71 @@
           "category": "General"
         }
       ]
+    },
+    {
+      "id": 5,
+      "title": "Frontend Developer",
+      "department": "Development",
+      "location": "Remote",
+      "experience_min": 0,
+      "experience_max": 0,
+      "salary_min": 0,
+      "salary_max": 0,
+      "employment_type": "Full-time",
+      "hiring_manager": "",
+      "deadline": "2026-07-19",
+      "status": "Active",
+      "description": "We are seeking a Frontend Developer to join our dynamic team. As a Frontend Developer, you will be responsible for creating and maintaining the user interface of web applications.",
+      "responsibilities": [
+        "Design and implement user interfaces for web applications",
+        "Write clean, efficient, and well-documented code",
+        "Collaborate with backend developers to ensure seamless integration",
+        "Test and debug frontend components",
+        "Stay up-to-date with the latest web technologies and trends"
+      ],
+      "requirements": [],
+      "preferred_skills": [
+        "Java",
+        "React js",
+        "Mysql"
+      ],
+      "nice_to_have_skills": [],
+      "benefits": [],
+      "applications_count": 0,
+      "created_at": "2026-07-19T16:10:08.843740",
+      "updated_at": "2026-07-19T16:10:08.843751",
+      "skills": [
+        {
+          "id": 21,
+          "name": "Java",
+          "category": "General"
+        },
+        {
+          "id": 14,
+          "name": "React js",
+          "category": "General"
+        },
+        {
+          "id": 37,
+          "name": "MySQL",
+          "category": "General"
+        },
+        {
+          "id": 46,
+          "name": "node js",
+          "category": "General"
+        },
+        {
+          "id": 47,
+          "name": "express js",
+          "category": "General"
+        },
+        {
+          "id": 18,
+          "name": "MongoDB",
+          "category": "General"
+        }
+      ]
     }
   ],
   "candidates": [
@@ -520,7 +595,7 @@
       "avatar_url": "",
       "summary": "Senior engineer with strong product delivery and FastAPI experience.",
       "created_at": "2026-07-10T15:32:18.296138",
-      "updated_at": "2026-07-17T14:20:51.750279",
+      "updated_at": "2026-07-19T15:42:47.477723",
       "skills": [
         {
           "id": 1,
@@ -681,7 +756,7 @@
       "avatar_url": "",
       "summary": "Resume imported and parsed.",
       "created_at": "2026-07-12T08:26:29.071351",
-      "updated_at": "2026-07-19T11:23:35.417095",
+      "updated_at": "2026-07-19T17:56:46.042126",
       "skills": [
         {
           "id": 6,
@@ -853,6 +928,182 @@
           "sender_name": "HR",
           "reply_to_email": "",
           "draft_saved": false
+        },
+        {
+          "id": 5,
+          "subject": "Thank You for Your Interest in [Company Name]",
+          "body": "Dear Sandeep Aegula,\n\nThank you for expressing interest in our company and taking the time to apply. After careful consideration of your application, we regret to inform you that at this time, we are not able to move forward with you for this role.\n\nWe appreciate your understanding and wish you all the best in your future endeavors. If there is anything else I can assist you with, please do not hesitate to contact me.\n\nBest regards,\nHR ABC company\nJunior Developer\nABC company",
+          "status": "Sent",
+          "sent_at": "2026-07-19T16:05:57.590524",
+          "email_type": "Rejection",
+          "decision": "Rejected",
+          "interview_id": 3,
+          "job_id": null,
+          "job_title": "",
+          "round_name": null,
+          "sender_name": "aegulasandeep@gmail.com",
+          "reply_to_email": "aegulasandeep@gmail.com",
+          "draft_saved": false
+        },
+        {
+          "id": 6,
+          "subject": "Invitation to Frontend Interview",
+          "body": "Dear Sandeep Aegula,\n\nI hope this message finds you well. I am writing to extend an invitation for a frontend interview at our company.\n\nBased on your profile, we believe you are a strong candidate for the position and would love the opportunity to learn more about your skills and experience. The interview will be conducted via video call and is scheduled for [insert date and time]. Please let us know if this works for you, or if there is another preferred time that suits you better.\n\nWe value diversity and inclusion at our company and are excited to have the chance to meet you in person. If you have any questions or need further information, please don't hesitate to reach out to me directly.\n\nThank you for considering this opportunity,\n\n[Your Name]\n[Your Title]\n[Company Name]\n[Reply-to Email]",
+          "status": "Sent",
+          "sent_at": "2026-07-19T16:13:27.755785",
+          "email_type": "Interview Invitation",
+          "decision": "Reject",
+          "interview_id": null,
+          "job_id": 3,
+          "job_title": "Frontend",
+          "round_name": "",
+          "sender_name": "Hr",
+          "reply_to_email": "aegulasandeep@gmail.com",
+          "draft_saved": false
+        },
+        {
+          "id": 7,
+          "subject": "Thank You for Your Interest in [Company Name]",
+          "body": "Dear Sandeep Aegula,\n\nThank you for expressing interest in our company and taking the time to apply. After careful consideration of your application, we regret to inform you that at this time, we are not able to move forward with you for this role.\n\nWe appreciate your understanding and wish you all the best in your future endeavors. If there is anything else I can assist you with, please do not hesitate to contact me.\n\nBest regards,\nHR ABC company\nJunior Developer\nABC company",
+          "status": "Sent",
+          "sent_at": "2026-07-19T16:15:26.522658",
+          "email_type": "Rejection",
+          "decision": "Rejected",
+          "interview_id": 3,
+          "job_id": null,
+          "job_title": "",
+          "round_name": null,
+          "sender_name": "aegulasandeep@gmail.com",
+          "reply_to_email": "aegulasandeep@gmail.com",
+          "draft_saved": false
+        },
+        {
+          "id": 8,
+          "subject": "Thank You for Your Interest in [Company Name]",
+          "body": "Dear Sandeep Aegula,\n\nThank you for expressing interest in our company and taking the time to apply. After careful consideration of your application, we regret to inform you that at this time, we are not able to move forward with you for this role.\n\nWe appreciate your understanding and wish you all the best in your future endeavors. If there is anything else I can assist you with, please do not hesitate to contact me.\n\nBest regards,\nHR ABC company\nJunior Developer\nABC company",
+          "status": "Sent",
+          "sent_at": "2026-07-19T16:15:44.786585",
+          "email_type": "Rejection",
+          "decision": "Rejected",
+          "interview_id": 3,
+          "job_id": null,
+          "job_title": "",
+          "round_name": null,
+          "sender_name": "aegulasandeep@gmail.com",
+          "reply_to_email": "aegulasandeep@gmail.com",
+          "draft_saved": false
+        },
+        {
+          "id": 9,
+          "subject": "Thank You for Your Interest in [Company Name]",
+          "body": "Dear Sandeep Aegula,\n\nThank you for expressing interest in our company and taking the time to apply. After careful consideration of your application, we regret to inform you that at this time, we are not able to move forward with you for this role.\n\nWe appreciate your understanding and wish you all the best in your future endeavors. If there is anything else I can assist you with, please do not hesitate to contact me.\n\nBest regards,\nHR ABC company\nJunior Developer\nABC company",
+          "status": "Sent",
+          "sent_at": "2026-07-19T16:15:50.016389",
+          "email_type": "Rejection",
+          "decision": "Rejected",
+          "interview_id": 3,
+          "job_id": null,
+          "job_title": "",
+          "round_name": null,
+          "sender_name": "aegulasandeep@gmail.com",
+          "reply_to_email": "aegulasandeep@gmail.com",
+          "draft_saved": false
+        },
+        {
+          "id": 10,
+          "subject": "Thank You for Your Interest in [Company Name]",
+          "body": "Dear Sandeep Aegula,\n\nThank you for expressing interest in our company and taking the time to apply. After careful consideration of your application, we regret to inform you that at this time, we are not able to move forward with you for this role.\n\nWe appreciate your understanding and wish you all the best in your future endeavors. If there is anything else I can assist you with, please do not hesitate to contact me.\n\nBest regards,\nHR ABC company\nJunior Developer\nABC company",
+          "status": "Sent",
+          "sent_at": "2026-07-19T16:17:06.547922",
+          "email_type": "Rejection",
+          "decision": "Rejected",
+          "interview_id": 3,
+          "job_id": null,
+          "job_title": "",
+          "round_name": null,
+          "sender_name": "aegulasandeep@gmail.com",
+          "reply_to_email": "aegulasandeep@gmail.com",
+          "draft_saved": false
+        },
+        {
+          "id": 11,
+          "subject": "Interview Invitation for Frontend Position",
+          "body": "Dear Sandeep Aegula,\n\nThank you for expressing interest in the Frontend Developer position at our company. Based on your application and our evaluation, we believe that you have a strong match with this role. We are excited to give you the opportunity to discuss how you can contribute to our team.\n\nTo proceed, please confirm your availability for an interview by replying to this email by [Insert Date]. If you have any questions or need further information, feel free to reach out.\n\nWe look forward to hearing from you soon!\n\nBest regards,\nHr\naegulasandeep@gmail.com",
+          "status": "Sent",
+          "sent_at": "2026-07-19T17:12:19.210474",
+          "email_type": "Interview Invitation",
+          "decision": "Reject",
+          "interview_id": null,
+          "job_id": 3,
+          "job_title": "Frontend",
+          "round_name": "",
+          "sender_name": "HR",
+          "reply_to_email": "aegulasandeep@gmail.com",
+          "draft_saved": false
+        },
+        {
+          "id": 12,
+          "subject": "Interview Invitation for Frontend Role",
+          "body": "Dear Sandeep Aegula,\n\nI hope this message finds you well. I am writing to extend an invitation to interview for the Frontend position at our company.\n\nYour application was highly rated with a match score of 50%, indicating that we believe your skills and experience align closely with our requirements. We are excited to have the opportunity to discuss how you can contribute to our team.\n\nThe interview will be conducted on [Date] at [Time] via [Online/In-Person]. Please let me know if this date works for you, or if there is another time that would be more convenient for you.\n\nWe look forward to hearing from you soon and potentially welcoming you into our team!\n\nBest regards,\n[Your Name]\n[Your Position]\n[Your Contact Information]",
+          "status": "Failed",
+          "sent_at": "2026-07-19T17:21:40.103975",
+          "email_type": "Interview Invitation",
+          "decision": "Rejection",
+          "interview_id": null,
+          "job_id": 3,
+          "job_title": "Frontend",
+          "round_name": "",
+          "sender_name": "Hr",
+          "reply_to_email": "aegulasandeep@gmail.com",
+          "draft_saved": false
+        },
+        {
+          "id": 13,
+          "subject": "Interview Invitation - Frontend",
+          "body": "Dear SANDEEP AEGULA,\n\nWe are excited to invite you to the next step for the Frontend role.\n\nBest regards,\nHR\nReply-To: aegulasandeep@gmail.com",
+          "status": "Failed",
+          "sent_at": "2026-07-19T17:28:23.043161",
+          "email_type": "Interview Invitation",
+          "decision": "Reject",
+          "interview_id": null,
+          "job_id": 3,
+          "job_title": "Frontend",
+          "round_name": "",
+          "sender_name": "HR",
+          "reply_to_email": "aegulasandeep@gmail.com",
+          "draft_saved": false
+        },
+        {
+          "id": 14,
+          "subject": "Interview Invitation - Frontend",
+          "body": "Dear SANDEEP AEGULA,\n\nWe are excited to invite you to the next step for the Frontend role.\n\nBest regards,\nHr\nReply-To: aegulasandeep@gmail.com",
+          "status": "Sent",
+          "sent_at": "2026-07-19T17:35:01.585251",
+          "email_type": "Interview Invitation",
+          "decision": "Rejection",
+          "interview_id": null,
+          "job_id": 3,
+          "job_title": "Frontend",
+          "round_name": "",
+          "sender_name": "Hr",
+          "reply_to_email": "aegulasandeep@gmail.com",
+          "draft_saved": false
+        },
+        {
+          "id": 15,
+          "subject": "Interview Invitation for Frontend Position",
+          "body": "Hello Sandeep,\n\nWe are pleased to extend our invitation for an interview for the Frontend position at our company. Based on your application, we believe you have a strong potential fit for this role.\n\nThe interview will take place via video call on [Date] at [Time]. Please let us know if the suggested date and time work for you or if there are any changes you prefer.\n\nWe look forward to meeting you soon!\n\nBest regards,\n[Your Name]\n[Your Position]\n[Company Name]",
+          "status": "Sent",
+          "sent_at": "2026-07-19T17:56:46.042104",
+          "email_type": "Interview Invitation",
+          "decision": "Rejection",
+          "interview_id": null,
+          "job_id": 3,
+          "job_title": "Frontend",
+          "round_name": "",
+          "sender_name": "Hr",
+          "reply_to_email": "aegulasandeep@gmail.com",
+          "draft_saved": false
         }
       ],
       "ranking_explanation": "Sandeep Aegula is a strong candidate for the Frontend Intern position as he possesses multiple programming languages and technologies relevant to the role, including Python, Java, JavaScript (ES6+), and React.js. However, his lack of specific experience in CSS frameworks like Bootstrap or TailwindCSS, and knowledge of version control systems such as Git, may make him a poor fit for the job."
@@ -981,8 +1232,26 @@
       "notes": [],
       "avatar_url": "",
       "created_at": "2026-07-17T14:02:42.060806",
-      "updated_at": "2026-07-17T14:07:51.011063",
-      "skills": []
+      "updated_at": "2026-07-19T17:51:01.403843",
+      "skills": [],
+      "email_history": [
+        {
+          "id": 1,
+          "subject": "Rejection - Frontend",
+          "body": "Dear GUMMADI ABHINASH,\n\nAfter careful consideration, we are unable to move forward with your application at this time.\n\nBest regards,\nHR\nReply-To: aegulasandeep@gmail.com",
+          "status": "Sent",
+          "sent_at": "2026-07-19T17:51:01.403819",
+          "email_type": "Rejection",
+          "decision": "Rejected",
+          "interview_id": null,
+          "job_id": 3,
+          "job_title": "Frontend",
+          "round_name": "",
+          "sender_name": "HR",
+          "reply_to_email": "aegulasandeep@gmail.com",
+          "draft_saved": false
+        }
+      ]
     },
     {
       "name": "SANDEEP AEGULA",
@@ -995,7 +1264,7 @@
       "years_experience": 0,
       "location": "",
       "status": "Shortlisted",
-      "match_score": 50,
+      "match_score": 75,
       "skill_match_breakdown": {
         "matched_skills": [
           "React.js",
@@ -1014,8 +1283,26 @@
       "notes": [],
       "avatar_url": "",
       "created_at": "2026-07-17T14:02:49.236940",
-      "updated_at": "2026-07-17T14:07:35.475903",
-      "skills": []
+      "updated_at": "2026-07-19T18:45:02.040838",
+      "skills": [],
+      "email_history": [
+        {
+          "id": 1,
+          "subject": "Interview Invitation for Frontend Developer Role",
+          "body": "Dear Sandeep Aegula,\n\nWe are thrilled to extend you an invitation to our interview process for the position of Frontend Developer. Your experience in React.js, Next.js, Express.js, Node.js, and MongoDB is highly relevant to this role, and we believe your skills align well with our team needs.\n\nPlease find the details below:\n- **Interview Date:** [Insert Date]\n- **Time:** [Insert Time]\n- **Location:** [Insert Location/Zoom Link]\n\nIf you have any questions or require further information, please do not hesitate to reach out to me directly at [Insert Contact Information].\n\nWe look forward to the opportunity of discussing your qualifications and how they can contribute to our team.\n\nBest regards,\n[Sender Name]\n[Sender Title]\n[Company Name]\n[Contact Information]",
+          "status": "Sent",
+          "sent_at": "2026-07-19T15:50:14.668233",
+          "email_type": "Interview Invitation",
+          "decision": "Shortlisted",
+          "interview_id": null,
+          "job_id": 4,
+          "job_title": "Frontend Developer",
+          "round_name": "",
+          "sender_name": "Charlie Davis",
+          "reply_to_email": "",
+          "draft_saved": false
+        }
+      ]
     },
     {
       "name": "SANDEEP AEGULA",
@@ -1167,11 +1454,11 @@
       "candidate_id": 8,
       "job_id": 4,
       "status": "Shortlist",
-      "match_score": 65,
-      "ai_summary": "Sandeep Aegula is a Computer Science undergraduate with practical experience in AI/ML, full-stack web development, and cloud platforms. He has built scalable AI-powered applications and data-driven solutions using technologies like React.js, Next.js, Node.js, Express.js, MongoDB, and AWS.",
+      "match_score": 75,
+      "ai_summary": "Sandeep Aegula is a Computer Science undergraduate with practical experience in AI/ML, full-stack web development, and cloud platforms. He has built scalable AI-powered applications and data-driven solutions, including projects on React.js, Next.js, Node.js, Express.js, and MongoDB.",
       "recruiter_notes": "",
       "created_at": "2026-07-17T14:07:51.032344",
-      "updated_at": "2026-07-17T14:07:51.032354"
+      "updated_at": "2026-07-19T18:45:02.045130"
     },
     {
       "id": 12,
@@ -2026,7 +2313,7 @@
       "recommendation": "",
       "created_at": "2026-07-10T15:32:18.296368",
       "decision": "Next Round",
-      "updated_at": "2026-07-17T14:20:51.750266"
+      "updated_at": "2026-07-19T15:42:47.477709"
     },
     {
       "id": 2,
@@ -2180,7 +2467,29 @@
         "Recruiter ROI Dashboard",
         "Funnel Conversion Analytics"
       ],
-      "promotions": []
+      "promotions": [],
+      "talent_insights": {
+        "executive_summary": "AI Insights are currently unavailable. Please check the AI service.",
+        "technical_assessment": "N/A",
+        "professional_assessment": "N/A",
+        "leadership_assessment": "N/A",
+        "communication_assessment": "N/A",
+        "collaboration_assessment": "N/A",
+        "learning_and_adaptability": "N/A",
+        "productivity_insights": "N/A",
+        "career_growth": {
+          "promotion_readiness": "Unknown",
+          "suggested_next_role": "Unknown",
+          "roadmap": []
+        },
+        "recommendations": [
+          "Review manually due to AI timeout."
+        ],
+        "overall_talent_score": 0,
+        "rating": "Unknown",
+        "error": "AI timeout or parsing failure"
+      },
+      "updated_at": "2026-07-19T14:57:19.194655"
     }
   ]
 }

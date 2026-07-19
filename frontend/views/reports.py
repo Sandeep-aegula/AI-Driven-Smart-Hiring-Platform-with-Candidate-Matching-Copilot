@@ -16,6 +16,18 @@ from frontend.components import api_client
 from frontend.services.app_state import AppState
 from frontend.components.page_utils import setup_page, render_sidebar_footer
 
+# Try to import reportlab for PDF generation
+try:
+    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.lib.units import inch
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    REPORTLAB_AVAILABLE = True
+except ImportError:
+    REPORTLAB_AVAILABLE = False
+
 # Page Config
 st.set_page_config(
     page_title="Reports - HirePilot",
@@ -166,13 +178,97 @@ if st.session_state.generated_report_type:
         excel_buffer = io.BytesIO()
         try:
             with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                df.to_excel(writer, index=False, sheet_name='Report')
+                df.to_excel(excel_buffer, index=False, sheet_name='Report')
             excel_data = excel_buffer.getvalue()
         except Exception:
             excel_data = csv_buffer  # fallback to csv bytes
             
-        # PDF Text Buffer
-        pdf_text = f"""HIREPILOT ANALYSIS REPORT: {report_name.upper()}
+        # Generate proper PDF using reportlab
+        pdf_buffer = io.BytesIO()
+        if REPORTLAB_AVAILABLE:
+            try:
+                doc = SimpleDocTemplate(pdf_buffer, pagesize=A4, rightMargin=0.5*inch, leftMargin=0.5*inch, topMargin=0.5*inch, bottomMargin=0.5*inch)
+                elements = []
+                
+                # Styles
+                styles = getSampleStyleSheet()
+                title_style = ParagraphStyle(
+                    'CustomTitle',
+                    parent=styles['Heading1'],
+                    fontSize=18,
+                    spaceAfter=12,
+                    alignment=TA_CENTER,
+                    textColor=colors.HexColor('#1E3A8A')
+                )
+                subtitle_style = ParagraphStyle(
+                    'Subtitle',
+                    parent=styles['Normal'],
+                    fontSize=10,
+                    spaceAfter=6,
+                    alignment=TA_CENTER,
+                    textColor=colors.HexColor('#64748B')
+                )
+                header_style = ParagraphStyle(
+                    'Header',
+                    parent=styles['Heading2'],
+                    fontSize=12,
+                    spaceAfter=6,
+                    textColor=colors.HexColor('#1E3A8A')
+                )
+                
+                # Title
+                elements.append(Paragraph(f"HIREPILOT ANALYSIS REPORT: {report_name.upper()}", title_style))
+                elements.append(Paragraph(f"Generated At: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", subtitle_style))
+                elements.append(Spacer(1, 12))
+                
+                # Convert DataFrame to table
+                if not df.empty:
+                    # Prepare table data
+                    headers = [Paragraph(str(col), ParagraphStyle('Header', parent=styles['Normal'], fontSize=8, textColor=colors.white, alignment=TA_CENTER)) for col in df.columns]
+                    data = [headers]
+                    
+                    for _, row in df.iterrows():
+                        row_data = []
+                        for val in row:
+                            if pd.isna(val):
+                                row_data.append(Paragraph("", ParagraphStyle('Cell', parent=styles['Normal'], fontSize=7)))
+                            else:
+                                row_data.append(Paragraph(str(val)[:100], ParagraphStyle('Cell', parent=styles['Normal'], fontSize=7)))
+                        data.append(row_data)
+                    
+                    # Create table
+                    col_widths = [6.5*inch / len(df.columns)] * len(df.columns)
+                    table = Table(data, colWidths=col_widths, repeatRows=1)
+                    
+                    # Style the table
+                    table_style = TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1E3A8A')),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 8),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                        ('TOPPADDING', (0, 0), (-1, 0), 8),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+                        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                        ('FONTSIZE', (0, 1), (-1, -1), 7),
+                        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+                        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F8FAFC')]),
+                        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                        ('TOPPADDING', (0, 1), (-1, -1), 4),
+                        ('BOTTOMPADDING', (0, 1), (-1, -1), 4),
+                    ])
+                    table.setStyle(table_style)
+                    elements.append(table)
+                
+                elements.append(Spacer(1, 24))
+                elements.append(Paragraph("End of Report", ParagraphStyle('End', parent=styles['Normal'], fontSize=8, alignment=TA_CENTER, textColor=colors.HexColor('#94A3B8'))))
+                
+                doc.build(elements)
+            except Exception as e:
+                # Fallback to simple text if reportlab fails
+                pdf_text = f"""HIREPILOT ANALYSIS REPORT: {report_name.upper()}
 Generated At: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 --------------------------------------------------
 
@@ -181,7 +277,21 @@ Generated At: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 --------------------------------------------------
 End of Report
 """
-        pdf_buffer = pdf_text.encode('utf-8')
+                pdf_buffer.write(pdf_text.encode('utf-8'))
+        else:
+            # Fallback if reportlab not available
+            pdf_text = f"""HIREPILOT ANALYSIS REPORT: {report_name.upper()}
+Generated At: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+--------------------------------------------------
+
+{df.to_string()}
+
+--------------------------------------------------
+End of Report
+"""
+            pdf_buffer.write(pdf_text.encode('utf-8'))
+        
+        pdf_data = pdf_buffer.getvalue()
         
         st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
         
@@ -190,7 +300,7 @@ End of Report
         with d_col1:
             st.download_button(
                 label="📄 Download PDF",
-                data=pdf_buffer,
+                data=pdf_data,
                 file_name=f"{report_name.replace(' ', '_')}.pdf",
                 mime="application/pdf",
                 use_container_width=True

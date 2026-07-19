@@ -14,6 +14,7 @@ if current_dir not in sys.path:
 
 from frontend.components.sidebar import render_sidebar
 from frontend.components.header import render_header
+from components.ai_assistant import render_ai_assistant
 from frontend.services.cache import inject_css_once
 
 # --- VIEW MAPPING ---
@@ -97,6 +98,13 @@ def main():
         render_ai_copilot()
     else:
         st.error(f"View not found! {page}")
+
+    # --- RENDER AI ASSISTANT (Floating Chat Widget) ---
+    render_ai_assistant()
+
+
+if __name__ == "__main__":
+    main()
 
 
 # Light mode update and sidebar collapse fix

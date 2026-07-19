@@ -10,7 +10,7 @@ from frontend.services.cache import get_jobs_cached, get_candidates_cached, get_
 def render_ai_screening() -> None:
     st.markdown("""
     <h1 style="font-size:1.6rem;font-weight:800;color:#0F172A;margin:0 0 4px 0;">
-        🤖 AI Screening
+        AI Screening
     </h1>
     <p style="font-size:0.85rem;color:#64748B;margin:0 0 20px 0;font-weight:500;">
         AI-powered resume screening and candidate analysis
@@ -45,7 +45,7 @@ def render_ai_screening() -> None:
 
     st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
 
-    if st.button("🤖 Run AI Match Analysis", type="primary", use_container_width=True):
+    if st.button("Run AI Match Analysis", type="primary", use_container_width=True):
         with st.spinner("Ollama qwen2.5-coder:7b is running evaluation… Up to 20 seconds…"):
             result = api_client.screen_candidate(cand_id, job_id) if hasattr(api_client, "screen_candidate") else None
             if not result:
@@ -88,6 +88,18 @@ def render_ai_screening() -> None:
     st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
 
     # ── Gauge + Summary ───────────────────────────────────────────────────
+    # Get the screening result
+    rkey = f"screen_{cand_id}_{job_id}"
+    rkey = f"screen_{cand_id}_{job_id}"
+    res = st.session_state.get(rkey, {}) or {}
+    
+    # Extract values from result
+    score = res.get("overall_match_percent", res.get("match_score", 75))
+    st.write("DEBUG SCORE:", score)
+    st.write("DEBUG RESULT:", res)
+    rec = res.get("overall_recommendation", "Shortlist")
+    rc = "#10B981" if rec == "Shortlist" else ("#F59E0B" if rec == "Hold" else "#EF4444")
+
     cg1, cg2 = st.columns(2)
     with cg1:
         with st.container(border=True):

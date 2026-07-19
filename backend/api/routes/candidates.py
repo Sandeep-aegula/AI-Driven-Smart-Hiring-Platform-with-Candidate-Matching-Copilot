@@ -7,6 +7,7 @@ from backend.schemas.entities import CandidateCreate, CandidateRead, CompareCand
 from backend.database.data_store import data_store
 from backend.services.ai_candidate_service import generate_ranking_explanation, analyze_skill_gap, compare_candidates
 from backend.services.ai_email_service import draft_candidate_email
+from backend.services.emailer import send_custom_email
 
 logger = logging.getLogger(__name__)
 
@@ -174,10 +175,35 @@ async def draft_candidate_email_route(candidate_id: int, payload: EmailDraftRequ
 
 @router.post("/{candidate_id}/send-email", response_model=EmailRecord)
 async def send_candidate_email(candidate_id: int, payload: EmailSendRequest):
-    try:
-        return await data_store.add_email_history(candidate_id, payload.subject, payload.body)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+    candidate = await data_store.get_candidate(candidate_id)
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    
+    # Actually send the email via SMTP (with Sent folder support)
+    email_sent = False
+    recipient_email = candidate.get("email", "").strip()
+    if recipient_email:
+        try:
+            email_sent = send_custom_email(
+                subject=payload.subject,
+                body=payload.body,
+                recipient=recipient_email,
+                sender=settings.smtp_from_email
+            )
+        except Exception as e:
+            logger.error(f"Failed to send email to {recipient_email}: {e}")
+            email_sent = False
+    
+    # Save to history regardless
+    status = "Sent" if email_sent else "Failed"
+    return await data_store.add_email_history(
+        candidate_id, 
+        payload.subject, 
+        payload.body, 
+        status=status,
+        email_type=payload.email_type if hasattr(payload, 'email_type') else "",
+        draft_saved=False
+    )
 
 
 @router.get("/{candidate_id}/email-history", response_model=list[EmailRecord])

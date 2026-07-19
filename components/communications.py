@@ -79,7 +79,6 @@ def _render_compose():
     interview_id = st.session_state.get("comm_draft_interview_id")
     job_id = st.session_state.get("comm_draft_job_id")
     email_type = st.session_state.get("comm_draft_email_type", EMAIL_TYPE_OPTIONS[0])
-    decision = st.session_state.get("comm_draft_decision", "")
 
     candidates = get_candidates_cached()
     candidate_map = {c["id"]: c for c in candidates}
@@ -97,14 +96,17 @@ def _render_compose():
         st.markdown(f"**Job:** {job_map.get(job_id, {}).get('title', 'Unknown')}  ")
 
     email_type = st.selectbox("Email Type", EMAIL_TYPE_OPTIONS, index=EMAIL_TYPE_OPTIONS.index(email_type) if email_type in EMAIL_TYPE_OPTIONS else 0)
-    decision = st.text_input("Decision", value=decision)
-    sender_name = st.text_input("Sender Name", value=st.session_state.get("comm_sender_name", ""))
-    reply_to = st.text_input("Reply-To Email", value=st.session_state.get("comm_reply_to", ""))
 
     if st.button("Generate Draft"):
-        if not candidate_id or not job_id or not decision:
-            st.error("Candidate, Job, and Decision are required to generate a draft.")
+        if not candidate_id or not job_id:
+            st.error("Candidate and Job are required to generate a draft.")
         else:
+            # Auto-populate decision from candidate status, sender name, and reply-to email
+            candidate = candidate_map.get(candidate_id, {})
+            decision = candidate.get("status", "Application Received")
+            sender_name = "HR Recruitment Team"
+            reply_to = "hr@company.com"  # Default, could be from env
+            
             payload = {
                 "candidate_id": candidate_id,
                 "email_type": email_type,
@@ -131,38 +133,35 @@ def _render_compose():
     if draft:
         subject = st.text_input("Subject", value=draft.get("subject", ""))
         body = st.text_area("Body", value=draft.get("body", ""), height=260)
-        if st.button("Save Draft"):
-            payload = {
-                "candidate_id": candidate_id,
-                "subject": subject,
-                "body": body,
-                "email_type": email_type,
-                "decision": decision,
-                "interview_id": interview_id,
-                "sender_name": sender_name,
-                "reply_to_email": reply_to,
-            }
-            res = api_client.save_communication_draft(payload)
-            if res:
-                st.success("Draft saved.")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Send Email"):
+                # Use auto-populated values
+                candidate = candidate_map.get(candidate_id, {})
+                decision = candidate.get("status", "Application Received")
+                sender_name = st.session_state.get("comm_sender_name", "HR Recruitment Team")
+                reply_to = st.session_state.get("comm_reply_to", "hr@company.com")
+                
+                payload = {
+                    "candidate_id": candidate_id,
+                    "subject": subject,
+                    "body": body,
+                    "email_type": email_type,
+                    "decision": decision,
+                    "interview_id": interview_id,
+                    "sender_name": sender_name,
+                    "reply_to_email": reply_to,
+                }
+                res = api_client.send_communication_email(payload)
+                if res:
+                    st.success("Email sent and recorded.")
+                    st.session_state["comm_draft"] = None
+                    api_client.clear_candidates_cache()
+                    api_client.clear_interviews_cache()
+        with col2:
+            if st.button("Clear Draft"):
                 st.session_state["comm_draft"] = None
-        if st.button("Send Email"):
-            payload = {
-                "candidate_id": candidate_id,
-                "subject": subject,
-                "body": body,
-                "email_type": email_type,
-                "decision": decision,
-                "interview_id": interview_id,
-                "sender_name": sender_name,
-                "reply_to_email": reply_to,
-            }
-            res = api_client.send_communication_email(payload)
-            if res:
-                st.success("Email sent and recorded.")
-                st.session_state["comm_draft"] = None
-                api_client.clear_candidates_cache()
-                api_client.clear_interviews_cache()
+                st.rerun()
 
 
 def render_communications():

@@ -8,6 +8,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 
 from backend.constants.email_mapping import STATUS_TO_EMAIL_TYPE, EMAIL_TYPE_OPTIONS, PENDING_DECISIONS
+from backend.core.config import settings
 from backend.database.data_store import data_store
 from backend.schemas.entities import (
     CommunicationDraftRequest,
@@ -15,6 +16,7 @@ from backend.schemas.entities import (
     EmailRecord,
 )
 from backend.services.ai_email_service import draft_communication_email
+from backend.services.emailer import send_custom_email
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -271,17 +273,42 @@ async def send_communication_email(payload: CommunicationSendRequest) -> EmailRe
             job = await data_store.get_job(job_id)
             job_title = job.get("title", "") if job else ""
 
+    # Actually send the email via SMTP
+    email_sent = False
+    recipient_email = candidate.get("email", "").strip()
+    sender_name = payload.sender_name or "Recruitment Team"
+    
+    if recipient_email:
+        try:
+            # Build email body with sender info
+            body = payload.body
+            if payload.reply_to_email:
+                body += f"\n\nReply-To: {payload.reply_to_email}"
+            body += f"\n\nBest regards,\n{sender_name}"
+            
+            email_sent = send_custom_email(
+                subject=payload.subject,
+                body=body,
+                recipient=recipient_email,
+                sender=settings.smtp_from_email
+            )
+        except Exception as e:
+            logger.error(f"Failed to send communication email to {recipient_email}: {e}")
+            email_sent = False
+    
+    # Save to history regardless
+    status = "Sent" if email_sent else "Failed"
     result = await data_store.add_email_history(
         payload.candidate_id,
         payload.subject,
         payload.body,
-        status="Sent",
+        status=status,
         email_type=payload.email_type,
         decision=payload.decision,
         interview_id=payload.interview_id,
         job_id=job_id,
         job_title=job_title,
-        round_name=interview_context.get("round") if interview_context else "",
+        round_name=interview_context.get("round") or "" if interview_context else "",
         sender_name=payload.sender_name,
         reply_to_email=payload.reply_to_email,
         draft_saved=False,
@@ -323,7 +350,7 @@ async def save_communication_draft(payload: CommunicationSendRequest) -> EmailRe
         interview_id=payload.interview_id,
         job_id=job_id,
         job_title=job_title,
-        round_name=interview_context.get("round") if interview_context else "",
+        round_name=interview_context.get("round") or "" if interview_context else "",
         sender_name=payload.sender_name,
         reply_to_email=payload.reply_to_email,
         draft_saved=True,

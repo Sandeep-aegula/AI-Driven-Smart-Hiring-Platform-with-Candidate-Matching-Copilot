@@ -1,14 +1,14 @@
 """
-app.py â€” HirePilot SPA Entry Point
+app.py — HirePilot SPA Entry Point
 =====================================
 Single entry point for the entire application.
 
 Rules:
-  â€¢ st.set_page_config() is called ONCE â€” right here, at the top.
-  â€¢ CSS is injected ONCE per browser session via services/cache.py.
-  â€¢ The sidebar is rendered by shared/sidebar.py on every rerun.
-  â€¢ Navigation happens by changing st.session_state["current_page"].
-  â€¢ NEVER import or call st.switch_page() anywhere in this project.
+  * st.set_page_config() is called ONCE — right here, at the top.
+  * CSS is injected ONCE per browser session via services/cache.py.
+  * The sidebar is rendered by shared/sidebar.py on every rerun.
+  * Navigation happens by changing st.session_state["current_page"].
+  * NEVER import or call st.switch_page() anywhere in this project.
 
 Run:
     streamlit run app.py
@@ -27,7 +27,7 @@ if PROJECT_ROOT not in sys.path:
 
 st.set_page_config(
     page_title="HirePilot AI Recruitment Copilot",
-    page_icon="âœˆï¸",
+    page_icon="✨",
     layout="wide",
     initial_sidebar_state="expanded",
 )
