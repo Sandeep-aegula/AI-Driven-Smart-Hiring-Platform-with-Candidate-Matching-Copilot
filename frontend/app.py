@@ -104,19 +104,17 @@ def main():
     # 2. Inject CSS exactly once per browser session (prevents flicker)
     inject_css_once()
 
-    # 3. Attempt to start backend & Ollama AI server (silently, if not already running)
-    if not st.session_state.get("__backend_started__"):
-        _start_backend()
-        _start_ollama()
-        st.session_state["__backend_started__"] = True
+    # 3. Backend & Ollama are managed externally (separate terminals)
+    #    - Backend: python -m uvicorn backend.api.app:app --host 127.0.0.1 --port 8000 --reload
+    #    - Ollama:  ollama serve  (then: ollama pull qwen2.5-coder:7b)
 
-    # 4. Persistent sidebar â€” renders on EVERY rerun, never destroyed
+    # 4. Persistent sidebar — renders on EVERY rerun, never destroyed
     render_sidebar()
 
-    # 5. Persistent header â€” breadcrumb, search, notifications, date
+    # 5. Persistent header — breadcrumb, search, notifications, date
     render_header()
 
-    # 6. Content dispatch â€” only the content area changes
+    # 6. Content dispatch — only the content area changes
     page = st.session_state.get("current_page", "Dashboard")
 
     if page == "Dashboard":

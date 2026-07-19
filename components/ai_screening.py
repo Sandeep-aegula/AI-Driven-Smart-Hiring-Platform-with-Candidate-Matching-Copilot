@@ -71,27 +71,19 @@ def render_ai_screening() -> None:
             st.session_state[rkey] = cached_res
         else:
             c_obj = next((c for c in cands_list if c["id"] == cand_id), {})
-        if c_obj.get("match_score", 0) > 0:
-            st.session_state[rkey] = {
-                "overall_match_percent": c_obj.get("match_score", 75),
-                "overall_recommendation": "Shortlist" if c_obj.get("match_score",75) >= 70 else "Reject",
-                "resume_summary": c_obj.get("summary",""),
-                "explanation": "Match score based on parsed profile comparison.",
-                "strengths": ["Strong coding alignment","Experienced profile","Relevant degree"],
-                "weaknesses": ["Minor cloud platform gaps"],
-                "missing_skills": ["Kubernetes"],
-                "radar": {"Skills": c_obj.get("match_score",75),
-                          "Experience": c_obj.get("match_score",75)-5,
-                          "Education": 80, "Projects": 75}
-            }
-
-    if rkey not in st.session_state:
-        return
-
-    res   = st.session_state[rkey]
-    score = res.get("overall_match_percent", 0)
-    rec   = res.get("overall_recommendation", "Shortlist")
-    rc    = {"Approve":"#10B981","Shortlist":"#F59E0B"}.get(rec, "#EF4444")
+            if c_obj.get("match_score", 0) > 0:
+                st.session_state[rkey] = {
+                    "overall_match_percent": c_obj.get("match_score", 75),
+                    "overall_recommendation": "Shortlist" if c_obj.get("match_score",75) >= 70 else "Reject",
+                    "resume_summary": c_obj.get("summary",""),
+                    "explanation": "Match score based on parsed profile comparison.",
+                    "strengths": ["Strong coding alignment","Experienced profile","Relevant degree"],
+                    "weaknesses": ["Minor cloud platform gaps"],
+                    "missing_skills": ["Kubernetes"],
+                    "radar": {"Skills": c_obj.get("match_score",75),
+                              "Experience": c_obj.get("match_score",75)-5,
+                              "Education": 80, "Projects": 75}
+                    }
 
     st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
 

@@ -51,30 +51,57 @@ def _inject_copilot_input_css():
             position: sticky;
             bottom: 0;
             background: transparent;
-            padding: 8px 0 4px 0;
+            padding: 12px 0 8px 0;
+            z-index: 100;
         }
         .copilot-input-wrapper [data-testid="stHorizontalBlock"] {
             background-color: #1e1e1e;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 9999px;
-            padding: 6px 10px;
+            padding: 8px 12px;
             align-items: center;
-            gap: 0px;
+            gap: 8px;
         }
         /* "+" quick-actions button */
         .copilot-input-wrapper div[data-testid="stPopover"] button {
             border-radius: 50% !important;
-            width: 34px !important;
-            height: 34px !important;
+            width: 36px !important;
+            height: 36px !important;
             padding: 0 !important;
             background-color: transparent !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important;
-            color: rgba(255, 255, 255, 0.7) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: rgba(255, 255, 255, 0.8) !important;
             font-size: 18px !important;
             line-height: 1 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
         .copilot-input-wrapper div[data-testid="stPopover"] button:hover {
-            background-color: rgba(255, 255, 255, 0.08) !important;
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.25) !important;
+        }
+        /* Popover content styling */
+        .copilot-input-wrapper [data-testid="stPopover"] > div > div {
+            background-color: #2a2a2a !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px !important;
+            padding: 8px !important;
+        }
+        .copilot-input-wrapper [data-testid="stPopover"] button {
+            border-radius: 8px !important;
+            background-color: transparent !important;
+            border: none !important;
+            color: #e6e6e6 !important;
+            font-size: 14px !important;
+            padding: 10px 12px !important;
+            width: 100% !important;
+            text-align: left !important;
+            height: auto !important;
+        }
+        .copilot-input-wrapper [data-testid="stPopover"] button:hover {
+            background-color: rgba(255, 106, 61, 0.15) !important;
+            color: #ff6a3d !important;
         }
         /* Text input — borderless, transparent, sits in the middle */
         .copilot-input-wrapper .stTextInput > div > div {
@@ -87,25 +114,30 @@ def _inject_copilot_input_css():
             border: none !important;
             color: #e6e6e6 !important;
             font-size: 15px !important;
-            padding-left: 6px !important;
+            padding: 8px 4px !important;
+            width: 100% !important;
+            min-height: 44px !important;
         }
         .copilot-input-wrapper .stTextInput input:focus {
             box-shadow: none !important;
             outline: none !important;
         }
         .copilot-input-wrapper .stTextInput input::placeholder {
-            color: rgba(255, 255, 255, 0.4) !important;
+            color: rgba(255, 255, 255, 0.45) !important;
         }
         /* Send button — circular, accent color, dims when disabled */
         .copilot-input-wrapper .send-btn button {
             border-radius: 50% !important;
-            width: 34px !important;
-            height: 34px !important;
+            width: 36px !important;
+            height: 36px !important;
             padding: 0 !important;
             background-color: #ff6a3d !important;
             border: none !important;
             color: #ffffff !important;
             font-size: 16px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
         .copilot-input-wrapper .send-btn button:hover {
             background-color: #ff7f57 !important;
@@ -133,7 +165,7 @@ def render_copilot_chat_input(key: str, placeholder: str, quick_actions: dict) -
         st.session_state[text_key] = ""
 
     st.markdown('<div class="copilot-input-wrapper">', unsafe_allow_html=True)
-    col_plus, col_input, col_send = st.columns([0.7, 6, 0.7], gap="small")
+    col_plus, col_input, col_send = st.columns([0.6, 7, 0.6], gap="small")
 
     with col_plus:
         with st.popover("+", use_container_width=True):

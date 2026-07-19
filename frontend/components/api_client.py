@@ -221,7 +221,7 @@ def update_candidate(candidate_id, payload):
 @st.cache_data(ttl=30, show_spinner=False)
 def get_upload_history():
     try:
-        resp = httpx.get(f"{API_URL}/resume/history")
+        resp = httpx.get(f"{API_URL}/resumes/history")
         return resp.json() if resp.status_code == 200 else []
     except Exception as e:
         logger.error(f"Error getting upload history: {e}")
@@ -280,10 +280,10 @@ async def _fetch_dashboard_data_async():
 def get_dashboard_data_batched():
     """Fetch 5 dashboard datasets concurrently using httpx.AsyncClient."""
     try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        data = loop.run_until_complete(_fetch_dashboard_data_async())
-        loop.close()
+        # Use asyncio.run() which properly manages the event loop
+        # This avoids the "Event loop is closed" error
+        import asyncio
+        data = asyncio.run(_fetch_dashboard_data_async())
         return data
     except Exception as e:
         logger.error(f"Failed to batch fetch dashboard data concurrently: {e}")
@@ -428,7 +428,7 @@ def update_candidate_status(candidate_id, status):
 def upload_resume(file_bytes, filename):
     try:
         files = {"file": (filename, file_bytes, "application/octet-stream")}
-        resp = httpx.post(f"{API_URL}/resume/upload", files=files, timeout=90.0)
+        resp = httpx.post(f"{API_URL}/resumes/upload", files=files, timeout=90.0)
         if resp.status_code == 200:
             clear_candidates_cache()
             get_upload_history.clear()
@@ -442,8 +442,8 @@ def upload_resume(file_bytes, filename):
 def parse_resume_text(text, filename="pasted_resume.txt"):
     try:
         resp = httpx.post(
-            f"{API_URL}/resume/parse-text",
-            json={"text": text, "filename": filename},
+            f"{API_URL}/resumes/parse-text",
+            data={"text": text, "filename": filename},
             timeout=90.0,
         )
         if resp.status_code == 200:

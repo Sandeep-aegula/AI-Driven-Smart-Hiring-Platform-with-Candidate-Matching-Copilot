@@ -25,6 +25,131 @@ st.set_page_config(
 
 setup_page("Resume Parser", "Upload and parse candidate resumes", page_key=__file__)
 
+# Inject custom CSS for better input alignment
+st.markdown("""
+<style>
+/* File uploader styling */
+.stFileUploader > div > div {
+    border: 2px dashed #E2E8F0 !important;
+    border-radius: 12px !important;
+    padding: 24px !important;
+    background-color: #FAFAFA !important;
+    transition: all 0.2s ease !important;
+}
+.stFileUploader > div > div:hover {
+    border-color: #6366F1 !important;
+    background-color: #F5F3FF !important;
+}
+.stFileUploader > div > div[data-drag-active="true"] {
+    border-color: #6366F1 !important;
+    background-color: #EEF2FF !important;
+}
+
+/* Text area for pasted resume */
+.stTextArea textarea {
+    border: 2px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+    min-height: 160px !important;
+}
+.stTextArea textarea:focus {
+    border-color: #6366F1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+    outline: none !important;
+}
+
+/* Button styling */
+.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 12px 24px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+}
+.stButton > button[kind="primary"]:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35) !important;
+}
+.stButton > button[kind="secondary"] {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    padding: 12px 24px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    color: #475569 !important;
+    transition: all 0.2s ease !important;
+}
+.stButton > button[kind="secondary"]:hover {
+    background-color: #F8FAFC !important;
+    border-color: #CBD5E1 !important;
+}
+
+/* Selectbox styling */
+.stSelectbox > div > div {
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    background-color: #FFFFFF !important;
+}
+.stSelectbox > div > div:focus-within {
+    border-color: #6366F1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+}
+
+/* Container borders */
+.stContainer > div[data-testid="stVerticalBlockBorderWrapper"] {
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02) !important;
+}
+
+/* Section headers */
+h4 {
+    font-weight: 700 !important;
+    color: #0F172A !important;
+}
+
+/* Pills styling */
+.stPills > div {
+    gap: 8px !important;
+}
+.stPills button {
+    background-color: #EEF2FF !important;
+    color: #4F46E5 !important;
+    border: 1px solid #E0E7FF !important;
+    border-radius: 9999px !important;
+    padding: 6px 14px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+/* Table styling */
+.custom-table th {
+    background-color: #F8FAFC !important;
+    font-weight: 700 !important;
+    color: #475569 !important;
+}
+.custom-table td {
+    color: #334155 !important;
+}
+.badge-strong {
+    background-color: #ECFDF5 !important;
+    color: #047857 !important;
+    padding: 4px 12px !important;
+    border-radius: 9999px !important;
+    font-weight: 600 !important;
+    font-size: 0.72rem !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # State initialization
 if "selected_resume_id" not in st.session_state:
     st.session_state.selected_resume_id = None
@@ -40,16 +165,16 @@ if st.session_state.selected_resume_id is None and uploads_list:
     st.session_state.selected_resume_id = uploads_list[0]["id"]
 
 # --- TOP SECTION: UPLOADER & UPLOAD HISTORY ---
-col_top_left, col_top_right = st.columns([1.1, 0.9])
+col_top_left, col_top_right = st.columns([1.15, 0.85], gap="large")
 
 with col_top_left:
     with st.container(border=True):
-        st.markdown("#### <i class='fa-solid fa-cloud-arrow-up' style='color:#6366F1;'></i> Drag & Drop Resumes", unsafe_allow_html=True)
-        st.markdown("<p style='font-size: 0.82rem; color: #64748B; margin-bottom: 15px;'>Support PDF, DOCX • Bulk Upload enabled</p>", unsafe_allow_html=True)
+        st.markdown("#### <i class='fa-solid fa-cloud-arrow-up' style='color:#6366F1;'></i> Upload Resumes", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 0.82rem; color: #64748B; margin-bottom: 16px;'>PDF, DOCX, TXT • Bulk upload supported</p>", unsafe_allow_html=True)
         
         uploaded_files = st.file_uploader(
             "Select files",
-            type=["pdf", "docx"],
+            type=["pdf", "docx", "txt"],
             accept_multiple_files=True,
             label_visibility="collapsed",
             key="bulk_resume_file_uploader"
@@ -86,27 +211,57 @@ with col_top_left:
                 status_text.markdown(f"### 🎉 Successfully parsed {success_count} / {len(uploaded_files)} resume(s)!")
                 st.session_state.selected_resume_id = None  # Force reload latest
                 st.rerun()
+        
+        # --- PASTE RESUME TEXT ---
+        with st.expander("📋 Or Paste Resume Text", expanded=False):
+            st.markdown("<p style='font-size: 0.82rem; color: #64748B; margin-bottom: 10px;'>Paste raw resume text for instant AI parsing</p>", unsafe_allow_html=True)
+            pasted_text = st.text_area(
+                "Resume text",
+                placeholder="Paste resume content here...",
+                height=160,
+                label_visibility="collapsed",
+                key="pasted_resume_text"
+            )
+            if st.button("Parse Pasted Text", type="secondary", use_container_width=True, disabled=not st.session_state.get("pasted_resume_text", "").strip()):
+                with st.spinner("Parsing with Ollama AI..."):
+                    res = api_client.parse_resume_text(st.session_state.get("pasted_resume_text", ""))
+                    if res:
+                        st.toast("Successfully parsed pasted resume!", icon="✅")
+                        st.session_state.selected_resume_id = None
+                        st.rerun()
+                    else:
+                        st.error("Failed to parse pasted resume.")
 
 with col_top_right:
     with st.container(border=True):
         st.markdown("#### <i class='fa-solid fa-clock-rotate-left' style='color:#6366F1;'></i> Upload History", unsafe_allow_html=True)
-        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
         
         if uploads_list:
-            uploads_html_container = "<div style='display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;'>"
-            st.markdown(uploads_html_container, unsafe_allow_html=True)
-            
-            # Selectbox for clean selection without radio buttons
-            upload_map = {f"📄 {u.get('filename', 'resume')} ({u.get('name') or 'New Applicant'})": u["id"] for u in uploads_list}
-            selected_label = st.selectbox(
-                "Select File to View Parsed Details",
-                list(upload_map.keys()),
-                index=0,
-                key="uploaded_file_selection"
-            )
-            st.session_state.selected_resume_id = upload_map[selected_label]
+            # Create a nice list with radio selection
+            for i, u in enumerate(uploads_list[:10]):
+                candidate_name = u.get('name') or 'New Applicant'
+                filename = u.get('filename', 'resume')
+                created = u.get('created_at', '')[:10] if u.get('created_at') else ''
+                
+                is_selected = st.session_state.selected_resume_id == u["id"]
+                
+                # Use a container with custom styling
+                with st.container():
+                    col_radio, col_info = st.columns([0.08, 0.92], gap="small")
+                    with col_radio:
+                        if st.radio("", [u["id"]], index=0 if is_selected else None, key=f"hist_radio_{u['id']}", label_visibility="collapsed", horizontal=True):
+                            st.session_state.selected_resume_id = u["id"]
+                            st.rerun()
+                    with col_info:
+                        st.markdown(f"""
+                        <div style='padding: 8px 12px; background-color: {"#EEF2FF" if is_selected else "#FAFAFA"}; border-radius: 10px; border: 1px solid {"#C7D2FE" if is_selected else "#F1F5F9"}; margin-bottom: 6px; cursor: pointer;'>
+                            <div style='font-weight: 600; color: #0F172A; font-size: 0.88rem;'>📄 {filename}</div>
+                            <div style='font-size: 0.8rem; color: #64748B; margin-top: 2px;'>{candidate_name} • {created}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
         else:
-            st.markdown("<p style='color: #64748B; font-size: 0.85rem;'>No uploads recorded yet.</p>", unsafe_allow_html=True)
+            st.markdown("<p style='color: #64748B; font-size: 0.85rem; text-align: center; padding: 20px;'>No uploads recorded yet</p>", unsafe_allow_html=True)
 
 st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
 
@@ -116,7 +271,7 @@ if st.session_state.selected_resume_id and uploads_list:
     selected_resume = next((u for u in uploads_list if u["id"] == st.session_state.selected_resume_id), None)
 
 if selected_resume:
-    col_bot_left, col_bot_right = st.columns([1, 1])
+    col_bot_left, col_bot_right = st.columns([1, 1], gap="large")
     
     # Left Side: Resume Preview (Raw text)
     with col_bot_left:
@@ -126,7 +281,7 @@ if selected_resume:
             st.text_area(
                 "Raw extracted text",
                 value=selected_resume.get("extracted_text", "No raw text available."),
-                height=450,
+                height=500,
                 disabled=True,
                 label_visibility="collapsed"
             )
@@ -241,11 +396,11 @@ with st.container(border=True):
         <table class="custom-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
             <thead>
                 <tr style="background-color: #F8FAFC; border-bottom: 2px solid #E2E8F0;">
-                    <th style="padding: 10px; font-weight: 700; color: #475569;">Filename</th>
-                    <th style="padding: 10px; font-weight: 700; color: #475569;">Candidate Name</th>
-                    <th style="padding: 10px; font-weight: 700; color: #475569;">Email</th>
-                    <th style="padding: 10px; font-weight: 700; color: #475569;">Phone</th>
-                    <th style="padding: 10px; font-weight: 700; color: #475569;">Upload Status</th>
+                    <th style="padding: 12px; font-weight: 700; color: #475569;">Filename</th>
+                    <th style="padding: 12px; font-weight: 700; color: #475569;">Candidate Name</th>
+                    <th style="padding: 12px; font-weight: 700; color: #475569;">Email</th>
+                    <th style="padding: 12px; font-weight: 700; color: #475569;">Phone</th>
+                    <th style="padding: 12px; font-weight: 700; color: #475569;">Upload Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -254,14 +409,14 @@ with st.container(border=True):
         for u in uploads_list[:6]:
             st.markdown(f"""
             <tr style="border-bottom: 1px solid #F1F5F9;">
-                <td style="padding: 10px; font-weight: 700; color: #4F46E5;">{u.get('filename')}</td>
-                <td style="padding: 10px; color: #0F172A; font-weight: 600;">{u.get('name') or 'N/A'}</td>
-                <td style="padding: 10px; color: #475569;">{u.get('email') or 'N/A'}</td>
-                <td style="padding: 10px; color: #475569;">{u.get('phone') or 'N/A'}</td>
-                <td style="padding: 10px;"><span class="badge-strong" style="background-color: #ECFDF5; color: #047857; font-size: 0.72rem; padding: 2px 10px;">{u.get('status')}</span></td>
+                <td style="padding: 12px; font-weight: 700; color: #4F46E5;">{u.get('filename')}</td>
+                <td style="padding: 12px; color: #0F172A; font-weight: 600;">{u.get('name') or 'N/A'}</td>
+                <td style="padding: 12px; color: #475569;">{u.get('email') or 'N/A'}</td>
+                <td style="padding: 12px; color: #475569;">{u.get('phone') or 'N/A'}</td>
+                <td style="padding: 12px;"><span class="badge-strong" style="background-color: #ECFDF5; color: #047857; font-size: 0.72rem; padding: 4px 12px;">{u.get('status')}</span></td>
             </tr>
             """, unsafe_allow_html=True)
             
         st.markdown("</tbody></table>", unsafe_allow_html=True)
     else:
-        st.write("No uploaded resumes found.")
+        st.markdown("<p style='color: #64748B; font-size: 0.85rem; text-align: center; padding: 20px;'>No uploaded resumes found</p>", unsafe_allow_html=True)

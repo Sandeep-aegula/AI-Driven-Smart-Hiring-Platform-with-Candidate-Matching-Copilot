@@ -195,3 +195,81 @@ async def update_candidate(candidate_id: int, payload: CandidateCreate):
         return await data_store.update_candidate(candidate_id, payload)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/history")
+async def get_resume_history(limit: int = 50):
+    """Get recent resume uploads with parsed data for the frontend history panel."""
+    if data_store._data is None:
+        await data_store._load_storage()
+    
+    resumes = data_store._data.get("resume_data", [])
+    # Sort by created_at descending (newest first)
+    resumes_sorted = sorted(resumes, key=lambda r: r.get("created_at", ""), reverse=True)
+    
+    history = []
+    for r in resumes_sorted[:limit]:
+        candidate = data_store._candidates_by_id.get(r.get("candidate_id"))
+        history.append({
+            "id": r.get("id"),
+            "candidate_id": r.get("candidate_id"),
+            "filename": r.get("filename"),
+            "name": r.get("name") or (candidate.get("name") if candidate else "Unknown"),
+            "email": r.get("email") or (candidate.get("email") if candidate else ""),
+            "extracted_text": r.get("extracted_text", ""),
+            "parsed_json": r.get("parsed_json", {}),
+            "created_at": r.get("created_at"),
+            "status": r.get("status", "Parsed")
+        })
+    return history
+
+
+@router.post("/parse-text")
+async def parse_resume_text(text: str = Form(...), filename: str = Form("pasted_resume.txt")):
+    """Parse resume text directly (for copy-paste scenarios)."""
+    try:
+        raw_text = text
+        if not raw_text.strip():
+            raise ValueError("No text provided.")
+            
+        async with _ai_semaphore:
+            try:
+                parsed_json = await parse_resume_to_json(raw_text)
+            except Exception as e:
+                parsed_json = {"name": filename, "summary": "AI analysis pending/failed. See raw text.", "error": str(e)}
+        
+        # Create candidate
+        payload = CandidateCreate(
+            name=parsed_json.get("name") or filename,
+            email=parsed_json.get("email") or f"{uuid.uuid4().hex[:8]}@example.com",
+            phone=parsed_json.get("phone", ""),
+            linkedin=parsed_json.get("linkedin", ""),
+            github=parsed_json.get("github", ""),
+            status="Applied",
+            match_score=parsed_json.get("match_score", 0),
+            skill_match_breakdown=parsed_json.get("skill_match_breakdown", {}),
+            hire_recommendation=parsed_json.get("hire_recommendation", ""),
+            summary=parsed_json.get("resume_summary", parsed_json.get("summary", ""))
+        )
+        
+        cand = await data_store.create_candidate(payload)
+        
+        # Save resume record
+        await data_store.store_resume_record(
+            candidate_id=cand["id"],
+            filename=filename,
+            mime_type="text/plain",
+            file_path="",
+            parsed=parsed_json,
+            raw_text=raw_text
+        )
+        
+        return ResumeDraftResponse(
+            candidate_id=cand["id"],
+            raw_text=raw_text,
+            parsed_json=parsed_json
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
