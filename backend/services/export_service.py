@@ -56,16 +56,31 @@ async def _run_export_task(export_id: str, report_type: str, format: str, data: 
         _export_tasks[export_id]["status"] = "failed"
         _export_tasks[export_id]["error"] = str(e)
 
+def _flatten_dict(d: dict) -> dict:
+    out = {}
+    for k, v in d.items():
+        if isinstance(v, dict):
+            for sub_k, sub_v in v.items():
+                out[f"{k}.{sub_k}"] = sub_v
+        elif isinstance(v, list):
+            out[k] = ", ".join(str(i) for i in v)
+        else:
+            out[k] = v
+    return out
+
 def _generate_csv(data, file_path):
     if isinstance(data, dict):
-        # Convert dict to single row or appropriate format
         data = [data]
+    if data and isinstance(data[0], dict):
+        data = [_flatten_dict(item) for item in data]
     df = pd.DataFrame(data)
     df.to_csv(file_path, index=False)
 
 def _generate_excel(data, file_path):
     if isinstance(data, dict):
         data = [data]
+    if data and isinstance(data[0], dict):
+        data = [_flatten_dict(item) for item in data]
     df = pd.DataFrame(data)
     df.to_excel(file_path, index=False, engine='openpyxl')
 
@@ -86,8 +101,16 @@ def _generate_pdf(data, file_path, report_type):
         from reportlab.lib.pagesizes import A4
         from reportlab.lib.units import inch
 
-        if report_type.startswith("job_report") and isinstance(data, dict):
-            story = _build_job_report_story(data)
+        story = None
+        if isinstance(data, dict):
+            if report_type.startswith("job_report"):
+                story = _build_job_report_story(data)
+            elif report_type.startswith("candidate_report"):
+                story = _build_candidate_report_story(data)
+            elif report_type.startswith("employee_report"):
+                story = _build_employee_report_story(data)
+
+        if story:
             doc = SimpleDocTemplate(
                 file_path,
                 pagesize=A4,
@@ -302,6 +325,263 @@ def _build_job_report_story(data: dict):
 
     return story
 
+
+def _build_candidate_report_story(data: dict):
+    from reportlab.platypus import Paragraph, Spacer, Table, TableStyle, ListFlowable, ListItem
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib import colors
+    from reportlab.lib.units import inch
+
+    styles = getSampleStyleSheet()
+    story = []
+    profile = data.get("profile") or {}
+    interviews = data.get("interviews") or []
+    resume = profile.get("resume_data") or profile.get("resume") or {}
+
+    skills = profile.get("skills") or resume.get("skills") or []
+    education = resume.get("education") or profile.get("education") or []
+    certifications = resume.get("certifications") or profile.get("certifications") or []
+
+    story.append(Paragraph("HirePilot Candidate Report", styles["Title"]))
+    story.append(Spacer(1, 0.2 * inch))
+
+    story.append(Paragraph("Basic Information", styles["Heading2"]))
+    basic_info = [
+        ["Candidate Name", profile.get("name") or "N/A"],
+        ["Email", profile.get("email") or "N/A"],
+        ["Phone", profile.get("phone") or "N/A"],
+        ["Experience", f"{profile.get('years_experience')} Years" if profile.get("years_experience") else "N/A"],
+        ["Current Position", profile.get("current_title") or "N/A"],
+        ["Location", profile.get("location") or "N/A"],
+        ["Status", profile.get("status") or "N/A"],
+    ]
+    basic_table = Table(basic_info, colWidths=[2.2 * inch, 4.3 * inch])
+    basic_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#EEF2FF")),
+                ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ]
+        )
+    )
+    story.append(basic_table)
+    story.append(Spacer(1, 0.2 * inch))
+
+    summary = profile.get("summary") or resume.get("summary")
+    if summary:
+        story.append(Paragraph("Professional Summary", styles["Heading2"]))
+        story.append(Paragraph(str(summary), styles["BodyText"]))
+        story.append(Spacer(1, 0.15 * inch))
+
+    if skills:
+        story.append(Paragraph("Technical Skills", styles["Heading2"]))
+        story.append(
+            ListFlowable(
+                [ListItem(Paragraph(str(s), styles["BodyText"])) for s in skills],
+                bulletType="bullet",
+                leftIndent=20,
+            )
+        )
+        story.append(Spacer(1, 0.15 * inch))
+
+    if education:
+        story.append(Paragraph("Education", styles["Heading2"]))
+        for edu in education:
+            story.append(Paragraph(f"- {edu}", styles["BodyText"]))
+        story.append(Spacer(1, 0.15 * inch))
+
+    if certifications:
+        story.append(Paragraph("Certifications", styles["Heading2"]))
+        for cert in certifications:
+            story.append(Paragraph(f"- {cert}", styles["BodyText"]))
+        story.append(Spacer(1, 0.15 * inch))
+
+    if interviews:
+        story.append(Paragraph("Recruitment Summary", styles["Heading2"]))
+        interview_data = [["Application Date", "Interview Stage", "Match Score", "Recruiter", "Hiring Manager"]]
+        for iv in interviews:
+            interview_data.append(
+                [
+                    _format_date(iv.get("date")),
+                    iv.get("stage") or iv.get("round") or "N/A",
+                    str(iv.get("match_score", "N/A")),
+                    iv.get("recruiter", "N/A"),
+                    iv.get("hiring_manager", "N/A"),
+                ]
+            )
+        interview_table = Table(interview_data, colWidths=[1.3 * inch, 1.5 * inch, 1.1 * inch, 1.3 * inch, 1.3 * inch])
+        interview_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#6366F1")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#F9FAFB")),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                    ("FONTSIZE", (0, 1), (-1, -1), 9),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ]
+            )
+        )
+        story.append(interview_table)
+        story.append(Spacer(1, 0.2 * inch))
+
+    ai_summary = profile.get("ai_summary") or resume.get("ai_summary")
+    if ai_summary:
+        story.append(Paragraph("AI Summary", styles["Heading2"]))
+        story.append(Paragraph(str(ai_summary), styles["BodyText"]))
+
+    return story
+
+def _build_employee_report_story(data: dict):
+    from reportlab.platypus import Paragraph, Spacer, Table, TableStyle, ListFlowable, ListItem
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib import colors
+    from reportlab.lib.units import inch
+
+    styles = getSampleStyleSheet()
+    story = []
+    emp = data
+    skills = emp.get("skills") or []
+    projects = emp.get("projects") or []
+    promotions = emp.get("promotions") or []
+    performance_history = emp.get("performance_history") or []
+
+    manager_feedback = []
+    achievements = []
+    training = []
+    for item in performance_history:
+        if isinstance(item, dict):
+            feedback = item.get("feedback")
+            if feedback:
+                manager_feedback.append(feedback)
+            achievement = item.get("achievement")
+            if achievement:
+                achievements.append(achievement)
+            training_item = item.get("training")
+            if training_item:
+                training.append(training_item)
+
+    story.append(Paragraph("HirePilot Employee Report", styles["Title"]))
+    story.append(Spacer(1, 0.2 * inch))
+
+    story.append(Paragraph("Employee Information", styles["Heading2"]))
+    basic_info = [
+        ["Name", emp.get("name") or "N/A"],
+        ["Employee ID", str(emp.get("id", "N/A"))],
+        ["Department", emp.get("department") or "N/A"],
+        ["Designation", emp.get("role") or "N/A"],
+        ["Joining Date", _format_date(emp.get("joining_date"))],
+        ["Employment Type", emp.get("employment_type") or "N/A"],
+        ["Manager", emp.get("manager") or "N/A"],
+    ]
+    basic_table = Table(basic_info, colWidths=[2.2 * inch, 4.3 * inch])
+    basic_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#EEF2FF")),
+                ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ]
+        )
+    )
+    story.append(basic_table)
+    story.append(Spacer(1, 0.2 * inch))
+
+    story.append(Paragraph("Performance Summary", styles["Heading2"]))
+    perf_data = [
+        ["Performance Rating", str(emp.get("performance_score", "N/A"))],
+        ["Projects", str(len(projects))],
+        ["Promotions", str(len(promotions))],
+    ]
+    perf_table = Table(perf_data, colWidths=[2.5 * inch, 2.5 * inch])
+    perf_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#EEF2FF")),
+                ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ]
+        )
+    )
+    story.append(perf_table)
+    story.append(Spacer(1, 0.15 * inch))
+
+    if manager_feedback:
+        story.append(Paragraph("Manager Feedback", styles["Heading2"]))
+        for feedback in manager_feedback:
+            story.append(Paragraph(f"- {feedback}", styles["BodyText"]))
+        story.append(Spacer(1, 0.1 * inch))
+
+    if achievements:
+        story.append(Paragraph("Achievements", styles["Heading2"]))
+        for achievement in achievements:
+            story.append(Paragraph(f"- {achievement}", styles["BodyText"]))
+        story.append(Spacer(1, 0.1 * inch))
+
+    if training:
+        story.append(Paragraph("Training", styles["Heading2"]))
+        for t in training:
+            story.append(Paragraph(f"- {t}", styles["BodyText"]))
+        story.append(Spacer(1, 0.1 * inch))
+
+    if skills:
+        story.append(Paragraph("Skills", styles["Heading2"]))
+        skill_names = [s.get("name") if isinstance(s, dict) else str(s) for s in skills]
+        story.append(Paragraph(", ".join(skill_names), styles["BodyText"]))
+        story.append(Spacer(1, 0.1 * inch))
+
+    if projects:
+        story.append(Paragraph("Projects", styles["Heading2"]))
+        for project in projects:
+            story.append(Paragraph(f"- {project}", styles["BodyText"]))
+        story.append(Spacer(1, 0.1 * inch))
+
+    if promotions:
+        story.append(Paragraph("Promotion History", styles["Heading2"]))
+        for promo in promotions:
+            story.append(Paragraph(f"- {promo}", styles["BodyText"]))
+        story.append(Spacer(1, 0.1 * inch))
+
+    talent_insights = emp.get("talent_insights") or {}
+    if talent_insights:
+        story.append(Paragraph("Talent Insights", styles["Heading2"]))
+        for key, value in talent_insights.items():
+            story.append(Paragraph(f"- {key}: {value}", styles["BodyText"]))
+
+    return story
 
 def _generate_simple_pdf(data, file_path, report_type):
     from reportlab.pdfgen import canvas
