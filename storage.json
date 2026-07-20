@@ -1283,7 +1283,7 @@
       "notes": [],
       "avatar_url": "",
       "created_at": "2026-07-17T14:02:49.236940",
-      "updated_at": "2026-07-19T18:45:02.040838",
+      "updated_at": "2026-07-20T13:52:27.939582",
       "skills": [],
       "email_history": [
         {
@@ -1455,10 +1455,10 @@
       "job_id": 4,
       "status": "Shortlist",
       "match_score": 75,
-      "ai_summary": "Sandeep Aegula is a Computer Science undergraduate with practical experience in AI/ML, full-stack web development, and cloud platforms. He has built scalable AI-powered applications and data-driven solutions, including projects on React.js, Next.js, Node.js, Express.js, and MongoDB.",
+      "ai_summary": "Sandeep Aegula is a Computer Science undergraduate with practical experience in Machine Learning, Full Stack web development, and cloud platforms. He has built scalable AI-powered applications and data-driven solutions.",
       "recruiter_notes": "",
       "created_at": "2026-07-17T14:07:51.032344",
-      "updated_at": "2026-07-19T18:45:02.045130"
+      "updated_at": "2026-07-20T13:52:27.965475"
     },
     {
       "id": 12,

@@ -71,6 +71,11 @@ def get_ollama_client():
         return None
 
 
+def get_gemini_client():
+    """Compatibility alias for the AI Copilot page's Gemini client import."""
+    return get_ollama_client()
+
+
 # ---------------------------------------------------------------------------
 # DATA CACHE — API responses memoized with short TTL
 # ---------------------------------------------------------------------------

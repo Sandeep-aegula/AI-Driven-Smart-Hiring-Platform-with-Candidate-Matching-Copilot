@@ -61,15 +61,7 @@ class AppState:
         "cand_skill": "All",
         "emp_search": "",
         "emp_dept": "All",
-
-        # Theme
-        "theme": "light",
-
-        # AI responses cache
-        "ai_responses": {},
-
-        # CSS sentinel (managed by cache.py)
-        "__css_injected__": False,
+    "search_query": "",
     }
 
     @classmethod

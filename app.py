@@ -14,7 +14,7 @@ if current_dir not in sys.path:
 
 from frontend.components.sidebar import render_sidebar
 from frontend.components.header import render_header
-from components.ai_assistant import render_ai_assistant
+from frontend.components.ai_assistant import render_ai_assistant
 from frontend.services.cache import inject_css_once
 
 # --- VIEW MAPPING ---
@@ -67,35 +67,40 @@ def main():
     page = st.session_state.current_page
     
     if page == "Dashboard":
-        from components.dashboard import render_dashboard
+        from frontend.components.dashboard import render_dashboard
         render_dashboard()
     elif page == "Jobs":
-        from components.jobs import render_jobs
+        from frontend.components.jobs import render_jobs
         render_jobs()
     elif page == "Candidates":
-        from components.candidates import render_candidates
+        from frontend.components.candidates import render_candidates
         render_candidates()
     elif page == "Resume Parser":
-        from components.resume_management import render_resume_management
+        from frontend.components.resume_management import render_resume_management
         render_resume_management()
     elif page == "AI Screening":
-        from components.ai_screening import render_ai_screening
+        from frontend.components.ai_screening import render_ai_screening
         render_ai_screening()
     elif page == "Interviews":
-        from components.interview_management import render_interview_management
+        from frontend.components.interview_management import render_interview_management
         render_interview_management()
     elif page == "Employees":
-        from components.employees import render_employees
+        from frontend.components.employees import render_employees
         render_employees()
     elif page == "Analytics":
-        from components.analytics import render_analytics
+        from frontend.components.analytics import render_analytics
         render_analytics()
     elif page == "Reports":
-        from components.reports import render_reports
+        from frontend.components.reports import render_reports
         render_reports()
     elif page == "AI Copilot":
-        from components.ai_copilot import render_ai_copilot
-        render_ai_copilot()
+        import importlib
+        import frontend.views.ai_copilot as ai_copilot_view
+
+        if not hasattr(ai_copilot_view, "render_ai_copilot"):
+            ai_copilot_view = importlib.reload(ai_copilot_view)
+
+        ai_copilot_view.render_ai_copilot()
     else:
         st.error(f"View not found! {page}")
 

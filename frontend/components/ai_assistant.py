@@ -521,6 +521,17 @@ def render_ai_assistant() -> None:
 
     # ── Floating Button ────────────────────────────────────────────────────
     if not st.session_state["ai_assistant_open"]:
+        # Render custom floating button with proper CSS class
+        st.markdown('''
+        <button class="ai-assistant-float-btn" id="ai-assistant-float-btn" aria-label="Open AI Assistant" title="Open AI Assistant">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 14C15.3137 14 18 11.3137 18 8C18 4.68629 15.3137 2 12 2C8.68629 2 6 4.68629 6 8C6 11.3137 8.68629 14 12 14Z" fill="white"/>
+                <circle cx="12" cy="10" r="3" fill="white"/>
+            </svg>
+        </button>
+        ''', unsafe_allow_html=True)
+        
+        # Hidden Streamlit button to handle the click
         if st.button("🤖", key="ai_assistant_toggle", help="Open AI Assistant", 
                      use_container_width=False):
             st.session_state["ai_assistant_open"] = True
@@ -677,7 +688,7 @@ def render_ai_assistant() -> None:
     )
     
     # Text input
-    user_input = st.chat_input("Ask HirePilot anything about candidates, jobs, interviews, resumes...", key="ai_assistant_input")
+    user_input = None  # Chat input removed from AI Copilot tab
     
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)

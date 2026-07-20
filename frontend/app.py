@@ -37,6 +37,7 @@ from frontend.services.app_state import AppState
 from frontend.services.cache import inject_css_once
 from frontend.components.bar import render_sidebar
 from frontend.components.header import render_header
+from frontend.components.ai_assistant import render_ai_assistant
 
 
 def _start_backend():
@@ -112,57 +113,66 @@ def main():
     render_sidebar()
 
     # 5. Persistent header — breadcrumb, search, notifications, date
+    # Safety init for header search field
+    if "search_query" not in st.session_state:
+        st.session_state.search_query = ""
     render_header()
+
+    # 5.5. Persistent AI Assistant — floating chat widget on all pages
+    # render_ai_assistant()
 
     # 6. Content dispatch — only the content area changes
     page = st.session_state.get("current_page", "Dashboard")
 
     if page == "Dashboard":
-        from components.dashboard import render_dashboard
+        from frontend.components.dashboard import render_dashboard
         render_dashboard()
 
     elif page == "Jobs":
-        from components.jobs import render_jobs
+        from frontend.components.jobs import render_jobs
         render_jobs()
 
     elif page == "Candidates":
-        from components.candidates import render_candidates
+        from frontend.components.candidates import render_candidates
         render_candidates()
 
     elif page == "Resume Parser":
-        from components.resume_management import render_resume_management
+        from frontend.components.resume_management import render_resume_management
         render_resume_management()
 
     elif page == "AI Screening":
-        from components.ai_screening import render_ai_screening
+        from frontend.components.ai_screening import render_ai_screening
         render_ai_screening()
 
     elif page == "Interviews":
-        from components.interview_management import render_interview_management
+        from frontend.components.interview_management import render_interview_management
         render_interview_management()
 
     elif page == "Employees":
-        from components.employees import render_employees
+        from frontend.components.employees import render_employees
         render_employees()
 
     elif page == "Communications":
-        from components.communications import render_communications
+        from frontend.components.communications import render_communications
         render_communications()
 
     elif page == "Analytics":
-        from components.analytics import render_analytics
+        from frontend.components.analytics import render_analytics
         render_analytics()
 
     elif page == "Reports":
-        from components.reports import render_reports
+        from frontend.components.reports import render_reports
         render_reports()
 
     elif page == "AI Copilot":
-        from components.ai_copilot import render_ai_copilot
+       
+        from frontend.views.ai_copilot import render_ai_copilot
         render_ai_copilot()
+
 
     else:
         st.error(f"Page '{page}' not found.")
+    
 
 # Light mode update and sidebar collapse fix
 main()

@@ -1,4 +1,4 @@
-﻿import streamlit as st
+import streamlit as st
 
 def _render_candidate_table():
     """Render mock candidate recommendation table."""
@@ -106,92 +106,6 @@ def render_ai_copilot():
         background-color: #6366F1 !important;
         color: white !important;
     }
-    /* Modern unified chat input bar */
-    .ai-copilot-input-wrapper {
-        background: #fff;
-        border: 1px solid #E5E7EB;
-        border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        padding: 8px 10px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        min-height: 56px;
-        margin-top: 10px;
-    }
-    .ai-copilot-input-wrapper > div {
-        flex: 1 1 auto;
-        min-height: 40px;
-        display: flex;
-        align-items: center;
-    }
-    .ai-copilot-input-wrapper .stButton > button {
-        width: 36px !important;
-        height: 36px !important;
-        padding: 0 !important;
-        border-radius: 10px !important;
-        background: transparent !important;
-        border: 1px solid transparent !important;
-        color: #374151 !important;
-        font-size: 18px !important;
-        min-height: unset !important;
-        height: 36px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex-shrink: 0 !important;
-    }
-    .ai-copilot-input-wrapper .stButton > button:hover {
-        background: #F3F4F6 !important;
-        border-color: #E5E7EB !important;
-    }
-    .ai-copilot-input-wrapper .stTextInput {
-        flex: 1 1 auto !important;
-        min-width: 0 !important;
-    }
-    .ai-copilot-input-wrapper .stTextInput > div {
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-        background: transparent !important;
-        padding: 0 !important;
-    }
-    .ai-copilot-input-wrapper .stTextInput > div > div > input {
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-        background: transparent !important;
-        font-size: 15px !important;
-        color: #111827 !important;
-        padding: 10px 2px !important;
-        min-height: 36px !important;
-        height: 36px !important;
-        line-height: 36px !important;
-    }
-    .ai-copilot-input-wrapper .stTextInput > div > div > input::placeholder {
-        color: #6B7280 !important;
-    }
-    .ai-copilot-input-wrapper .stButton[kind="primary"] > button,
-    .ai-copilot-input-wrapper button[aria-label="Send message"] {
-        width: 40px !important;
-        height: 40px !important;
-        padding: 0 !important;
-        border-radius: 50% !important;
-        background: #6366F1 !important;
-        color: #fff !important;
-        border: none !important;
-        font-size: 18px !important;
-        min-height: unset !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 0 1px 2px rgba(99, 102, 241, 0.35) !important;
-        flex-shrink: 0 !important;
-    }
-    .ai-copilot-input-wrapper .stButton[kind="primary"] > button:hover,
-    .ai-copilot-input-wrapper button[aria-label="Send message"]:hover {
-        background: #4F46E5 !important;
-    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -217,24 +131,11 @@ def render_ai_copilot():
                     c3.button("👎 Dislike", key=f"dislike_{id(msg)}")
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # Modern chat input bar
+        # Chat input area (sticky at bottom of left column)
         st.markdown('<div class="ai-copilot-input-wrapper">', unsafe_allow_html=True)
-        if "ai_copilot_text" not in st.session_state:
-            st.session_state.ai_copilot_text = ""
-        input_cols = st.columns([0.08, 0.84, 0.08], gap="small")
-        with input_cols[0]:
-            st.button("📎", key="ai_copilot_attach", help="Attach file")
-        with input_cols[1]:
-            typed = st.text_input(
-                "Message",
-                value=st.session_state.ai_copilot_text,
-                placeholder="Ask anything about candidates, jobs, interviews...",
-                label_visibility="collapsed",
-                key="ai_copilot_text_input",
-            )
-            st.session_state.ai_copilot_text = typed
-        with input_cols[2]:
-            st.button("➤", key="ai_copilot_send", help="Send message")
+        col_attach, col_input = st.columns([0.08, 0.92])
+        col_attach.file_uploader("📎", type=["pdf", "docx", "doc", "txt", "xlsx", "csv"], label_visibility="collapsed", key="ai_copilot_upload")
+        user_input = col_input.chat_input("Ask anything about candidates, jobs, interviews...", key="ai_copilot_input")
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -251,16 +152,12 @@ def render_ai_copilot():
         st.markdown('</div>', unsafe_allow_html=True)
 
     # Handle user input
-    text_value = st.session_state.get("ai_copilot_text", "").strip()
-    send_clicked = st.session_state.get("ai_copilot_send_clicked", False)
-    if text_value and send_clicked:
-        st.session_state.messages.append({"role": "user", "content": text_value})
+    if user_input:
+        st.session_state.messages.append({"role": "user", "content": user_input})
         # Mock assistant response with table
         st.session_state.messages.append({
             "role": "assistant",
             "content": "Here are the top candidates matching your criteria:",
             "show_table": True
         })
-        st.session_state.ai_copilot_text = ""
-        st.session_state.ai_copilot_send_clicked = False
         st.rerun()

@@ -95,8 +95,8 @@ def render_ai_screening() -> None:
     
     # Extract values from result
     score = res.get("overall_match_percent", res.get("match_score", 75))
-    st.write("DEBUG SCORE:", score)
-    st.write("DEBUG RESULT:", res)
+    # st.write("DEBUG SCORE:", score)
+    # st.write("DEBUG RESULT:", res)
     rec = res.get("overall_recommendation", "Shortlist")
     rc = "#10B981" if rec == "Shortlist" else ("#F59E0B" if rec == "Hold" else "#EF4444")
 
