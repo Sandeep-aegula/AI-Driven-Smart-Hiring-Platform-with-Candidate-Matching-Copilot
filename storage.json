@@ -747,7 +747,7 @@
       "current_title": "Applicant",
       "years_experience": 0,
       "location": "Remote",
-      "status": "Rejected",
+      "status": "Interview Scheduled",
       "match_score": 50,
       "tags": [
         "Imported"
@@ -756,7 +756,7 @@
       "avatar_url": "",
       "summary": "Resume imported and parsed.",
       "created_at": "2026-07-12T08:26:29.071351",
-      "updated_at": "2026-07-19T17:56:46.042126",
+      "updated_at": "2026-07-20T18:30:52.555653",
       "skills": [
         {
           "id": 6,
@@ -1263,8 +1263,8 @@
       "current_title": "",
       "years_experience": 0,
       "location": "",
-      "status": "Shortlisted",
-      "match_score": 75,
+      "status": "Rejected",
+      "match_score": 45,
       "skill_match_breakdown": {
         "matched_skills": [
           "React.js",
@@ -1283,7 +1283,7 @@
       "notes": [],
       "avatar_url": "",
       "created_at": "2026-07-17T14:02:49.236940",
-      "updated_at": "2026-07-20T13:52:27.939582",
+      "updated_at": "2026-07-20T18:33:09.793768",
       "skills": [],
       "email_history": [
         {
@@ -1300,6 +1300,22 @@
           "round_name": "",
           "sender_name": "Charlie Davis",
           "reply_to_email": "",
+          "draft_saved": false
+        },
+        {
+          "id": 2,
+          "subject": "Rejection Notification - Thank You for Applying to Frontend Developer Role",
+          "body": "Dear Sandeep Aegula,\n\nThank you for your interest in joining our team as a Frontend Developer. After careful consideration, we regret to inform you that we are unable to move forward with your application at this time.\n\nWe value your skills and experience in frontend technologies, and we believe that your talent is evident through the projects you have worked on. We hope you continue to pursue your passion for software development and explore opportunities where your expertise can be utilized.\n\nThank you once again for considering our company. Best of luck with your future endeavors.\n\nSincerely,\n[Your Name]\n[Your Position]\n[Company Name]\n[Reply-to Email]",
+          "status": "Sent",
+          "sent_at": "2026-07-20T18:33:09.793756",
+          "email_type": "Rejection",
+          "decision": "Rejected",
+          "interview_id": null,
+          "job_id": 4,
+          "job_title": "Frontend Developer",
+          "round_name": "",
+          "sender_name": "HR Recruitment Team",
+          "reply_to_email": "hr@company.com",
           "draft_saved": false
         }
       ]
@@ -1453,12 +1469,12 @@
       "id": 11,
       "candidate_id": 8,
       "job_id": 4,
-      "status": "Shortlist",
-      "match_score": 75,
-      "ai_summary": "Sandeep Aegula is a Computer Science undergraduate with practical experience in Machine Learning, Full Stack web development, and cloud platforms. He has built scalable AI-powered applications and data-driven solutions.",
+      "status": "Reject",
+      "match_score": 45,
+      "ai_summary": "Sandeep Aegula is a Computer Science undergraduate with practical experience in Agentic AI, Machine Learning, full-stack web development, and cloud platforms. He has built scalable AI-powered applications and data-driven solutions, including projects like PRISM and Google Arcade Points Calculator.",
       "recruiter_notes": "",
       "created_at": "2026-07-17T14:07:51.032344",
-      "updated_at": "2026-07-20T13:52:27.965475"
+      "updated_at": "2026-07-20T18:32:11.526088"
     },
     {
       "id": 12,
@@ -2376,6 +2392,30 @@
           }
         ]
       }
+    },
+    {
+      "candidate_id": 4,
+      "job_id": 4,
+      "date": "2026-07-21",
+      "time": "10:00",
+      "duration": 60,
+      "round": "HR Screen",
+      "type": "Online",
+      "meeting_platform": "Google Meet",
+      "meeting_link": "http://localhost:8501/",
+      "panel_members": [
+        "HR"
+      ],
+      "recruiter_name": "HR",
+      "instructions": "Be Ready",
+      "required_documents": [],
+      "timezone": "UTC",
+      "id": 5,
+      "status": "Scheduled",
+      "feedback": {},
+      "decision": "",
+      "created_at": "2026-07-20T18:30:52.555635",
+      "updated_at": "2026-07-20T18:30:52.555644"
     }
   ],
   "employees": [
@@ -2489,7 +2529,7 @@
         "rating": "Unknown",
         "error": "AI timeout or parsing failure"
       },
-      "updated_at": "2026-07-19T14:57:19.194655"
+      "updated_at": "2026-07-20T18:34:44.728301"
     }
   ]
 }

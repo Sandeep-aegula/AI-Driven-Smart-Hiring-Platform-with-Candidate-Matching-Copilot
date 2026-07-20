@@ -70,31 +70,254 @@ def _generate_excel(data, file_path):
     df.to_excel(file_path, index=False, engine='openpyxl')
 
 def _generate_pdf(data, file_path, report_type):
-    # Minimal PDF generation using reportlab or fpdf
-    # Since we might not have them installed, let's write a simple HTML to PDF or use a stub that creates a text file masquerading as PDF for now, or just text.
-    # To be safe without extra dependencies, I'll generate a CSV if PDF fails or write a basic text representation.
-    # We'll use a simple txt for now as a fallback if no PDF lib is available.
     try:
-        from reportlab.pdfgen import canvas
-        c = canvas.Canvas(file_path)
-        c.drawString(100, 800, f"HirePilot Report: {report_type}")
-        y = 750
-        if isinstance(data, list):
-            for i, item in enumerate(data[:30]):  # Cap at 30 rows for basic PDF
-                c.drawString(50, y, str(item)[:100])
-                y -= 20
-                if y < 50:
-                    c.showPage()
-                    y = 800
+        from reportlab.platypus import (
+            SimpleDocTemplate,
+            Paragraph,
+            Spacer,
+            Table,
+            TableStyle,
+            ListFlowable,
+            ListItem,
+            PageBreak,
+        )
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.units import inch
+
+        if report_type.startswith("job_report") and isinstance(data, dict):
+            story = _build_job_report_story(data)
+            doc = SimpleDocTemplate(
+                file_path,
+                pagesize=A4,
+                rightMargin=72,
+                leftMargin=72,
+                topMargin=72,
+                bottomMargin=18,
+            )
+            doc.build(story)
         else:
-            for k, v in data.items():
-                c.drawString(50, y, f"{k}: {str(v)[:80]}")
-                y -= 20
-        c.save()
+            _generate_simple_pdf(data, file_path, report_type)
     except ImportError:
-        # Fallback if reportlab is not installed
         with open(file_path.replace(".pdf", ".txt"), "w", encoding="utf-8") as f:
             f.write(f"HirePilot Report: {report_type}\n\n")
             f.write(str(data))
-        # Update path to match
         os.rename(file_path.replace(".pdf", ".txt"), file_path)
+
+
+def _format_date(value):
+    if not value:
+        return "N/A"
+    try:
+        from datetime import datetime
+
+        return datetime.strptime(str(value), "%Y-%m-%d").strftime("%d %B %Y")
+    except Exception:
+        return str(value)
+
+
+def _build_hiring_summary(job):
+    parts = []
+    if job.get("title"):
+        parts.append(f"actively hiring for a {job['title']}")
+    if job.get("department"):
+        parts.append(f"within the {job['department']} department")
+    required = job.get("required_skills") or job.get("requirements") or []
+    if required:
+        parts.append(f"The role requires strong {', '.join(str(s) for s in required[:3])} skills")
+    if job.get("experience_min") or job.get("experience_max"):
+        parts.append(f"with {job.get('experience_min')}–{job.get('experience_max')} years of experience")
+    if job.get("deadline"):
+        parts.append(f"Applications remain open until {_format_date(job.get('deadline'))}")
+    return "This position is " + " ".join(parts) + "." if parts else None
+
+
+def _build_job_report_story(data: dict):
+    from reportlab.platypus import (
+        Paragraph,
+        Spacer,
+        Table,
+        TableStyle,
+        ListFlowable,
+        ListItem,
+    )
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib import colors
+    from reportlab.lib.units import inch
+
+    styles = getSampleStyleSheet()
+    story = []
+    job = data.get("job") or {}
+    pipeline = data.get("pipeline") or {}
+    candidates = data.get("candidates") or []
+
+    story.append(Paragraph("HirePilot Job Report", styles["Title"]))
+    story.append(Spacer(1, 0.2 * inch))
+
+    story.append(Paragraph("Basic Information", styles["Heading2"]))
+    basic_info = [
+        ["Job Title", job.get("title") or "N/A"],
+        ["Department", job.get("department") or "N/A"],
+        ["Employment Type", job.get("employment_type") or "N/A"],
+        ["Location", job.get("location") or "N/A"],
+        ["Status", job.get("status") or "N/A"],
+        ["Hiring Manager", job.get("hiring_manager") or "N/A"],
+        ["Application Deadline", _format_date(job.get("deadline"))],
+        [
+            "Salary Range",
+            f"₹{job.get('salary_min')}–{job.get('salary_max')} LPA"
+            if job.get("salary_min") or job.get("salary_max")
+            else "N/A",
+        ],
+        [
+            "Experience Required",
+            f"{job.get('experience_min')}–{job.get('experience_max')} Years"
+            if job.get("experience_min") or job.get("experience_max")
+            else "N/A",
+        ],
+    ]
+    basic_table = Table(basic_info, colWidths=[2.2 * inch, 4.3 * inch])
+    basic_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#EEF2FF")),
+                ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ]
+        )
+    )
+    story.append(basic_table)
+    story.append(Spacer(1, 0.2 * inch))
+
+    description = job.get("description")
+    if description:
+        story.append(Paragraph("Job Description", styles["Heading2"]))
+        story.append(Paragraph(str(description), styles["BodyText"]))
+        story.append(Spacer(1, 0.15 * inch))
+
+    responsibilities = job.get("responsibilities") or []
+    if responsibilities:
+        story.append(Paragraph("Key Responsibilities", styles["Heading2"]))
+        story.append(
+            ListFlowable(
+                [ListItem(Paragraph(str(r), styles["BodyText"])) for r in responsibilities],
+                bulletType="bullet",
+                leftIndent=20,
+            )
+        )
+        story.append(Spacer(1, 0.15 * inch))
+
+    required_skills = job.get("required_skills") or job.get("requirements") or []
+    if required_skills:
+        story.append(Paragraph("Required Skills", styles["Heading2"]))
+        story.append(Paragraph(", ".join(str(s) for s in required_skills), styles["BodyText"]))
+        story.append(Spacer(1, 0.15 * inch))
+
+    preferred_skills = job.get("preferred_skills") or job.get("nice_to_have_skills") or []
+    if preferred_skills:
+        story.append(Paragraph("Preferred Skills", styles["Heading2"]))
+        story.append(Paragraph(", ".join(str(s) for s in preferred_skills), styles["BodyText"]))
+        story.append(Spacer(1, 0.15 * inch))
+
+    story.append(Paragraph("Pipeline Summary", styles["Heading2"]))
+    pipeline_data = [
+        ["Total Candidates", str(pipeline.get("total_candidates", 0))],
+        ["Qualified Candidates", str(pipeline.get("qualified", 0))],
+        ["Interviews Scheduled", str(pipeline.get("interviews", 0))],
+        ["Offers Released", str(pipeline.get("offers_released", 0))],
+        ["Hired", str(pipeline.get("hired", 0))],
+    ]
+    pipeline_table = Table(pipeline_data, colWidths=[2.5 * inch, 2.5 * inch])
+    pipeline_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#EEF2FF")),
+                ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ]
+        )
+    )
+    story.append(pipeline_table)
+    story.append(Spacer(1, 0.2 * inch))
+
+    if candidates:
+        story.append(Paragraph("Candidate Summary", styles["Heading2"]))
+        candidate_data = [["Name", "Match Score", "Status", "Email"]]
+        for c in candidates[:20]:
+            candidate_data.append(
+                [
+                    c.get("name") or "Unknown",
+                    str(c.get("match_score", "N/A")),
+                    c.get("status") or "Unknown",
+                    c.get("email") or "",
+                ]
+            )
+        candidate_table = Table(
+            candidate_data, colWidths=[1.8 * inch, 1.2 * inch, 1.5 * inch, 2 * inch]
+        )
+        candidate_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#6366F1")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#F9FAFB")),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                    ("FONTSIZE", (0, 1), (-1, -1), 9),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ]
+            )
+        )
+        story.append(candidate_table)
+        story.append(Spacer(1, 0.2 * inch))
+
+    summary = _build_hiring_summary(job)
+    if summary:
+        story.append(Paragraph("Hiring Summary", styles["Heading2"]))
+        story.append(Paragraph(summary, styles["BodyText"]))
+
+    return story
+
+
+def _generate_simple_pdf(data, file_path, report_type):
+    from reportlab.pdfgen import canvas
+
+    c = canvas.Canvas(file_path)
+    c.drawString(100, 800, f"HirePilot Report: {report_type}")
+    y = 750
+    if isinstance(data, list):
+        for i, item in enumerate(data[:30]):
+            c.drawString(50, y, str(item)[:100])
+            y -= 20
+            if y < 50:
+                c.showPage()
+                y = 800
+    else:
+        for k, v in data.items():
+            c.drawString(50, y, f"{k}: {str(v)[:80]}")
+            y -= 20
+    c.save()

@@ -27,7 +27,7 @@ async def get_overview():
 
 @router.get("/pipeline-funnel")
 async def get_funnel(department: str = "All"):
-    jobs = await data_store.list_jobs(department=department if department != "All" else "")
+    jobs = await data_store.list_jobs(department=department if department != "All" else "All")
     cands = await data_store.list_candidates()
     ivs = await data_store.list_interviews()
     apps = data_store._data.get("applications", []) if data_store._data else []
@@ -62,7 +62,7 @@ async def get_dashboard_bundle(department: str = "All", days: int = 30):
     """
     Returns all dashboard metrics in one shot via concurrent aggregation.
     """
-    jobs = await data_store.list_jobs(department=department if department != "All" else "")
+    jobs = await data_store.list_jobs(department=department if department != "All" else "All")
     cands = await data_store.list_candidates()
     ivs = await data_store.list_interviews()
     emps = await data_store.list_employees()

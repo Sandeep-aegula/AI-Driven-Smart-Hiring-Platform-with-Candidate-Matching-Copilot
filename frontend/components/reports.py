@@ -2,7 +2,125 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import time
+from datetime import datetime
 from frontend.components import api_client
+
+def _format_date(value: str | None) -> str | None:
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").strftime("%d %B %Y")
+    except Exception:
+        return value
+
+def _build_job_report_sections(job_rep: dict) -> dict:
+    job = (job_rep or {}).get("job") or {}
+    pipeline = (job_rep or {}).get("pipeline") or {}
+    candidates = (job_rep or {}).get("candidates") or []
+
+    required_skills = job.get("required_skills") or job.get("requirements") or []
+    preferred_skills = job.get("preferred_skills") or job.get("nice_to_have_skills") or []
+
+    summary_parts = []
+    if job.get("title"):
+        summary_parts.append(f"actively hiring for a {job['title']}")
+    if job.get("department"):
+        summary_parts.append(f"within the {job['department']} department")
+    if required_skills:
+        summary_parts.append(f"The role requires strong {', '.join(str(s) for s in required_skills[:3])} skills")
+    if job.get("experience_min") or job.get("experience_max"):
+        summary_parts.append(f"with {job.get('experience_min')}–{job.get('experience_max')} years of experience")
+    if job.get("deadline"):
+        summary_parts.append(f"Applications remain open until {_format_date(job.get('deadline'))}")
+
+    return {
+        "title": "Job Report",
+        "basic_info": [
+            ("Job Title", job.get("title")),
+            ("Department", job.get("department")),
+            ("Employment Type", job.get("employment_type")),
+            ("Location", job.get("location")),
+            ("Status", job.get("status")),
+            ("Hiring Manager", job.get("hiring_manager")),
+            ("Application Deadline", _format_date(job.get("deadline"))),
+            ("Salary Range", f"₹{job.get('salary_min')} LPA – ₹{job.get('salary_max')} LPA" if job.get("salary_min") or job.get("salary_max") else None),
+            ("Experience Required", f"{job.get('experience_min')}–{job.get('experience_max')} Years" if job.get("experience_min") or job.get("experience_max") else None),
+        ],
+        "description": job.get("description"),
+        "responsibilities": job.get("responsibilities") or [],
+        "required_skills": required_skills,
+        "preferred_skills": preferred_skills,
+        "pipeline": {
+            "Total Candidates": pipeline.get("total_candidates", 0),
+            "Qualified Candidates": pipeline.get("qualified", 0),
+            "Interviews Scheduled": pipeline.get("interviews", 0),
+            "Offers Released": pipeline.get("offers_released", 0),
+            "Hired": pipeline.get("hired", 0),
+        },
+        "candidates": [
+            {
+                "name": c.get("name") or "Unknown",
+                "match_score": c.get("match_score", "N/A"),
+                "status": c.get("status", "Unknown"),
+                "email": c.get("email") or "",
+            }
+            for c in candidates
+        ],
+        "hiring_summary": "This position is " + " ".join(summary_parts) + "." if summary_parts else None,
+    }
+
+def _render_job_report(job_rep: dict) -> None:
+    sections = _build_job_report_sections(job_rep)
+    if not sections:
+        st.warning("No report data available.")
+        return
+
+    st.subheader(sections.get("title") or "Job Report")
+
+    st.markdown("### Basic Information")
+    basic_cols = st.columns(3)
+    rendered = 0
+    for label, value in sections.get("basic_info", []):
+        if not value:
+            continue
+        col = basic_cols[rendered % 3]
+        with col:
+            st.markdown(f"**{label}**")
+            st.markdown(str(value))
+        rendered += 1
+
+    description = sections.get("description")
+    if description:
+        st.markdown("### Job Description")
+        st.markdown(description)
+
+    responsibilities = sections.get("responsibilities") or []
+    if responsibilities:
+        st.markdown("### Key Responsibilities")
+        for item in responsibilities:
+            st.markdown(f"- {item}")
+
+    required_skills = sections.get("required_skills") or []
+    if required_skills:
+        st.markdown("### Required Skills")
+        st.markdown(", ".join(str(s) for s in required_skills))
+
+    preferred_skills = sections.get("preferred_skills") or []
+    if preferred_skills:
+        st.markdown("### Preferred Skills")
+        st.markdown(", ".join(str(s) for s in preferred_skills))
+
+    st.markdown("### Candidate Statistics")
+    stat_cols = st.columns(5)
+    pipeline = sections.get("pipeline") or {}
+    stat_cols[0].metric("Total Applicants", pipeline.get("Total Candidates", 0))
+    stat_cols[1].metric("Qualified", pipeline.get("Qualified Candidates", 0))
+    stat_cols[2].metric("Interviews", pipeline.get("Interviews Scheduled", 0))
+    stat_cols[3].metric("Offers", pipeline.get("Offers Released", 0))
+    stat_cols[4].metric("Hired", pipeline.get("Hired", 0))
+
+    if sections.get("hiring_summary"):
+        st.info(sections["hiring_summary"])
 
 def render_reports() -> None:
     st.markdown("""
@@ -30,9 +148,8 @@ def render_reports() -> None:
                 f_cols[i].metric(k, funnel.get(k, 0))
                 
             fig = go.Figure(go.Funnel(
-                y=f_keys,
-                x=[funnel.get(k, 0) for k in f_keys],
-                marker={"color": ["#94A3B8", "#64748B", "#475569", "#334155", "#0F172A"]}
+                y=f_keys, x=[funnel.get(k, 0) for k in f_keys],
+                marker={"color": ["#2563EB", "#06B6D4", "#F97316", "#9333EA", "#16A34A"]}
             ))
             fig.update_layout(margin=dict(l=10, r=10, t=30, b=10), height=300)
             st.plotly_chart(fig, use_container_width=True)
@@ -51,8 +168,7 @@ def render_reports() -> None:
             
             if st.button("Preview Job Report"):
                 job_rep = api_client.get_job_report(job_id)
-                st.json(job_rep)
-                
+                _render_job_report(job_rep)
             st.markdown("<hr>", unsafe_allow_html=True)
             fmt = st.selectbox("Export Format", ["pdf", "xlsx", "csv"], key="job_rep_fmt")
             if st.button("Export Job Report", key="exp_job"):
