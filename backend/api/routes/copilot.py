@@ -1,76 +1,65 @@
 import logging
-import uuid
+from typing import Optional
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
 
-from backend.services.intent_router_service import process_copilot_message, CopilotResponse
+from backend.services.chat_service import chat_service
 
 logger = logging.getLogger(__name__)
-
 router = APIRouter()
 
-# In-memory history for sessions
-_chat_history = {}
-
-class ChatMessage(BaseModel):
-    role: str
-    content: str
 
 class ChatRequest(BaseModel):
-    session_id: str
     message: str
+    session_id: Optional[str] = None
 
-class ActionConfirmRequest(BaseModel):
-    session_id: str
-    action_type: str
-    action_payload: dict
 
-@router.post("/chat", response_model=CopilotResponse)
+class ChatResponse(BaseModel):
+    response: str
+
+
+@router.post("/chat", response_model=ChatResponse)
 async def chat_with_copilot(req: ChatRequest):
-    if req.session_id not in _chat_history:
-        _chat_history[req.session_id] = []
-        
-    history = _chat_history[req.session_id]
-    
-    # Process via Ollama
-    response = await process_copilot_message(req.message, history)
-    
-    # Append to history
-    history.append({"role": "user", "content": req.message})
-    history.append({"role": "assistant", "content": response.reply})
-    
-    # Keep history bounded
-    if len(history) > 20:
-        _chat_history[req.session_id] = history[-20:]
-        
-    return response
+    """
+    Simple chat endpoint for the AI Copilot.
 
-@router.post("/action/confirm")
-async def confirm_action(req: ActionConfirmRequest):
+    Frontend sends:
+        { "message": "...", "session_id": "optional-session-id" }
+
+    Backend:
+        - Maintains per-session conversation history
+        - Calls Ollama with system prompt + history + latest message
+        - Returns plain text response
     """
-    Executes a side-effect action that the user confirmed via the UI.
-    """
-    # For now, we simulate success since the frontend will display the actual effects.
-    # In a full implementation, this would map to endpoints in candidates.py or emails.py.
-    logger.info(f"Confirmed action: {req.action_type} with payload {req.action_payload}")
-    
-    if req.session_id in _chat_history:
-        _chat_history[req.session_id].append({"role": "system", "content": f"Action {req.action_type} executed successfully."})
-        
-    return {"status": "success", "message": f"Action {req.action_type} completed."}
+    session_id = req.session_id or "default"
+    if not req.message.strip():
+        raise HTTPException(status_code=400, detail="Message cannot be empty.")
+
+    try:
+        reply = await chat_service.chat(session_id, req.message)
+    except Exception as exc:
+        logger.exception("Chat endpoint error: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to process chat message.")
+
+    return ChatResponse(response=reply)
+
 
 @router.get("/session/{session_id}/history")
 async def get_history(session_id: str):
-    return {"history": _chat_history.get(session_id, [])}
+    history = await chat_service.get_history(session_id)
+    return {"history": history}
+
 
 @router.get("/suggestions")
 async def get_suggestions():
     return {
         "suggestions": [
-            "How many open roles do we have?",
-            "Who are the top candidates for the Data Scientist role?",
-            "Draft a rejection email for candidate ID 1.",
-            "What is our current hiring velocity?"
+            "Show top candidates for the Data Scientist role",
+            "Write a rejection email for candidate ID 1",
+            "Summarize the hiring pipeline status",
+            "What is our current hiring velocity?",
+            "Extract key skills from the latest uploaded resume",
+            "Schedule interview feedback for tomorrow",
         ]
     }

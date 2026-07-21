@@ -35,14 +35,14 @@ def render_header():
         st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
         head_c1, head_c2 = st.columns([7, 3])
         
-        with head_c1:
-            st.session_state.search_query = st.text_input(
-                label="Search Box", 
-                placeholder="Search candidate name, skills...", 
-                value=st.session_state.search_query,
-                label_visibility="collapsed",
-                key="header_search_input"
-            )
+        # with head_c1:
+        #     st.session_state.search_query = st.text_input(
+        #         label="Search Box", 
+        #         placeholder="Search candidate name, skills...", 
+        #         value=st.session_state.search_query,
+        #         label_visibility="collapsed",
+        #         key="header_search_input"
+        #     )
             
         with head_c2:
             today_str = datetime.date.today().strftime("%b %d, %Y")

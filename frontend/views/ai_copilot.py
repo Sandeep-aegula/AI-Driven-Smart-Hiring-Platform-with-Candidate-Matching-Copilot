@@ -1,266 +1,138 @@
-﻿import streamlit as st
+import os
+import time
 
-def _render_candidate_table():
-    """Render mock candidate recommendation table."""
-    import pandas as pd
-    data = {
-        "Candidate": ["Alice Johnson", "Bob Smith", "Carol Davis"],
-        "Match Score": ["95%", "88%", "82%"],
-        "Experience": ["5 yrs", "4 yrs", "6 yrs"],
-        "Skills": ["Python, ML, NLP", "React, TS, Node", "Java, Spring, SQL"]
-    }
-    df = pd.DataFrame(data)
-    st.dataframe(df, use_container_width=True, hide_index=True)
+import streamlit as st
 
-def _render_quick_actions():
-    """Render quick action cards in right column."""
-    actions = [
-        {"icon": "🔍", "title": "Find best candidates", "subtitle": "Search talent pool"},
-        {"icon": "📊", "title": "Job insights", "subtitle": "Market analytics"},
-        {"icon": "📝", "title": "Screening summary", "subtitle": "Candidate evaluation"},
-        {"icon": "🎯", "title": "Interview insights", "subtitle": "Feedback analysis"},
-        {"icon": "📄", "title": "Resume analysis", "subtitle": "Skill extraction"},
-    ]
-    for action in actions:
-        with st.container(border=True):
-            c1, c2, c3 = st.columns([0.1, 0.8, 0.1])
-            c1.write(action["icon"])
-            c2.write(f"**{action['title']}**")
-            c2.caption(action["subtitle"])
+from frontend.services.copilot_service import (
+    _init_session_state,
+    append_message,
+    attach_resume_context,
+    clear_chat,
+    clear_resume_context,
+    get_messages,
+    get_resume_context,
+    get_suggestions,
+    send_message,
+    set_thinking,
+)
 
-def _render_recent_conversations():
-    """Render recent conversations list."""
-    conversations = [
-        {"title": "Top Python Developers", "time": "2 hours ago"},
-        {"title": "Frontend Pipeline", "time": "5 hours ago"},
-        {"title": "AI/ML Candidates", "time": "Yesterday"},
-        {"title": "Interview Feedback", "time": "Yesterday"},
-    ]
-    for conv in conversations:
-        with st.container(border=True):
-            c1, c2, c3 = st.columns([0.1, 0.8, 0.1])
-            c1.write("📄")
-            c2.write(conv["title"])
-            c3.caption(conv["time"])
 
-def render_ai_copilot():
-    # Initialize session state with mock data
-    if 'messages' not in st.session_state:
-        st.session_state.messages = [
-            {
-                "role": "assistant",
-                "content": "Hello HR Manager! I'm your AI Copilot. I can help you with candidate search, resume screening, interview preparation, hiring insights, and job analytics."
-            }
-        ]
+def render_ai_copilot() -> None:
+    """Render the AI Copilot chat page using native Streamlit layout.
 
-    # Minimal custom CSS for layout and styling
-    st.markdown("""
-    <style>
-    .ai-copilot-layout {
-        display: flex;
-        gap: 24px;
-        height: calc(100vh - 180px);
-        min-height: 600px;
-    }
-    .ai-copilot-left {
-        flex: 72;
-        display: flex;
-        flex-direction: column;
-        background: #fff;
-        border: 1px solid #E5E7EB;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .ai-copilot-right {
-        flex: 28;
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-    }
-    .ai-copilot-conversation {
-        flex: 1;
-        overflow-y: auto;
-        padding-right: 8px;
-    }
-    .ai-copilot-input-wrapper {
-        flex-shrink: 0;
-        padding-top: 16px;
-        border-top: 1px solid #E5E7EB;
-        background: #fff;
-    }
-    .user-bubble {
-        background: #E0E7FF !important;
-        border-radius: 16px !important;
-        padding: 12px 16px !important;
-        margin-left: 20% !important;
-    }
-    .assistant-bubble {
-        background: #fff !important;
-        border: 1px solid #E5E7EB !important;
-        border-radius: 16px !important;
-        padding: 16px !important;
-        margin-right: 20% !important;
-    }
-    .stChatInput [data-testid="stChatInputSubmitButton"] {
-        background-color: #6366F1 !important;
-        color: white !important;
-    }
-    /* Modern unified chat input bar */
-    .ai-copilot-input-wrapper {
-        background: #fff;
-        border: 1px solid #E5E7EB;
-        border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        padding: 8px 10px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        min-height: 56px;
-        margin-top: 10px;
-    }
-    .ai-copilot-input-wrapper > div {
-        flex: 1 1 auto;
-        min-height: 40px;
-        display: flex;
-        align-items: center;
-    }
-    .ai-copilot-input-wrapper .stButton > button {
-        width: 36px !important;
-        height: 36px !important;
-        padding: 0 !important;
-        border-radius: 10px !important;
-        background: transparent !important;
-        border: 1px solid transparent !important;
-        color: #374151 !important;
-        font-size: 18px !important;
-        min-height: unset !important;
-        height: 36px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex-shrink: 0 !important;
-    }
-    .ai-copilot-input-wrapper .stButton > button:hover {
-        background: #F3F4F6 !important;
-        border-color: #E5E7EB !important;
-    }
-    .ai-copilot-input-wrapper .stTextInput {
-        flex: 1 1 auto !important;
-        min-width: 0 !important;
-    }
-    .ai-copilot-input-wrapper .stTextInput > div {
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-        background: transparent !important;
-        padding: 0 !important;
-    }
-    .ai-copilot-input-wrapper .stTextInput > div > div > input {
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-        background: transparent !important;
-        font-size: 15px !important;
-        color: #111827 !important;
-        padding: 10px 2px !important;
-        min-height: 36px !important;
-        height: 36px !important;
-        line-height: 36px !important;
-    }
-    .ai-copilot-input-wrapper .stTextInput > div > div > input::placeholder {
-        color: #6B7280 !important;
-    }
-    .ai-copilot-input-wrapper .stButton[kind="primary"] > button,
-    .ai-copilot-input-wrapper button[aria-label="Send message"] {
-        width: 40px !important;
-        height: 40px !important;
-        padding: 0 !important;
-        border-radius: 50% !important;
-        background: #6366F1 !important;
-        color: #fff !important;
-        border: none !important;
-        font-size: 18px !important;
-        min-height: unset !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 0 1px 2px rgba(99, 102, 241, 0.35) !important;
-        flex-shrink: 0 !important;
-    }
-    .ai-copilot-input-wrapper .stButton[kind="primary"] > button:hover,
-    .ai-copilot-input-wrapper button[aria-label="Send message"]:hover {
-        background: #4F46E5 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    Layout matches other pages:
+    - Title + caption
+    - Two columns: conversation (left) and tools (right)
+    - Conversation scrolls independently
+    - Chat input stays fixed below conversation
+    """
+    _init_session_state()
 
-    # Main two-column layout
-    left_col, right_col = st.columns([0.72, 0.28], gap="medium")
+    # ---------- Header ----------
+    st.title("AI Copilot")
+    st.caption("Your intelligent recruitment assistant")
+
+    # ---------- Main layout ----------
+    left_col, right_col = st.columns([7, 3], gap="medium")
 
     with left_col:
-        st.markdown('<div class="ai-copilot-left">', unsafe_allow_html=True)
-        st.title("AI Copilot")
-        st.caption("Your intelligent recruitment assistant")
+        # Scrollable conversation area.
+        chat_container = st.container(height=600)
+        with chat_container:
+            messages = get_messages()
+            for msg in messages:
+                with st.chat_message(
+                    msg["role"],
+                    avatar="🤖" if msg["role"] == "assistant" else "👤",
+                ):
+                    st.markdown(msg["content"])
 
-        # Conversation area (scrollable)
-        st.markdown('<div class="ai-copilot-conversation">', unsafe_allow_html=True)
-        for msg in st.session_state.messages:
-            with st.chat_message(msg["role"], avatar="🤖" if msg["role"] == "assistant" else "👤"):
-                st.markdown(msg["content"])
-                if msg["role"] == "assistant" and msg.get("show_table"):
-                    _render_candidate_table()
-                if msg["role"] == "assistant":
-                    c1, c2, c3 = st.columns(3)
-                    c1.button("📋 Copy", key=f"copy_{id(msg)}")
-                    c2.button("👍 Like", key=f"like_{id(msg)}")
-                    c3.button("👎 Dislike", key=f"dislike_{id(msg)}")
-        st.markdown('</div>', unsafe_allow_html=True)
+            # Thinking indicator rendered as the last assistant message.
+            if st.session_state.get("is_thinking", False):
+                with st.chat_message("assistant", avatar="🤖"):
+                    with st.spinner("Thinking..."):
+                        st.empty()
 
-        # Modern chat input bar
-        st.markdown('<div class="ai-copilot-input-wrapper">', unsafe_allow_html=True)
-        if "ai_copilot_text" not in st.session_state:
-            st.session_state.ai_copilot_text = ""
-        input_cols = st.columns([0.08, 0.84, 0.08], gap="small")
-        with input_cols[0]:
-            st.button("📎", key="ai_copilot_attach", help="Attach file")
-        with input_cols[1]:
-            typed = st.text_input(
-                "Message",
-                value=st.session_state.ai_copilot_text,
-                placeholder="Ask anything about candidates, jobs, interviews...",
-                label_visibility="collapsed",
-                key="ai_copilot_text_input",
-            )
-            st.session_state.ai_copilot_text = typed
-        with input_cols[2]:
-            st.button("➤", key="ai_copilot_send", help="Send message")
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Streamlit's native chat input stays fixed below the conversation.
+        if prompt := st.chat_input(
+            "Ask anything about candidates, jobs, interviews...",
+            key="copilot_chat_input",
+        ):
+            append_message("user", prompt)
+            set_thinking(True)
+            st.rerun()
+
+        # Handle streaming response after the user sends a message.
+        if st.session_state.get("is_thinking", False):
+            with st.chat_message("assistant", avatar="🤖"):
+                with st.spinner("Thinking..."):
+                    messages = get_messages()
+                    last_user_msg = next(
+                        (
+                            m["content"]
+                            for m in reversed(messages)
+                            if m["role"] == "user"
+                        ),
+                        "",
+                    )
+                    if last_user_msg:
+                        full_message = last_user_msg
+                        resume_context = get_resume_context()
+                        if resume_context:
+                            full_message = (
+                                f"{resume_context}\n\nUser: {last_user_msg}"
+                            )
+
+                        response = send_message(full_message)
+
+                        if resume_context:
+                            clear_resume_context()
+
+                        # Progressive streaming display.
+                        placeholder = st.empty()
+                        displayed = ""
+                        for char in response:
+                            displayed += char
+                            placeholder.markdown(displayed)
+
+                        append_message("assistant", response)
+                        set_thinking(False)
+                        st.rerun()
 
     with right_col:
-        st.markdown('<div class="ai-copilot-right">', unsafe_allow_html=True)
+        # Upload Resume card.
         with st.container(border=True):
-            st.subheader("What can I help you with?")
-            _render_quick_actions()
+            st.subheader("Upload Resume")
+            uploaded_file = st.file_uploader(
+                "Choose a file",
+                type=["pdf", "docx", "txt", "csv"],
+                label_visibility="collapsed",
+            )
+            if uploaded_file is not None:
+                file_text = str(
+                    uploaded_file.read(), "utf-8", errors="replace"
+                )
+                attach_resume_context(uploaded_file.name, file_text)
+                st.success(f"Uploaded: {uploaded_file.name}")
+                st.caption(
+                    "You can now ask me to summarize, extract skills, or evaluate this resume."
+                )
 
+        # Suggested Prompts card.
         with st.container(border=True):
-            st.subheader("Recent Conversations")
-            st.button("View All", key="view_all_conv")
-            _render_recent_conversations()
-        st.markdown('</div>', unsafe_allow_html=True)
+            st.subheader("Suggested Prompts")
+            suggestions = get_suggestions()
+            for suggestion in suggestions:
+                if st.button(
+                    suggestion,
+                    key=f"suggest_{hash(suggestion)}",
+                    use_container_width=True,
+                ):
+                    append_message("user", suggestion)
+                    set_thinking(True)
+                    st.rerun()
 
-    # Handle user input
-    text_value = st.session_state.get("ai_copilot_text", "").strip()
-    send_clicked = st.session_state.get("ai_copilot_send_clicked", False)
-    if text_value and send_clicked:
-        st.session_state.messages.append({"role": "user", "content": text_value})
-        # Mock assistant response with table
-        st.session_state.messages.append({
-            "role": "assistant",
-            "content": "Here are the top candidates matching your criteria:",
-            "show_table": True
-        })
-        st.session_state.ai_copilot_text = ""
-        st.session_state.ai_copilot_send_clicked = False
-        st.rerun()
+        # Clear Chat button.
+        if st.button("Clear Chat", use_container_width=True):
+            clear_chat()
+            st.rerun()

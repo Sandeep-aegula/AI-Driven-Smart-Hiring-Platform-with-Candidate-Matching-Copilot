@@ -1263,8 +1263,8 @@
       "current_title": "",
       "years_experience": 0,
       "location": "",
-      "status": "Rejected",
-      "match_score": 45,
+      "status": "Shortlisted",
+      "match_score": 75,
       "skill_match_breakdown": {
         "matched_skills": [
           "React.js",
@@ -1283,7 +1283,7 @@
       "notes": [],
       "avatar_url": "",
       "created_at": "2026-07-17T14:02:49.236940",
-      "updated_at": "2026-07-20T18:33:09.793768",
+      "updated_at": "2026-07-21T12:50:51.257936",
       "skills": [],
       "email_history": [
         {
@@ -1469,12 +1469,12 @@
       "id": 11,
       "candidate_id": 8,
       "job_id": 4,
-      "status": "Reject",
-      "match_score": 45,
-      "ai_summary": "Sandeep Aegula is a Computer Science undergraduate with practical experience in Agentic AI, Machine Learning, full-stack web development, and cloud platforms. He has built scalable AI-powered applications and data-driven solutions, including projects like PRISM and Google Arcade Points Calculator.",
+      "status": "Shortlist",
+      "match_score": 75,
+      "ai_summary": "Sandeep Aegula is a Computer Science undergraduate with practical experience in AI/ML, full-stack web development, and cloud platforms. He has built scalable AI-powered applications and data-driven solutions using technologies like React.js, Next.js, Node.js, Express.js, MongoDB, and AWS.",
       "recruiter_notes": "",
       "created_at": "2026-07-17T14:07:51.032344",
-      "updated_at": "2026-07-20T18:32:11.526088"
+      "updated_at": "2026-07-21T12:49:05.983878"
     },
     {
       "id": 12,
@@ -2223,6 +2223,12 @@
     }
   ],
   "activities": [
+    {
+      "icon": "fa-user-pen",
+      "title": "Candidate Shortlisted",
+      "description": "SANDEEP AEGULA status updated to Shortlisted.",
+      "time": "Just now"
+    },
     {
       "icon": "fa-file-arrow-up",
       "title": "Resume Uploaded",
