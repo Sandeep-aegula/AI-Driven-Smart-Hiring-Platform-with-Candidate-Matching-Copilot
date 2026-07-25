@@ -3,6 +3,16 @@
 *.py[cod]
 *$py.class
 
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables & secrets
+.env
+.env.*
+*.env
+
 # Databases & local configs
 *.db
 storage.json
@@ -13,11 +23,29 @@ uploads/
 frontend/uploads/
 reports/
 
-# OS/IDE configs
+# AI coding assistants
+.claude/
+.cursor/
+.agents/
+.gemini/
+
+# IDEs
 .idea/
 .vscode/
-.gemini/
+
+# OS files
 .DS_Store
 Thumbs.db
-.env
 
+# Logs
+*.log
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+
+# pytest / mypy
+.pytest_cache/
+.mypy_cache/
+.coverage
