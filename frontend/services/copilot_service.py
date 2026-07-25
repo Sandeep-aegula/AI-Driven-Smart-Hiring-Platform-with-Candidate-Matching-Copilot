@@ -1,4 +1,5 @@
 """ services/copilot_service.py — HirePilot AI Copilot Frontend Service ====================================================== Handles communication with the FastAPI backend for the AI Copilot chat. Maintains session state, sends messages, and processes responses. """
+import io
 import json
 import os
 import sys
