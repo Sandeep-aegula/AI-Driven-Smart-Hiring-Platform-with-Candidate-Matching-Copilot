@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import imaplib
 import logging
@@ -126,8 +126,15 @@ def send_recruiter_decision_email(candidate: dict[str, Any], decision: str) -> b
         return False
 
 
-def send_custom_email(subject: str, body: str, recipient: str, sender: str | None = None) -> bool:
-    """Send a custom email and save to Sent folder."""
+def send_custom_email(
+    subject: str, 
+    body: str, 
+    recipient: str, 
+    sender: str | None = None,
+    attachment_filename: str | None = None,
+    attachment_bytes: bytes | None = None
+) -> bool:
+    """Send a custom email and save to Sent folder, optionally with an attachment."""
     if not settings.smtp_host or not settings.smtp_from_email:
         logger.warning("Custom email was not sent: SMTP_HOST and SMTP_FROM_EMAIL are required.")
         return False
@@ -149,6 +156,18 @@ def send_custom_email(subject: str, body: str, recipient: str, sender: str | Non
     email["From"] = sender or settings.smtp_from_email
     email["To"] = recipient
     email.set_content(body)
+
+    if attachment_filename and attachment_bytes:
+        import mimetypes
+        mime_type, _ = mimetypes.guess_type(attachment_filename)
+        mime_type = mime_type or 'application/octet-stream'
+        maintype, subtype = mime_type.split('/', 1)
+        email.add_attachment(
+            attachment_bytes, 
+            maintype=maintype, 
+            subtype=subtype, 
+            filename=attachment_filename
+        )
 
     try:
         logger.info("Connecting to SMTP server...")

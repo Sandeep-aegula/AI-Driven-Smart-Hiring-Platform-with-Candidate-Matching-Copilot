@@ -1,4 +1,4 @@
-﻿import streamlit as st
+import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from frontend.components import api_client
@@ -678,17 +678,17 @@ def render_employees() -> None:
 
     cs, cd, cr = st.columns([3, 1.5, 1.5])
     with cs: search = st.text_input("Search", placeholder="Search by name, email...", label_visibility="collapsed")
-    with cd: dept_f = st.selectbox("Department", ["All", "Engineering", "Analytics", "HR", "Sales", "Design"], label_visibility="collapsed")
-    with cr: stat_f = st.selectbox("Status", ["All", "Active", "On Leave", "Ex-Employee"], label_visibility="collapsed")
+    with cd: dept_f = st.selectbox("Department", ["Department", "Engineering", "Analytics", "HR", "Sales", "Design"], label_visibility="collapsed")
+    with cr: stat_f = st.selectbox("Status", ["Status", "Active", "On Leave", "Ex-Employee"], label_visibility="collapsed")
 
     employees = api_client.get_employees()
     if employees:
         if search:
             like = search.lower()
             employees = [e for e in employees if like in e.get("name", "").lower() or like in e.get("email", "").lower()]
-        if dept_f != "All":
+        if dept_f != "Department":
             employees = [e for e in employees if e.get("department") == dept_f]
-        if stat_f != "All":
+        if stat_f != "Status":
             employees = [e for e in employees if e.get("status") == stat_f]
 
     # Main tabs: Team Members and Employee Profile (when selected)

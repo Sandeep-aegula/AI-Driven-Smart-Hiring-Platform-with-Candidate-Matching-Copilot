@@ -683,6 +683,18 @@ class RecruitmentDataStore:
             await self._load_storage()
         return self._employees_by_id.get(employee_id)
         
+    async def get_employee_by_candidate_id(self, candidate_id: int) -> dict | None:
+        if self._data is None:
+            await self._load_storage()
+        for emp in self._employees_by_id.values():
+            if emp.get("candidate_id") == candidate_id:
+                return emp
+        return None
+
+    async def employee_exists(self, candidate_id: int) -> bool:
+        emp = await self.get_employee_by_candidate_id(candidate_id)
+        return emp is not None
+
     async def create_employee(self, payload: dict) -> dict:
         if self._data is None:
             await self._load_storage()

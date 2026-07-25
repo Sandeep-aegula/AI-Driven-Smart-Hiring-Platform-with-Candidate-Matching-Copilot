@@ -133,31 +133,47 @@ def _render_compose():
     if draft:
         subject = st.text_input("Subject", value=draft.get("subject", ""))
         body = st.text_area("Body", value=draft.get("body", ""), height=260)
+        uploaded_file = None
+        if email_type == "Offer Letter":
+            st.divider()
+            st.markdown("### Offer Letter Attachment")
+            uploaded_file = st.file_uploader("Upload Offer Letter", type=["pdf", "docx"], label_visibility="collapsed")
+            st.divider()
+            
         col1, col2 = st.columns(2)
         with col1:
             if st.button("Send Email"):
-                # Use auto-populated values
-                candidate = candidate_map.get(candidate_id, {})
-                decision = candidate.get("status", "Application Received")
-                sender_name = st.session_state.get("comm_sender_name", "HR Recruitment Team")
-                reply_to = st.session_state.get("comm_reply_to", "hr@company.com")
-                
-                payload = {
-                    "candidate_id": candidate_id,
-                    "subject": subject,
-                    "body": body,
-                    "email_type": email_type,
-                    "decision": decision,
-                    "interview_id": interview_id,
-                    "sender_name": sender_name,
-                    "reply_to_email": reply_to,
-                }
-                res = api_client.send_communication_email(payload)
-                if res:
-                    st.success("Email sent and recorded.")
-                    st.session_state["comm_draft"] = None
-                    api_client.clear_candidates_cache()
-                    api_client.clear_interviews_cache()
+                if uploaded_file and uploaded_file.size > 20 * 1024 * 1024:
+                    st.error("Attachment size exceeds 20MB limit.")
+                else:
+                    # Use auto-populated values
+                    candidate = candidate_map.get(candidate_id, {})
+                    decision = candidate.get("status", "Application Received")
+                    sender_name = st.session_state.get("comm_sender_name", "HR Recruitment Team")
+                    reply_to = st.session_state.get("comm_reply_to", "hr@company.com")
+                    
+                    payload = {
+                        "candidate_id": candidate_id,
+                        "subject": subject,
+                        "body": body,
+                        "email_type": email_type,
+                        "decision": decision,
+                        "interview_id": interview_id,
+                        "sender_name": sender_name,
+                        "reply_to_email": reply_to,
+                    }
+                    
+                    if uploaded_file:
+                        res = api_client.send_communication_email_with_attachment(payload, uploaded_file)
+                    else:
+                        res = api_client.send_communication_email(payload)
+                        
+                    if res:
+                        st.success("Email sent and recorded.")
+                        st.session_state["comm_draft"] = None
+                        api_client.clear_candidates_cache()
+                        api_client.clear_interviews_cache()
+                        st.rerun()
         with col2:
             if st.button("Clear Draft"):
                 st.session_state["comm_draft"] = None

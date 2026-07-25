@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 
 from backend.constants.email_mapping import STATUS_TO_EMAIL_TYPE, EMAIL_TYPE_OPTIONS, PENDING_DECISIONS
 from backend.core.config import settings
@@ -311,6 +311,88 @@ async def send_communication_email(payload: CommunicationSendRequest) -> EmailRe
         round_name=interview_context.get("round") or "" if interview_context else "",
         sender_name=payload.sender_name,
         reply_to_email=payload.reply_to_email,
+        draft_saved=False,
+    )
+    clear_pending_cache()
+    return result
+
+
+@router.post("/send-multipart")
+async def send_communication_email_multipart(
+    candidate_id: int = Form(...),
+    subject: str = Form(...),
+    body: str = Form(...),
+    email_type: str = Form(""),
+    decision: str = Form(""),
+    interview_id: int | None = Form(None),
+    sender_name: str = Form(""),
+    reply_to_email: str = Form(""),
+    file: UploadFile | None = File(None)
+) -> dict:
+    candidate = await data_store.get_candidate(candidate_id)
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+
+    interview_context = None
+    if interview_id is not None:
+        interview_context = await data_store.get_interview(interview_id)
+
+    job_title = ""
+    job_id = None
+    if interview_context:
+        job_id = interview_context.get("job_id")
+        job = await data_store.get_job(job_id)
+        job_title = job.get("title", "") if job else ""
+    else:
+        if candidate.get("applications"):
+            app = candidate["applications"][0]
+            job_id = app.get("job_id")
+            job = await data_store.get_job(job_id)
+            job_title = job.get("title", "") if job else ""
+
+    email_sent = False
+    recipient_email = candidate.get("email", "").strip()
+    sender_name = sender_name or "Recruitment Team"
+    
+    if recipient_email:
+        try:
+            full_body = body
+            if reply_to_email:
+                full_body += f"\n\nReply-To: {reply_to_email}"
+            full_body += f"\n\nBest regards,\n{sender_name}"
+            
+            attachment_filename = None
+            attachment_bytes = None
+            if file:
+                attachment_filename = file.filename
+                attachment_bytes = await file.read()
+            
+            email_sent = send_custom_email(
+                subject=subject,
+                body=full_body,
+                recipient=recipient_email,
+                sender=settings.smtp_from_email,
+                attachment_filename=attachment_filename,
+                attachment_bytes=attachment_bytes
+            )
+        except Exception as e:
+            logger.error(f"Failed to send communication email to {recipient_email}: {e}")
+            email_sent = False
+    
+    status = "Sent" if email_sent else "Failed"
+    result = await data_store.add_email_history(
+        candidate_id,
+        subject,
+        body,
+        status=status,
+        email_type=email_type,
+        decision=decision,
+        interview_id=interview_id,
+        job_id=job_id,
+        job_title=job_title,
+        round_name=interview_context.get("round") or "" if interview_context else "",
+        sender_name=sender_name,
+        reply_to_email=reply_to_email,
         draft_saved=False,
     )
     clear_pending_cache()

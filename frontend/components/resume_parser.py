@@ -1,8 +1,11 @@
 """
 components/resume_parser.py — HirePilot Resume Parser Page
 """
+
 import os
+
 import streamlit as st
+
 from frontend.components import api_client
 from frontend.services.cache import get_uploads_cached, invalidate_uploads, invalidate_candidates
 
@@ -32,33 +35,34 @@ def render_resume_parser() -> None:
     with col_left:
         with st.container(border=True):
             st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 6px 0;'>"
-                        "<i class='fa-solid fa-cloud-arrow-up' style='color:#6366F1;'></i>"
-                        " Drag &amp; Drop Resumes</h4>", unsafe_allow_html=True)
-            st.markdown("<p style='font-size:0.82rem;color:#64748B;margin-bottom:15px;'>"
-                        "Supports PDF, DOCX • Bulk Upload enabled</p>", unsafe_allow_html=True)
+                        "<i class='fa-solid fa-wand-magic-sparkles' style='color:#6366F1;'></i>"
+                        " Add Resumes</h4>", unsafe_allow_html=True)
+            st.markdown("<p style='font-size:0.82rem;color:#64748B;margin-bottom:12px;'>"
+                        "Upload one or more PDF/DOCX files below.</p>", unsafe_allow_html=True)
 
             uploaded_files = st.file_uploader(
-                "Select files", type=["pdf", "docx"],
+                "Upload Resume(s)",
+                type=["pdf", "docx"],
                 accept_multiple_files=True,
-                label_visibility="collapsed",
                 key="bulk_resume_uploader"
             )
 
             if uploaded_files:
-                progress_bar = st.progress(0)
-                status_text  = st.empty()
-
-                if st.button("Parse Resumes with Ollama AI", type="primary", use_container_width=True):
+                if st.button("Parse Resumes", type="primary"):
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
                     success = 0
+
+                    upload_dir = os.path.join(
+                        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads"
+                    )
+                    os.makedirs(upload_dir, exist_ok=True)
+
                     for idx, file in enumerate(uploaded_files):
                         status_text.markdown(f"AI parsing: *{file.name}*…")
                         file_bytes = file.read()
 
                         # Save local copy
-                        upload_dir = os.path.join(
-                            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads"
-                        )
-                        os.makedirs(upload_dir, exist_ok=True)
                         with open(os.path.join(upload_dir, file.name), "wb") as f:
                             f.write(file_bytes)
 
@@ -69,35 +73,13 @@ def render_resume_parser() -> None:
                         else:
                             st.error(f"Failed: {file.name}")
 
-                        progress_bar.progress(int(((idx+1)/len(uploaded_files))*100))
+                        progress_bar.progress(int(((idx + 1) / len(uploaded_files)) * 100))
 
                     invalidate_uploads()
                     invalidate_candidates()
                     status_text.markdown(f"### 🎉 Parsed {success}/{len(uploaded_files)} resume(s)!")
                     st.session_state["selected_resume_id"] = None
                     st.rerun()
-
-            st.markdown("**Or paste resume text**")
-            pasted_resume_text = st.text_area(
-                "Resume text",
-                height=180,
-                placeholder="Paste the candidate's full resume text here...",
-                key="pasted_resume_text",
-            )
-            if st.button("Parse pasted resume", type="primary", width="stretch"):
-                if not pasted_resume_text.strip():
-                    st.error("Paste resume text before parsing.")
-                else:
-                    with st.spinner("Parsing resume text with Ollama AI..."):
-                        result = api_client.parse_resume_text(pasted_resume_text)
-                    if result:
-                        invalidate_uploads()
-                        invalidate_candidates()
-                        st.session_state["selected_resume_id"] = result["id"]
-                        st.success("Resume parsed successfully.")
-                        st.rerun()
-                    else:
-                        st.error("Unable to parse the pasted resume text.")
 
     with col_right:
         with st.container(border=True):

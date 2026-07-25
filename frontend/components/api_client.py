@@ -159,6 +159,21 @@ def send_communication_email(payload):
         return None
 
 
+def send_communication_email_with_attachment(payload, uploaded_file):
+    try:
+        data = {k: str(v) if v is not None else "" for k, v in payload.items()}
+        files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
+        resp = httpx.post(f"{API_URL}/communications/send-multipart", data=data, files=files, timeout=30.0)
+        if resp.status_code == 200:
+            clear_candidates_cache()
+            clear_interviews_cache()
+            return resp.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error sending communication email with attachment: {e}")
+        return None
+
+
 def save_communication_draft(payload):
     try:
         resp = httpx.post(f"{API_URL}/communications/save-draft", json=payload, timeout=10.0)
