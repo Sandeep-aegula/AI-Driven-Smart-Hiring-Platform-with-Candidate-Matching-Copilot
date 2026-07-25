@@ -24,28 +24,38 @@ Employee Data:
 Name: {employee_data.get('name')}
 Designation: {employee_data.get('designation')}
 Department: {employee_data.get('department')}
+Status: {employee_data.get('status')}
+Location: {employee_data.get('work_location')}
 Skills: {json.dumps(employee_data.get('skills', []))}
+Experience: {json.dumps(employee_data.get('experience', []))}
+Certifications: {json.dumps(employee_data.get('certifications', []))}
+Achievements: {json.dumps(employee_data.get('achievements', []))}
 Projects: {json.dumps(employee_data.get('projects', []))}
 Performance History: {json.dumps(employee_data.get('performance_history', []))}
+Notes/Feedback: {json.dumps(employee_data.get('notes', []))}
 
-Your response MUST perfectly match this JSON schema:
+Your response MUST perfectly match this JSON schema. For 'technical' and 'leadership', return a dictionary of skills and their evaluations.
 {{
-    "executive_summary": "A 2-3 sentence high-level summary of the employee's current standing and value.",
-    "technical_assessment": "Analysis of their technical skills and project contributions.",
-    "professional_assessment": "Analysis of their professional growth based on performance metrics.",
-    "leadership_assessment": "Analysis of leadership potential or demonstrated leadership.",
-    "communication_assessment": "Assessment of communication based on role and feedback.",
-    "collaboration_assessment": "Teamwork and collaboration analysis.",
-    "learning_and_adaptability": "How well they learn and adapt to new projects/skills.",
-    "productivity_insights": "Analysis of their productivity metrics.",
-    "career_growth": {{
-        "promotion_readiness": "High/Medium/Low",
-        "suggested_next_role": "String",
-        "roadmap": ["Step 1", "Step 2", "Step 3"]
+    "overall_score": 89,
+    "overall_rating": "Excellent",
+    "executive_summary": "Summary of their performance...",
+    "technical": {{
+        "SQL Proficiency": {{"score": 90}},
+        "Tableau Competency": {{"score": 85}}
     }},
-    "recommendations": ["Recommendation 1", "Recommendation 2", "Recommendation 3"],
-    "overall_talent_score": 85, // Integer 0-100
-    "rating": "Exceptional" // One of: Needs Improvement, Meets Expectations, Exceeds Expectations, Exceptional
+    "leadership": {{
+        "Project Management": "Strong",
+        "Team Leadership": "Developing"
+    }},
+    "career_growth": {{
+        "promotion_readiness": "High",
+        "next_role": "Senior Software Engineer"
+    }},
+    "strengths": ["Strength 1", "Strength 2"],
+    "improvements": ["Area 1", "Area 2"],
+    "recommended_training": ["Training 1", "Training 2"],
+    "risk_level": "Low",
+    "future_potential": "High"
 }}
 """
 
@@ -76,6 +86,8 @@ Your response MUST perfectly match this JSON schema:
                 clean_json = clean_json[:-3]
                 
             insights = json.loads(clean_json.strip())
+            from datetime import datetime
+            insights["last_generated"] = datetime.utcnow().isoformat()
             return insights
             
     except json.JSONDecodeError as e:
@@ -87,21 +99,5 @@ Your response MUST perfectly match this JSON schema:
 
 def _fallback_insights() -> dict:
     return {
-        "executive_summary": "AI Insights are currently unavailable. Please check the AI service.",
-        "technical_assessment": "N/A",
-        "professional_assessment": "N/A",
-        "leadership_assessment": "N/A",
-        "communication_assessment": "N/A",
-        "collaboration_assessment": "N/A",
-        "learning_and_adaptability": "N/A",
-        "productivity_insights": "N/A",
-        "career_growth": {
-            "promotion_readiness": "Unknown",
-            "suggested_next_role": "Unknown",
-            "roadmap": []
-        },
-        "recommendations": ["Review manually due to AI timeout."],
-        "overall_talent_score": 0,
-        "rating": "Unknown",
-        "error": "AI timeout or parsing failure"
+        "error": "Unable to generate AI insights. Please verify that the AI service is running."
     }

@@ -548,21 +548,133 @@ def _render_employee_profile(emp):
         insights = emp.get("talent_insights", {})
         if not insights:
             st.warning("No insights available. Click the button below to generate them.")
+        elif "error" in insights:
+            st.error(insights["error"])
         else:
+            # Parse overall rating to stars (simple heuristic based on text or score)
+            score = insights.get('overall_score', 0)
+            rating_text = insights.get('overall_rating', 'Unknown')
+            if score >= 90: stars = "★★★★★"
+            elif score >= 80: stars = "★★★★☆"
+            elif score >= 70: stars = "★★★☆☆"
+            elif score >= 60: stars = "★★☆☆☆"
+            else: stars = "★☆☆☆☆"
+            
             st.markdown(f"""
-            <div style="background:#F0FDF4;border:1px solid #BBF7D0;padding:12px;border-radius:8px;margin-bottom:12px;">
-                <strong><i class="fa-solid fa-star" style="color:#22C55E;"></i> Overall Rating:</strong> {insights.get('rating', 'N/A')}
-                (Score: {insights.get('overall_talent_score', 'N/A')}/100)
-            </div>
-            <div style="font-size:0.85rem;">
-                <strong>Executive Summary:</strong> {insights.get('executive_summary', 'N/A')}<br><br>
-                <strong>Technical:</strong> {insights.get('technical_assessment', 'N/A')}<br><br>
-                <strong>Leadership:</strong> {insights.get('leadership_assessment', 'N/A')}<br><br>
-                <strong>Career Growth:</strong> 
-                Promotion Readiness: {insights.get('career_growth', {}).get('promotion_readiness', 'N/A')} | 
-                Next Role: {insights.get('career_growth', {}).get('suggested_next_role', 'N/A')}
+            <div style="background:#F0FDF4;border:1px solid #BBF7D0;padding:12px;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <strong><span style="color:#22C55E;font-size:1.1rem;">{stars}</span> Overall Rating:</strong> {rating_text}
+                    (Score: {score}/100)
+                </div>
             </div>
             """, unsafe_allow_html=True)
+            
+            st.markdown("##### Executive Summary")
+            st.write(insights.get("executive_summary", "N/A"))
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("##### Technical Assessment")
+                tech_data = insights.get("technical", "N/A")
+                
+                def _render_tech(data):
+                    html_parts = []
+                    for skill, info in data.items():
+                        clean_skill = " ".join([word.capitalize() for word in str(skill).replace("_", " ").split()])
+                        if isinstance(info, dict):
+                            score = info.get("score", info.get("progress", "N/A"))
+                        else:
+                            score = info
+                        html_parts.append(
+                            f"• {clean_skill}<br>"
+                            f"&nbsp;&nbsp;Score: {score}/100"
+                        )
+                    if html_parts:
+                        st.markdown("<br><br>".join(html_parts), unsafe_allow_html=True)
+                    else:
+                        st.write(str(data))
+                
+                if isinstance(tech_data, dict):
+                    _render_tech(tech_data)
+                elif isinstance(tech_data, str):
+                    try:
+                        import json
+                        parsed_tech = json.loads(tech_data)
+                        if isinstance(parsed_tech, dict):
+                            _render_tech(parsed_tech)
+                        else:
+                            st.write(tech_data)
+                    except Exception:
+                        st.write(tech_data)
+                else:
+                    st.write(tech_data)
+            with col2:
+                st.markdown("##### Leadership Assessment")
+                lead_data = insights.get("leadership", "N/A")
+                
+                def _render_lead(data):
+                    html_parts = []
+                    for skill, info in data.items():
+                        clean_skill = " ".join([word.capitalize() for word in str(skill).replace("_", " ").split()])
+                        if isinstance(info, dict):
+                            val = next(iter(info.values())) if info else "N/A"
+                        else:
+                            val = info
+                        html_parts.append(
+                            f"• {clean_skill}<br>"
+                            f"&nbsp;&nbsp;{val}"
+                        )
+                    if html_parts:
+                        st.markdown("<br><br>".join(html_parts), unsafe_allow_html=True)
+                    else:
+                        st.write(str(data))
+                        
+                if isinstance(lead_data, dict):
+                    _render_lead(lead_data)
+                elif isinstance(lead_data, str):
+                    try:
+                        import json
+                        parsed_lead = json.loads(lead_data)
+                        if isinstance(parsed_lead, dict):
+                            _render_lead(parsed_lead)
+                        else:
+                            st.write(lead_data)
+                    except Exception:
+                        st.write(lead_data)
+                else:
+                    st.write(lead_data)
+                
+            st.markdown("---")
+            
+            cg = insights.get("career_growth", {})
+            col_c1, col_c2, col_c3, col_c4 = st.columns(4)
+            col_c1.metric("Promotion Readiness", cg.get("promotion_readiness", "Unknown"))
+            col_c2.metric("Next Recommended Role", cg.get("next_role", "Unknown"))
+            col_c3.metric("Future Potential", insights.get("future_potential", "Unknown"))
+            col_c4.metric("Risk Level", insights.get("risk_level", "Unknown"))
+            
+            st.markdown("---")
+            col_list1, col_list2, col_list3 = st.columns(3)
+            with col_list1:
+                st.markdown("##### Strengths")
+                for s in insights.get("strengths", []):
+                    st.markdown(f"- {s}")
+            with col_list2:
+                st.markdown("##### Improvement Areas")
+                for i in insights.get("improvements", []):
+                    st.markdown(f"- {i}")
+            with col_list3:
+                st.markdown("##### Recommended Training")
+                for t in insights.get("recommended_training", []):
+                    st.markdown(f"- {t}")
+                    
+            if "last_generated" in insights:
+                from datetime import datetime
+                try:
+                    dt = datetime.fromisoformat(insights["last_generated"])
+                    st.caption(f"Insights generated at: {dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+                except Exception:
+                    pass
 
         if st.button("Refresh Insights", width='stretch', key=f"refresh_insights_{emp.get('id')}"):
             with st.spinner("Generating deep AI insights..."):

@@ -75,21 +75,23 @@ async def create_employee_from_candidate(candidate_id: int) -> dict:
         existing_emp = await data_store.get_employee_by_candidate_id(candidate_id)
         if existing_emp:
             emp_id = existing_emp["id"]
-            # To avoid overwriting existing properties like joining date or history if not wanted,
-            # we can merge. But for simplicity and consistency with requirements, we update.
-            # We don't overwrite joining_date or status or existing lists if they exist in a meaningful way.
-            # However, the requirement is "update the existing employee."
             payload["joining_date"] = existing_emp.get("joining_date", payload["joining_date"])
             payload["projects"] = existing_emp.get("projects", [])
             payload["performance_history"] = existing_emp.get("performance_history", [])
             payload["talent_insights"] = existing_emp.get("talent_insights", {})
             employee = await data_store.update_employee(emp_id, payload)
             logger.info(f"Successfully updated Employee {emp_id} from Candidate {candidate_id}.")
-            return employee
         else:
             employee = await data_store.create_employee(payload)
             logger.info(f"Successfully converted Candidate {candidate_id} to Employee {employee.get('id')}.")
-            return employee
+            
+        # Automatically generate and store AI insights
+        from backend.services.ai_talent_service import generate_talent_insights
+        insights = await generate_talent_insights(employee)
+        await data_store.update_talent_insights(employee["id"], insights)
+        employee["talent_insights"] = insights
+        
+        return employee
     except Exception as e:
         logger.error(f"Error creating/updating employee from candidate: {e}")
         raise
