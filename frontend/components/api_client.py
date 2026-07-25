@@ -800,3 +800,27 @@ def get_copilot_suggestions():
     except Exception as e:
         logger.error(f"Error getting copilot suggestions: {e}")
         return []
+
+# --- AI ASSISTANT ---
+
+def chat_with_assistant(session_id: str, message: str, history: list, current_page: str):
+    try:
+        payload = {
+            "session_id": session_id,
+            "message": message,
+            "history": history,
+            "current_page": current_page
+        }
+        resp = httpx.post(f"{API_URL}/api/assistant/chat", json=payload, timeout=60.0)
+        return resp.json() if resp.status_code == 200 else None
+    except Exception as e:
+        logger.error(f"Error chatting with assistant: {e}")
+        return None
+
+def get_assistant_suggestions():
+    try:
+        resp = httpx.get(f"{API_URL}/api/assistant/suggestions")
+        return resp.json().get("suggestions", []) if resp.status_code == 200 else []
+    except Exception as e:
+        logger.error(f"Error getting assistant suggestions: {e}")
+        return []

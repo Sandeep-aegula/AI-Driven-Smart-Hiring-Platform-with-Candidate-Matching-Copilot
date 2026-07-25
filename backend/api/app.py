@@ -7,6 +7,7 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.routes.ai_screening import router as screening_router
 from backend.api.routes.candidates import router as candidates_router
@@ -32,6 +33,15 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(title=settings.app_name, lifespan=lifespan)
     
+    # Enable CORS for frontend requests (Streamlit default port is 8501)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    
     # GZip compression for API responses
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     
@@ -55,6 +65,10 @@ def create_app() -> FastAPI:
     app.include_router(reports_router, prefix="/reports", tags=["reports"])
     app.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
     app.include_router(copilot_router, prefix="/copilot", tags=["copilot"])
+    
+    from backend.api.routes.assistant import router as assistant_router
+    app.include_router(assistant_router, prefix="/api/assistant", tags=["assistant"])
+    
     return app
 
 

@@ -119,7 +119,7 @@ def main():
     render_header()
 
     # 5.5. Persistent AI Assistant — floating chat widget on all pages
-    # render_ai_assistant()
+    render_ai_assistant()
 
     # 6. Content dispatch — only the content area changes
     page = st.session_state.get("current_page", "Dashboard")

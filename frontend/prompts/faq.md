@@ -1,1 +1,26 @@
-# HirePilot AI - FAQ ====================================================== ## Getting Started Q: What is HirePilot AI? A: HirePilot AI is an end-to-end AI-powered recruitment and talent management platform that helps you streamline hiring from job posting to employee onboarding. Q: How do I get started? A: 1. Navigate to Jobs and create your first job posting 2. Go to Resume Parser to upload candidate resumes 3. Use AI Screening to evaluate candidates 4. Schedule interviews via the Interviews page 5. Generate offers and onboard employees ## Features Q: What AI features are available? A: - Resume parsing and skill extraction - Candidate matching and scoring - Job description generation - Interview question generation - Email generation (rejection, offer, feedback) - Natural language query interface via AI Copilot Q: Can I upload bulk resumes? A: Yes, the Resume Parser supports bulk upload of PDF, DOCX, TXT, and CSV files. Q: How accurate is the resume parsing? A: The AI-powered parser extracts skills, experience, education, and contact information with high accuracy. Q: Can I customize screening criteria? A: Yes, you can define custom criteria for AI screening on the AI Screening page. ## Technical Q: What AI model powers the assistant? A: The AI Copilot uses Ollama with the qwen2.5-coder:7b model running locally. Q: Is my data secure? A: Yes, all data is stored locally in a SQLite database. No data is sent to external servers except the local Ollama instance. Q: What browsers are supported? A: The application works best on Chrome, Firefox, Edge, and Safari (latest versions). Q: Can I export data? A: Yes, you can export candidates, jobs, and reports to CSV format. ## Troubleshooting Q: The AI Copilot is not responding A: Ensure Ollama is running locally and the qwen2.5-coder:7b model is installed. Q: Resume parsing is slow A: Large files may take longer. Try splitting bulk uploads into smaller batches. Q: I can't see my uploaded resumes A: Check the Resume Parser page - uploaded resumes appear in the list below the upload area.
+# Frequently Asked Questions (FAQ)
+
+**Q: How do I upload a resume?**
+A: Go to the Resume Parser page. Click Upload Resume. Choose one or multiple PDF/DOCX files. Click Parse Resume. The system extracts candidate information automatically.
+
+**Q: How do I hire a candidate?**
+A: Open Candidates. Select the candidate. Change the status to Hired. Once hired, the candidate is moved into Employees, AI Insights are automatically generated, and an Employee profile is created.
+
+**Q: How do I send an offer letter?**
+A: Open Communications. Choose the candidate. Select Offer Letter. Upload the offer letter PDF or DOCX. Generate the email draft. Click Send Email. The uploaded document will be attached automatically.
+
+**Q: Where can I see reports?**
+A: Navigate to Reports from the left sidebar. There you can generate recruitment reports, hiring metrics and export summaries.
+
+**Q: What is AI Screening?**
+A: AI Screening compares candidate resumes with job requirements, extracts skills, evaluates match scores and helps rank candidates before interviews.
+
+**Q: What does the Employee AI Insights page show?**
+A: It provides AI-generated analysis including:
+- Executive Summary
+- Technical Assessment
+- Leadership Assessment
+- Promotion Readiness
+- Future Potential
+- Risk Level
+- Recommended Next Role
