@@ -171,7 +171,7 @@ if st.session_state.job_action in ("create", "edit"):
     st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
 
     # ── Step 2: Generate from all inputs ──────────────────────────────────
-    if st.button("⚡ Generate Job Description with AI", type="primary", use_container_width=True, key="jf_generate_btn"):
+    if st.button("⚡ Generate Job Description with AI", type="primary", width="stretch", key="jf_generate_btn"):
         title = st.session_state.get("jf_title", "").strip()
         dept = st.session_state.get("jf_department", "").strip()
         reqs = [l.strip() for l in st.session_state.get("jf_required_skills", "").split("\n") if l.strip()]
@@ -227,7 +227,7 @@ if st.session_state.job_action in ("create", "edit"):
     with btn_c1:
         if st.button(
             "💾 Save Job Opening" if is_edit else "🚀 Create Job Opening",
-            type="primary", use_container_width=True, key="jf_save_btn"
+            type="primary", width="stretch", key="jf_save_btn"
         ):
             payload = _build_job_payload(job_data.get("status", "Active"))
             if not payload["title"] or not payload["department"]:
@@ -250,7 +250,7 @@ if st.session_state.job_action in ("create", "edit"):
                     else:
                         st.error("Failed to create job.")
     with btn_c2:
-        if st.button("✕ Cancel", use_container_width=True, key="jf_cancel_btn"):
+        if st.button("✕ Cancel", width="stretch", key="jf_cancel_btn"):
             go_to_list()
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -359,7 +359,7 @@ else:
     with col_exp:
         exp_filter = st.selectbox("Experience Filter", ["All", "Junior (0-2 Yrs)", "Mid-level (3-5 Yrs)", "Senior (6+ Yrs)"], index=0, label_visibility="collapsed")
     with col_btn:
-        if st.button("➕ Create Job", type="primary", use_container_width=True):
+        if st.button("➕ Create Job", type="primary", width="stretch"):
             st.session_state.job_action = "create"
             st.session_state.selected_job_id = None
             st.rerun()
@@ -416,12 +416,12 @@ else:
                     st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
                     btn_row1 = st.columns(2)
                     with btn_row1[0]:
-                        if st.button("View", key=f"v_btn_{job.get('id')}", use_container_width=True):
+                        if st.button("View", key=f"v_btn_{job.get('id')}", width="stretch"):
                             st.session_state.job_action = "view"
                             st.session_state.selected_job_id = job.get('id')
                             st.rerun()
                     with btn_row1[1]:
-                        if st.button("Edit", key=f"e_btn_{job.get('id')}", use_container_width=True):
+                        if st.button("Edit", key=f"e_btn_{job.get('id')}", width="stretch"):
                             st.session_state.job_action = "edit"
                             st.session_state.selected_job_id = job.get('id')
                             st.rerun()
@@ -429,19 +429,19 @@ else:
                     btn_row2 = st.columns(2)
                     with btn_row2[0]:
                         is_archived = job.get("status") == "Archived"
-                        if st.button("Archive", key=f"a_btn_{job.get('id')}", use_container_width=True, disabled=is_archived):
+                        if st.button("Archive", key=f"a_btn_{job.get('id')}", width="stretch", disabled=is_archived):
                             res = api_client.archive_job(job.get('id'))
                             if res:
                                 st.toast("Job opening archived.", icon="📥")
                                 st.rerun()
                     with btn_row2[1]:
-                        if st.button("Delete", key=f"d_btn_{job.get('id')}", use_container_width=True):
+                        if st.button("Delete", key=f"d_btn_{job.get('id')}", width="stretch"):
                             res = api_client.delete_job(job.get('id'))
                             if res:
                                 st.toast("Job opening deleted.", icon="🗑️")
                                 st.rerun()
 
-                    if st.button("🪄 AI Generate JD", key=f"ai_jd_btn_{job.get('id')}", use_container_width=True, type="secondary"):
+                    if st.button("🪄 AI Generate JD", key=f"ai_jd_btn_{job.get('id')}", width="stretch", type="secondary"):
                         with st.spinner("AI is generating Job description details..."):
                             payload = {
                                 "title": job.get("title"), "department": job.get("department"),

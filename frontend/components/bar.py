@@ -9,6 +9,7 @@ _NAV_ITEMS = (
     ("AI Screening", ":material/psychology:"),
     ("Interviews", ":material/event:"),
     ("Communications", ":material/mail:"),
+    ("Onboarding", ":material/assignment_ind:"),
     ("Employees", ":material/badge:"),
     ("Analytics", ":material/analytics:"),
     ("Reports", ":material/assessment:"),

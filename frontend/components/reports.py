@@ -347,7 +347,7 @@ def render_reports() -> None:
                 marker={"color": ["#2563EB", "#06B6D4", "#F97316", "#9333EA", "#16A34A"]}
             ))
             fig.update_layout(margin=dict(l=10, r=10, t=30, b=10), height=300)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
             # Export
             st.markdown("<hr>", unsafe_allow_html=True)
             if st.button("Export Summary (PDF)", key="exp_sum_pdf"):

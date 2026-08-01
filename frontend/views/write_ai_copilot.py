@@ -10,7 +10,7 @@ def _render_candidate_table():
         "Skills": ["Python, ML, NLP", "React, TS, Node", "Java, Spring, SQL"]
     }
     df = pd.DataFrame(data)
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, width="stretch", hide_index=True)
 
 def _render_quick_actions():
     """Render quick action cards in right column."""

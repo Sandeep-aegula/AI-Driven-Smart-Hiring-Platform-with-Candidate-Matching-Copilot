@@ -37,7 +37,7 @@ async def get_recruitment_summary(department: str = "All"):
     jobs = await data_store.list_jobs(department=department if department != "All" else "", status="All")
     cands = await data_store.list_candidates()
     ivs = await data_store.list_interviews()
-    apps = data_store._data.get("applications", []) if data_store._data else []
+    apps = await data_store.list_applications()
     
     funnel = get_pipeline_funnel(jobs, apps, ivs, cands, department)
     velocity = get_hiring_velocity(apps, ivs, cands, days=30)

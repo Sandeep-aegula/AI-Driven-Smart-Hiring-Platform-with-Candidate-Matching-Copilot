@@ -43,7 +43,7 @@ def _render_list_view():
             
     # Need to get jobs and candidates to map IDs to Names
     cands = get_candidates_cached()
-    cand_map = {c["id"]: c["name"] for c in cands}
+    cand_map = {c.get("id"): c.get("name", "Unknown") for c in cands if isinstance(c, dict)}
     jobs = get_jobs_cached()
     job_map = {j["id"]: j["title"] for j in jobs}
             
@@ -96,7 +96,7 @@ def _render_schedule_view():
         st.warning("Please ensure there are Candidates and Jobs in the system before scheduling.")
         return
         
-    c_map = {c["name"]: c["id"] for c in cands}
+    c_map = {c.get("name", "Unknown"): c.get("id") for c in cands if isinstance(c, dict)}
     j_map = {j["title"]: j["id"] for j in jobs}
     
     # Pre-fill logic
@@ -104,7 +104,7 @@ def _render_schedule_view():
     default_c_idx = 0
     if prefill_cid:
         for i, c in enumerate(cands):
-            if c["id"] == prefill_cid:
+            if isinstance(c, dict) and c.get("id") == prefill_cid:
                 default_c_idx = i
                 break
                 
@@ -162,11 +162,11 @@ def _render_detail_view():
         return
 
     cands = get_candidates_cached()
-    cand = next((c for c in cands if c["id"] == iv.get("candidate_id")), None)
+    cand = next((c for c in cands if isinstance(c, dict) and c.get("id") == iv.get("candidate_id")), None)
     jobs = get_jobs_cached()
-    job = next((j for j in jobs if j["id"] == iv.get("job_id")), None)
-    
-    cand_name = cand["name"] if cand else f"Candidate {iv.get('candidate_id', 'N/A')}"
+    job = next((j for j in jobs if isinstance(j, dict) and j.get("id") == iv.get("job_id")), None)
+
+    cand_name = cand.get("name", "Unknown") if cand else f"Candidate {iv.get('candidate_id', 'N/A')}"
     job_title = job["title"] if job else f"Job {iv.get('job_id', 'N/A')}"
 
     st.markdown(f"<h3>{cand_name} - {iv.get('round')} Interview</h3>", unsafe_allow_html=True)

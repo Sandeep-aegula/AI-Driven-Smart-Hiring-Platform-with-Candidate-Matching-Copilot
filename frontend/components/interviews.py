@@ -60,7 +60,7 @@ def render_interviews() -> None:
                         st.markdown(f"<div style='text-align:right;font-weight:700;color:{sc};font-size:0.8rem;'>"
                                     f"{iv.get('status')}</div>", unsafe_allow_html=True)
                         st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
-                        if st.button("Feedback / Notes", key=f"feed_{iv.get('id')}", use_container_width=True):
+                        if st.button("Feedback / Notes", key=f"feed_{iv.get('id')}", width="stretch"):
                             st.session_state["selected_interview_id"] = iv.get("id")
                             st.rerun()
                 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
@@ -134,7 +134,7 @@ def render_interviews() -> None:
                 with dc: date = st.date_input("Date", value=datetime.date.today() + datetime.timedelta(days=1))
                 with tc: time = st.time_input("Time", value=datetime.time(10,0))
                 meet_link  = st.text_input("Meeting Link", value="https://meet.google.com/abc-defg-hij")
-                if st.button("Schedule Session", type="primary", use_container_width=True):
+                if st.button("Schedule Session", type="primary", width="stretch"):
                     payload = {"candidate_id": cand_map[sel_cand], "interviewer": interviewer,
                                "date": date.isoformat(), "time": time.strftime("%H:%M"),
                                "stage": stage, "meeting_link": meet_link}
@@ -154,7 +154,7 @@ def render_interviews() -> None:
                         unsafe_allow_html=True)
             ai_stage  = st.selectbox("Category", ["Technical","Coding","Behavioral","HR"], key="ai_q_stage")
             ai_skills = st.text_input("Candidate Skills (comma separated)", value="Python, FastAPI, SQL")
-            if st.button("Generate Questions with Ollama AI", type="secondary", use_container_width=True):
+            if st.button("Generate Questions with Ollama AI", type="secondary", width="stretch"):
                 with st.spinner("Generating…"):
                     skills_list = [s.strip() for s in ai_skills.split(",") if s.strip()]
                     res = api_client.generate_interview_questions(ai_stage, skills_list)
@@ -188,7 +188,7 @@ def render_interviews() -> None:
                                        index=recs_opts.index(active.get("recommendation","Select…") or "Select…"))
                     fa1, fa2 = st.columns(2)
                     with fa1:
-                        if st.button("Save Feedback", type="primary", use_container_width=True):
+                        if st.button("Save Feedback", type="primary", width="stretch"):
                             if rec == "Select…": st.error("Pick a recommendation.")
                             else:
                                 r = api_client.add_interview_feedback(
@@ -200,5 +200,5 @@ def render_interviews() -> None:
                                     st.session_state["selected_interview_id"] = None
                                     st.rerun()
                     with fa2:
-                        if st.button("Cancel", use_container_width=True):
+                        if st.button("Cancel", width="stretch"):
                             st.session_state["selected_interview_id"] = None; st.rerun()

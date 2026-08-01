@@ -287,7 +287,7 @@ def render_dashboard_fragment() -> None:
                 marker={"color": ["#94A3B8", "#64748B", "#475569", "#334155", "#0F172A"]}
             ))
             fig1.update_layout(margin=dict(l=10, r=10, t=10, b=10), height=250)
-            st.plotly_chart(fig1, use_container_width=True, config={"displayModeBar": False})
+            st.plotly_chart(fig1, width="stretch", config={"displayModeBar": False})
             
     with cc2:
         with st.container(border=True):
@@ -298,7 +298,7 @@ def render_dashboard_fragment() -> None:
                 fig2 = px.line(df_v, x="date", y=["Applications", "Interviews", "Hires"],
                                color_discrete_sequence=["#94A3B8", "#4F46E5", "#10B981"])
                 fig2.update_layout(margin=dict(l=10, r=10, t=10, b=10), height=250, legend_title="")
-                st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar": False})
+                st.plotly_chart(fig2, width="stretch", config={"displayModeBar": False})
             else:
                 st.info("No velocity data.")
 
@@ -314,7 +314,7 @@ def render_dashboard_fragment() -> None:
                 df_l = pd.DataFrame(load)
                 fig3 = px.bar(df_l, x="date", y="count", color_discrete_sequence=["#6366F1"])
                 fig3.update_layout(margin=dict(l=10, r=10, t=10, b=10), height=250)
-                st.plotly_chart(fig3, use_container_width=True, config={"displayModeBar": False})
+                st.plotly_chart(fig3, width="stretch", config={"displayModeBar": False})
             else:
                 st.info("No interviews scheduled in this window.")
                 
@@ -329,7 +329,7 @@ def render_dashboard_fragment() -> None:
                 df_d = pd.DataFrame(list(dept_counts.items()), columns=["Department", "Count"])
                 fig4 = px.pie(df_d, values="Count", names="Department", hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel)
                 fig4.update_layout(margin=dict(l=10, r=10, t=10, b=10), height=200)
-                st.plotly_chart(fig4, use_container_width=True, config={"displayModeBar": False})
+                st.plotly_chart(fig4, width="stretch", config={"displayModeBar": False})
 
 def render_dashboard() -> None:
     render_dashboard_fragment()

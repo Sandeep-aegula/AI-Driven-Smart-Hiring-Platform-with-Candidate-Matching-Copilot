@@ -106,7 +106,7 @@ with st.expander("🏆 AI Resume Matching & Candidate Ranking", expanded=False):
             label_visibility="collapsed"
         )
     with rc2:
-        rank_btn = st.button("🔍 Rank Candidates", type="primary", use_container_width=True)
+        rank_btn = st.button("🔍 Rank Candidates", type="primary", width="stretch")
 
     if rank_btn and selected_job_label != "— Choose a job —":
         selected_job = job_options[selected_job_label]
@@ -233,29 +233,29 @@ with list_col:
                 btn_cols = st.columns(5)
 
                 with btn_cols[0]:
-                    if st.button("View Profile", key=f"view_profile_btn_{c['id']}", use_container_width=True):
+                    if st.button("View Profile", key=f"view_profile_btn_{c['id']}", width="stretch"):
                         st.session_state.selected_cand_id = c["id"]
                         st.rerun()
 
                 with btn_cols[1]:
-                    if st.button("AI Summary", key=f"ai_summary_btn_{c['id']}", use_container_width=True, type="secondary"):
+                    if st.button("AI Summary", key=f"ai_summary_btn_{c['id']}", width="stretch", type="secondary"):
                         st.session_state[f"ai_sum_open_{c['id']}"] = not st.session_state.get(f"ai_sum_open_{c['id']}", False)
                         st.rerun()
 
                 with btn_cols[2]:
-                    if st.button("Compare", key=f"compare_btn_{c['id']}", use_container_width=True, type="secondary"):
+                    if st.button("Compare", key=f"compare_btn_{c['id']}", width="stretch", type="secondary"):
                         st.session_state.selected_eval_cand_id = c["id"]
                         st.switch_page("pages/4_AI_Screening.py")
 
                 with btn_cols[3]:
-                    if st.button("Interview", key=f"interview_btn_{c['id']}", use_container_width=True, type="secondary"):
+                    if st.button("Interview", key=f"interview_btn_{c['id']}", width="stretch", type="secondary"):
                         res = api_client.update_candidate_status(c["id"], "Interview Scheduled")
                         if res:
                             st.toast("Status updated to Interview Scheduled!", icon="📅")
                             st.rerun()
 
                 with btn_cols[4]:
-                    if st.button("Resume", key=f"resume_btn_{c['id']}", use_container_width=True, type="secondary"):
+                    if st.button("Resume", key=f"resume_btn_{c['id']}", width="stretch", type="secondary"):
                         st.session_state[f"resume_preview_open_{c['id']}"] = not st.session_state.get(f"resume_preview_open_{c['id']}", False)
                         st.rerun()
 
@@ -309,7 +309,7 @@ if drawer_col and st.session_state.selected_cand_id:
                     </div>
                     """, unsafe_allow_html=True)
                 with head_col2:
-                    if st.button("✕ Close", key="close_drawer_btn", use_container_width=True):
+                    if st.button("✕ Close", key="close_drawer_btn", width="stretch"):
                         st.session_state.selected_cand_id = None
                         st.rerun()
 
@@ -408,7 +408,7 @@ if drawer_col and st.session_state.selected_cand_id:
 
                         st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
 
-                        if st.button("🤖 Get AI Upskilling Recommendations", key=f"ai_gap_{cand['id']}", type="primary", use_container_width=True):
+                        if st.button("🤖 Get AI Upskilling Recommendations", key=f"ai_gap_{cand['id']}", type="primary", width="stretch"):
                             if missing:
                                 with st.spinner("Asking Ollama AI for recommendations…"):
                                     prompt = (
@@ -474,7 +474,7 @@ if drawer_col and st.session_state.selected_cand_id:
                                     label_visibility="collapsed"
                                 )
                             with cf2:
-                                send = st.form_submit_button("Send ➤", use_container_width=True)
+                                send = st.form_submit_button("Send ➤", width="stretch")
 
                         if send and user_q.strip():
                             st.session_state[chat_key].append({"role": "user", "content": user_q.strip()})
@@ -521,7 +521,7 @@ if drawer_col and st.session_state.selected_cand_id:
                 with tab_notes:
                     st.markdown("**Recruiter Notes:**")
                     new_note = st.text_area("Write note...", placeholder="Enter review remarks...", label_visibility="collapsed", key="drawer_note_input")
-                    if st.button("Save Note", type="primary", use_container_width=True):
+                    if st.button("Save Note", type="primary", width="stretch"):
                         if new_note.strip():
                             res = api_client.add_candidate_note(cand["id"], new_note.strip())
                             if res:

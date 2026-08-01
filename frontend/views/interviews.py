@@ -140,7 +140,7 @@ with col_left:
                     st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
                     
                     # Selection triggers for logging feedback
-                    if st.button("Feedback / Notes", key=f"feed_btn_{i.get('id')}", use_container_width=True):
+                    if st.button("Feedback / Notes", key=f"feed_btn_{i.get('id')}", width="stretch"):
                         st.session_state.selected_interview_id = i.get('id')
                         st.rerun()
                         
@@ -217,7 +217,7 @@ with col_right:
                 
             meet_link = st.text_input("Meeting Link", value="https://meet.google.com/abc-defg-hij")
             
-            if st.button("Schedule Session", type="primary", use_container_width=True):
+            if st.button("Schedule Session", type="primary", width="stretch"):
                 payload = {
                     "candidate_id": cand_map[selected_cand],
                     "interviewer": interviewer,
@@ -246,7 +246,7 @@ with col_right:
                 
                 c_act1, c_act2 = st.columns(2)
                 with c_act1:
-                    if st.button("Save Feedback", type="primary", use_container_width=True):
+                    if st.button("Save Feedback", type="primary", width="stretch"):
                         if recommendation == "Select...":
                             st.error("Please pick a recommendation.")
                         else:
@@ -256,6 +256,6 @@ with col_right:
                                 st.session_state.selected_interview_id = None
                                 st.rerun()
                 with c_act2:
-                    if st.button("Cancel Log", use_container_width=True):
+                    if st.button("Cancel Log", width="stretch"):
                         st.session_state.selected_interview_id = None
                         st.rerun()

@@ -45,7 +45,7 @@ def render_ai_screening() -> None:
 
     st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
 
-    if st.button("Run AI Match Analysis", type="primary", use_container_width=True):
+    if st.button("Run AI Match Analysis", type="primary", width="stretch"):
         with st.spinner("Ollama qwen2.5-coder:7b is running evaluation… Up to 20 seconds…"):
             result = api_client.screen_candidate(cand_id, job_id) if hasattr(api_client, "screen_candidate") else None
             if not result:
@@ -116,7 +116,7 @@ def render_ai_screening() -> None:
             ))
             fig.update_layout(margin=dict(l=20,r=20,t=10,b=10), height=160,
                               paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar":False})
+            st.plotly_chart(fig, width="stretch", config={"displayModeBar":False})
             st.markdown(f"<div style='text-align:center;font-weight:700;color:{rc};font-size:1.1rem;'>"
                         f"Recommendation: {rec}</div>", unsafe_allow_html=True)
 
@@ -152,7 +152,7 @@ def render_ai_screening() -> None:
                 showlegend=False, margin=dict(l=30,r=30,t=20,b=20), height=240,
                 paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)"
             )
-            st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar":False})
+            st.plotly_chart(fig2, width="stretch", config={"displayModeBar":False})
 
     with cr2:
         with st.container(border=True):
@@ -242,19 +242,19 @@ def render_ai_screening() -> None:
         st.markdown("#### Recruiter Decision")
         da1, da2, da3 = st.columns(3)
         with da1:
-            if st.button("Shortlist Candidate", use_container_width=True, key="ai_short"):
+            if st.button("Shortlist Candidate", width="stretch", key="ai_short"):
                 if api_client.update_candidate_status(cand_id,"Shortlisted"):
                     invalidate_candidates()
                     st.toast("Shortlisted!", icon="✅")
                     st.rerun()
         with da2:
-            if st.button("Approve & Advance", type="primary", use_container_width=True, key="ai_appr"):
+            if st.button("Approve & Advance", type="primary", width="stretch", key="ai_appr"):
                 if api_client.update_candidate_status(cand_id,"Approved"):
                     invalidate_candidates()
                     st.toast("Approved!", icon="🎉")
                     st.rerun()
         with da3:
-            if st.button("Reject Candidate", use_container_width=True, key="ai_rej"):
+            if st.button("Reject Candidate", width="stretch", key="ai_rej"):
                 if api_client.update_candidate_status(cand_id,"Rejected"):
                     invalidate_candidates()
                     st.toast("Rejected.", icon="❌")

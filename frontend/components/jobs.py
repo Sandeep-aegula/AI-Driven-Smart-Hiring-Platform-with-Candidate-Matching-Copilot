@@ -9,6 +9,7 @@ import pandas as pd
 import streamlit as st
 from frontend.components import api_client
 from frontend.services.cache import get_jobs_cached, invalidate_jobs
+from frontend.components.api_client import publish_job, pause_job, close_job
 
 def render_jobs() -> None:
     st.markdown("""
@@ -56,7 +57,7 @@ def _render_manual_entry():
                     work_mode = st.selectbox("Work Mode", ["Remote", "Hybrid", "On-site"])
                     hiring_deadline = st.date_input("Hiring Deadline")
                     experience_required = st.text_input("Experience Required", placeholder="e.g. 3-5 years")
-                    salary_range = st.text_input("Salary Range", placeholder="e.g. $120k - $150k")
+                    salary_range = st.text_input("Salary Range", placeholder="e.g. ₹120k - ₹150k")
             
             # Group 2: Skills
             with st.expander("🛠️ Skills & Requirements", expanded=True):
@@ -124,7 +125,7 @@ def _render_manual_entry():
             
         c1, c2 = st.columns(2)
         with c1:
-            if st.button("💾 Save Job Posting", type="primary", use_container_width=True):
+            if st.button("💾 Save Job Posting", type="primary", width="stretch"):
                 if not description:
                     st.error("Job Description Summary cannot be empty.")
                 else:
@@ -145,7 +146,7 @@ def _render_manual_entry():
                     else:
                         st.error("Failed to save job posting.")
         with c2:
-            if st.button("Cancel & Clear", use_container_width=True):
+            if st.button("Cancel & Clear", width="stretch"):
                 st.session_state.manual_job_state = "input"
                 st.session_state.manual_job_payload = {}
                 st.session_state.manual_job_draft = {}
@@ -203,7 +204,7 @@ def _render_ai_upload():
         
         c1, c2, c3 = st.columns(3)
         with c1:
-            if st.button("💾 Save Job Posting", type="primary", use_container_width=True):
+            if st.button("💾 Save Job Posting", type="primary", width="stretch"):
                 if not title or not department or not new_draft["required_skills"] or not new_draft["job_description"]:
                     st.error("Please fill in all required fields (*).")
                 else:
@@ -232,7 +233,7 @@ def _render_ai_upload():
                     else:
                         st.error("Failed to save job posting.")
         with c2:
-            if st.button("🪄 Regenerate Draft", use_container_width=True):
+            if st.button("🪄 Regenerate Draft", width="stretch"):
                 with st.spinner("Regenerating..."):
                     # Current draft arrays need to be lists for JSON
                     req_payload = {
@@ -252,7 +253,7 @@ def _render_ai_upload():
                     else:
                         st.error("Failed to regenerate draft.")
         with c3:
-            if st.button("Cancel & Clear", use_container_width=True):
+            if st.button("Cancel & Clear", width="stretch"):
                 st.session_state.ai_draft_generated = False
                 st.session_state.ai_draft_data = None
                 st.session_state.ai_raw_text = None
@@ -264,7 +265,7 @@ def _render_job_list():
     with cs:  search = st.text_input("Search", value="", placeholder="Search by title...", label_visibility="collapsed")
     with cd:  department = st.selectbox("Dept", ["All Departments","Engineering","Sales","Marketing","HR","Finance"], label_visibility="collapsed")
     with cl:  location = st.selectbox("Location", ["All Locations","Remote","On-site","Hybrid"], label_visibility="collapsed")
-    with cst: status = st.selectbox("Status", ["All Statuses","Active","Paused","Archived"], label_visibility="collapsed")
+    with cst: status = st.selectbox("Status", ["All Statuses","draft","published","paused","closed"], label_visibility="collapsed")
     
     dept_api = "All" if department == "All Departments" else department
     status_api = "All" if status == "All Statuses" else status
@@ -282,7 +283,7 @@ def _render_job_list():
     for j in all_jobs:
         df_data.append({
             "ID": j.get("id"),
-            "Status": "🟢 Active" if j.get("status") == "Active" else ("🟡 Paused" if j.get("status") == "Paused" else "⚪ Archived"),
+            "Status": "🟢 Published" if j.get("status") == "published" else ("🟡 Paused" if j.get("status") == "paused" else ("⚪ Closed" if j.get("status") == "closed" else "📝 Draft")),
             "Title": j.get("title"),
             "Department": j.get("department"),
             "Location": j.get("location"),
@@ -311,7 +312,7 @@ def _render_job_list():
     # Render dataframe
     st.dataframe(
         df_page,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         column_config={
             "ID": st.column_config.NumberColumn(width="small"),
@@ -334,3 +335,30 @@ def _render_job_list():
             if st.button("Next ➡️", disabled=(st.session_state.job_page_num == total_pages)):
                 st.session_state.job_page_num += 1
                 st.rerun()
+
+    st.markdown("---")
+    st.markdown("### Manage Job Status")
+    manage_cols = st.columns([2, 1, 1, 1])
+    
+    with manage_cols[0]:
+        job_options = {j["id"]: f"{j['title']} (ID: {j['id']})" for j in all_jobs}
+        selected_manage_job = st.selectbox("Select Job to Manage", options=list(job_options.keys()), format_func=lambda x: job_options[x])
+        
+    if selected_manage_job:
+        job_to_manage = next((j for j in all_jobs if j["id"] == selected_manage_job), None)
+        if job_to_manage:
+            with manage_cols[1]:
+                if st.button("🚀 Publish", width="stretch", disabled=(job_to_manage.get("status") == "published")):
+                    publish_job(selected_manage_job)
+                    st.toast("Job published successfully!")
+                    st.rerun()
+            with manage_cols[2]:
+                if st.button("⏸️ Pause", width="stretch", disabled=(job_to_manage.get("status") in ["paused", "closed"])):
+                    pause_job(selected_manage_job)
+                    st.toast("Job paused successfully!")
+                    st.rerun()
+            with manage_cols[3]:
+                if st.button("⛔ Close", width="stretch", disabled=(job_to_manage.get("status") == "closed")):
+                    close_job(selected_manage_job)
+                    st.toast("Job closed successfully!")
+                    st.rerun()

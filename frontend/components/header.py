@@ -50,16 +50,11 @@ def render_header():
             profile_path = os.path.join(current_dir, "assets", "images", "profile.png")
             avatar_html = f'<div style="width: 32px; height: 32px; border-radius: 50%; background-color: #E2E8F0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #475569; border: 1px solid #CBD5E1;">AD</div>'
             
-            # Since HTML img doesn't easily resolve local files unless served, we check and fallback to text avatar or base64. Let's keep it simple with text avatar or Font Awesome user icon:
-            avatar_html = '<div style="width: 34px; height: 34px; border-radius: 50%; background-color: #EFF6FF; border: 1px solid #DBEAFE; display: flex; align-items: center; justify-content: center; color: #2563EB; font-size: 15px;"><i class="fa-solid fa-user"></i></div>'
-            
+            if st.button("🚪 Logout", key="logout_btn", width="content"):
+                st.session_state.token = None
+                st.rerun()
+                
             st.markdown(f"""
-            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 14px; height: 42px;">
-                <div style="font-size: 18px; cursor: pointer; color: #64748B;" title="Notifications"><i class="fa-regular fa-bell"></i></div>
-                <div style="cursor: pointer;" title="User Profile">
-                    {avatar_html}
-                </div>
-            </div>
             <div style="text-align: right; font-size: 11px; color: #64748B; font-weight: 600; margin-top: 2px;">
                 {today_str}
             </div>

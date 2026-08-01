@@ -91,7 +91,7 @@ with tab_funnel:
                 margin=dict(l=10, r=10, t=10, b=10), height=240,
                 paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
             )
-            st.plotly_chart(fig_fun, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(fig_fun, width="stretch", config={'displayModeBar': False})
             
         st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
         with st.container(border=True):
@@ -113,7 +113,7 @@ with tab_funnel:
                 xaxis_title="Avg Days", yaxis_title=None,
                 coloraxis_showscale=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
             )
-            st.plotly_chart(fig_time, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(fig_time, width="stretch", config={'displayModeBar': False})
 
     with col_t1_right:
         with st.container(border=True):
@@ -135,7 +135,7 @@ with tab_funnel:
                 showlegend=True, legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5),
                 paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
             )
-            st.plotly_chart(fig_pipe, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(fig_pipe, width="stretch", config={'displayModeBar': False})
 
 with tab_trends:
     col_t2_left, col_t2_right = st.columns(2)
@@ -156,7 +156,7 @@ with tab_trends:
                 xaxis=dict(showgrid=False), yaxis=dict(showgrid=True, gridcolor='#F1F5F9'),
                 paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
             )
-            st.plotly_chart(fig_hire_line, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(fig_hire_line, width="stretch", config={'displayModeBar': False})
             
         st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
         with st.container(border=True):
@@ -178,7 +178,7 @@ with tab_trends:
                 xaxis_title=None, yaxis_title="Total Hires",
                 coloraxis_showscale=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
             )
-            st.plotly_chart(fig_dept_bar, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(fig_dept_bar, width="stretch", config={'displayModeBar': False})
 
     with col_t2_right:
         with st.container(border=True):
@@ -195,7 +195,7 @@ with tab_trends:
                 xaxis=dict(showgrid=False), yaxis=dict(showgrid=True, gridcolor='#F1F5F9'),
                 paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
             )
-            st.plotly_chart(fig_app_area, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(fig_app_area, width="stretch", config={'displayModeBar': False})
 
 with tab_talent:
     col_t3_left, col_t3_right = st.columns(2)
@@ -221,7 +221,7 @@ with tab_talent:
                 coloraxis_showscale=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
             )
             fig_skills_bar.update_yaxes(autorange="reversed")
-            st.plotly_chart(fig_skills_bar, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(fig_skills_bar, width="stretch", config={'displayModeBar': False})
             
         st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
         with st.container(border=True):
@@ -241,7 +241,7 @@ with tab_talent:
                 showlegend=True, legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5),
                 paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
             )
-            st.plotly_chart(fig_offers_donut, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(fig_offers_donut, width="stretch", config={'displayModeBar': False})
 
     with col_t3_right:
         with st.container(border=True):
@@ -262,7 +262,7 @@ with tab_talent:
                 showlegend=True, legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5),
                 paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
             )
-            st.plotly_chart(fig_sources_donut, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(fig_sources_donut, width="stretch", config={'displayModeBar': False})
 
 with tab_recruiters:
     with st.container(border=True):
@@ -278,4 +278,4 @@ with tab_recruiters:
             xaxis_title="Recruiter Name", yaxis_title="Count",
             paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
         )
-        st.plotly_chart(fig_recruiter, use_container_width=True, config={'displayModeBar': False})
+        st.plotly_chart(fig_recruiter, width="stretch", config={'displayModeBar': False})

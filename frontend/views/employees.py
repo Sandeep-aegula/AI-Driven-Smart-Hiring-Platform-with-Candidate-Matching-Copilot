@@ -80,7 +80,7 @@ with list_col:
                     """, unsafe_allow_html=True)
                 with c_c2:
                     st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
-                    if st.button("View Profile Details", key=f"view_emp_{emp.get('id')}", use_container_width=True):
+                    if st.button("View Profile Details", key=f"view_emp_{emp.get('id')}", width="stretch"):
                         st.session_state.selected_employee_id = emp.get('id')
                         st.rerun()
             st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
@@ -97,7 +97,7 @@ if drawer_col and st.session_state.selected_employee_id:
                 with head_col1:
                     st.markdown("### <i class='fa-solid fa-address-card' style='color:#6366F1;'></i> Employee Profile")
                 with head_col2:
-                    if st.button("Close Profile", key="close_emp_drawer", use_container_width=True):
+                    if st.button("Close Profile", key="close_emp_drawer", width="stretch"):
                         st.session_state.selected_employee_id = None
                         st.rerun()
                         
@@ -223,7 +223,7 @@ if drawer_col and st.session_state.selected_employee_id:
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
-                        st.plotly_chart(go.Figure(go.Scatter(y=sparkline_data, mode='lines', line=dict(color='#6366F1', width=2), fill='tozeroy', fillcolor='rgba(99,102,241,0.1)')).update_layout(height=35, margin=dict(l=0,r=0,t=0,b=0), xaxis=dict(visible=False), yaxis=dict(visible=False), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), config={'displayModeBar': False}, use_container_width=True)
+                        st.plotly_chart(go.Figure(go.Scatter(y=sparkline_data, mode='lines', line=dict(color='#6366F1', width=2), fill='tozeroy', fillcolor='rgba(99,102,241,0.1)')).update_layout(height=35, margin=dict(l=0,r=0,t=0,b=0), xaxis=dict(visible=False), yaxis=dict(visible=False), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), config={'displayModeBar': False}, width="stretch")
                     
                     # KPI Card 2 - Goal Completion
                     with kpi_col2:

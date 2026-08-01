@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from backend.schemas.entities import JobCreate, JobRead
 from backend.database.data_store import data_store
+from backend.services.application_workflow_service import close_job, pause_job, publish_job
 from backend.services.recruitment import generate_job_description
 from backend.services.ai_job_service import parse_document, generate_job_description as ai_generate_jd, regenerate_job_description as ai_regenerate_jd
 
@@ -55,7 +56,48 @@ async def get_job_by_id(job_id: int) -> JobRead:
 async def create_job(payload: JobCreate) -> JobRead:
     if payload.openings < 1:
         raise HTTPException(status_code=400, detail="Openings must be at least 1")
-    return await data_store.create_job(payload)
+    created = await data_store.create_job(payload)
+    if payload.status in {"Active", "Open", "draft", ""}:
+        from backend.services.application_workflow_service import normalize_created_job_status
+        await normalize_created_job_status(created["id"], payload.status)
+        created["status"] = "draft"
+    return created
+
+
+@router.post("/{job_id}/publish", response_model=JobRead)
+async def publish_job_endpoint(job_id: int) -> JobRead:
+    try:
+        await publish_job(job_id)
+        job = await data_store.get_job(job_id)
+        if not job:
+            raise ValueError("Job not found")
+        return job
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.post("/{job_id}/pause", response_model=JobRead)
+async def pause_job_endpoint(job_id: int) -> JobRead:
+    try:
+        await pause_job(job_id)
+        job = await data_store.get_job(job_id)
+        if not job:
+            raise ValueError("Job not found")
+        return job
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.post("/{job_id}/close", response_model=JobRead)
+async def close_job_endpoint(job_id: int) -> JobRead:
+    try:
+        await close_job(job_id)
+        job = await data_store.get_job(job_id)
+        if not job:
+            raise ValueError("Job not found")
+        return job
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @router.put("/{job_id}", response_model=JobRead)

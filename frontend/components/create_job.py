@@ -97,7 +97,7 @@ def render_create_job():
         # Form buttons
         form_btn_col1, form_btn_col2, form_btn_col3 = st.columns([1, 1, 3])
         with form_btn_col1:
-            if st.button("Save Job", type="primary", use_container_width=True, key="save_job_btn_restruct"):
+            if st.button("Save Job", type="primary", width="stretch", key="save_job_btn_restruct"):
                 st.session_state.job_details = {
                     "title": job_title,
                     "department": department,
@@ -117,7 +117,7 @@ def render_create_job():
                 st.success("Hiring criteria saved! Analysis updates reflecting automatically.")
                 st.rerun()
         with form_btn_col2:
-            if st.button("Reset Form", use_container_width=True, key="reset_job_btn_restruct"):
+            if st.button("Reset Form", width="stretch", key="reset_job_btn_restruct"):
                 if 'job_details' in st.session_state:
                     del st.session_state.job_details
                 st.toast("Job form reset to defaults", icon="🔄")

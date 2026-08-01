@@ -6,10 +6,14 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
 
 from backend.constants.email_mapping import STATUS_TO_EMAIL_TYPE, EMAIL_TYPE_OPTIONS, PENDING_DECISIONS
 from backend.core.config import settings
 from backend.database.data_store import data_store
+from backend.database.session import get_db_session
+from backend.models.entities import Communication, Candidate, Application, Job
 from backend.schemas.entities import (
     CommunicationDraftRequest,
     CommunicationSendRequest,
@@ -54,7 +58,7 @@ def _has_draft_for_decision(candidate: dict, decision: str, interview_id: int | 
     return False
 
 
-def _build_pending_entry(candidate: dict, interview: dict | None = None) -> dict:
+async def _build_pending_entry(candidate: dict, interview: dict | None = None) -> dict:
     decision = candidate.get("status")
     implied_email_type = STATUS_TO_EMAIL_TYPE.get(decision)
     if not implied_email_type:
@@ -66,15 +70,14 @@ def _build_pending_entry(candidate: dict, interview: dict | None = None) -> dict
         application = candidate["applications"][0]
         job_id = application.get("job_id")
     if job_id:
-        job = data_store._jobs_by_id.get(job_id)
-        if job:
+            job = await data_store.get_job(job_id)
             job_title = job.get("title", job_title)
 
     round_name = ""
     if interview is not None:
         round_name = interview.get("round", "")
     elif candidate.get("status") == "Interview Scheduled":
-        interviews = [iv for iv in data_store._interviews_by_id.values() if iv.get("candidate_id") == candidate.get("id")]
+        interviews = [iv for iv in (await data_store.list_interviews()) if iv.get("candidate_id") == candidate.get("id")]
         if interviews:
             latest = sorted(interviews, key=lambda iv: iv.get("updated_at", ""), reverse=True)[0]
             round_name = latest.get("round", "")
@@ -101,8 +104,8 @@ def _build_pending_entry(candidate: dict, interview: dict | None = None) -> dict
 
 
 async def _compute_pending_queue() -> list[dict]:
-    candidates = list(data_store._candidates_by_id.values())
-    interviews = list(data_store._interviews_by_id.values())
+    candidates = list((await data_store.list_candidates()))
+    interviews = list((await data_store.list_interviews()))
     interviews_by_candidate: dict[int, list[dict]] = {}
     for iv in interviews:
         candidate_id = iv.get("candidate_id")
@@ -131,14 +134,42 @@ async def _compute_pending_queue() -> list[dict]:
 
 @router.get("/pending")
 async def get_pending_communications() -> list[dict]:
-    async with _pending_cache_lock:
-        now_ts = datetime.utcnow().timestamp()
-        if _pending_queue_cache["timestamp"] and now_ts - _pending_queue_cache["timestamp"] < _cache_ttl_seconds:
-            return _pending_queue_cache["queue"]
-        queue = await _compute_pending_queue()
-        _pending_queue_cache["queue"] = queue
-        _pending_queue_cache["timestamp"] = now_ts
-        return queue
+    """
+    Get pending communications from the database.
+    Returns candidates who have been shortlisted and are pending email communication.
+    """
+    async with get_db_session() as session:
+        # Query communications with status 'pending'
+        stmt = select(Communication).options(
+            selectinload(Communication.candidate),
+            selectinload(Communication.job)
+        ).where(
+            Communication.status == "pending"
+        ).order_by(Communication.queued_at.desc())
+
+        result = await session.execute(stmt)
+        communications = result.scalars().all()
+
+        pending_queue = []
+        for comm in communications:
+            pending_queue.append({
+                "id": comm.id,
+                "candidate_id": comm.candidate_id,
+                "application_id": comm.application_id,
+                "job_id": comm.job_id,
+                "candidate_name": comm.candidate.name if comm.candidate else "",
+                "candidate_email": comm.email,
+                "job_title": comm.job.title if comm.job else "",
+                "department": comm.job.department if comm.job else "",
+                "round": comm.recruitment_round,
+                "status": comm.status,
+                "subject": comm.subject,
+                "message": comm.message,
+                "queued_at": comm.queued_at.isoformat() if comm.queued_at else None,
+                "days_pending": (datetime.utcnow() - comm.queued_at).days if comm.queued_at else 0,
+            })
+
+        return pending_queue
 
 
 @router.get("/history")
@@ -185,7 +216,7 @@ async def get_communications_history(
     offset = (page - 1) * page_size
     matched: list[dict] = []
     total = 0
-    all_candidates = list(data_store._candidates_by_id.values())
+    all_candidates = list((await data_store.list_candidates()))
     for candidate in all_candidates:
         for email in candidate.get("email_history", []):
             if _matches_filters(email, candidate):
@@ -439,3 +470,179 @@ async def save_communication_draft(payload: CommunicationSendRequest) -> EmailRe
     )
     clear_pending_cache()
     return result
+
+
+@router.post("/send-bulk")
+async def send_bulk_communications(payload: dict) -> dict:
+    """
+    Send bulk emails to multiple pending candidates.
+    Updates communication status from pending to sent.
+
+    Request body:
+    {
+        "communication_ids": [1, 2, 3],
+        "subject": "Email subject",
+        "body": "Email body with {{candidate_name}} and {{job_title}} placeholders",
+        "sender_name": "Recruitment Team"
+    }
+    """
+    communication_ids = payload.get("communication_ids", [])
+    subject = payload.get("subject", "")
+    body = payload.get("body", "")
+    sender_name = payload.get("sender_name", "Recruitment Team")
+
+    if not communication_ids:
+        raise HTTPException(status_code=400, detail="No communication IDs provided")
+
+    if not subject or not body:
+        raise HTTPException(status_code=422, detail="Subject and body are required")
+
+    async with get_db_session() as session:
+        results = {"successful": [], "failed": []}
+
+        for comm_id in communication_ids:
+            try:
+                stmt = select(Communication).options(
+                    selectinload(Communication.candidate),
+                    selectinload(Communication.job)
+                ).where(Communication.id == comm_id)
+
+                result = await session.execute(stmt)
+                communication = result.scalar_one_or_none()
+
+                if not communication:
+                    results["failed"].append({
+                        "communication_id": comm_id,
+                        "error": "Communication record not found"
+                    })
+                    continue
+
+                if communication.status == "sent":
+                    results["successful"].append({
+                        "communication_id": comm_id,
+                        "candidate_id": communication.candidate_id,
+                        "candidate_name": communication.candidate.name if communication.candidate else "",
+                        "status": "already_sent"
+                    })
+                    continue
+
+                candidate_name = communication.candidate.name if communication.candidate else "Candidate"
+                job_title = communication.job.title if communication.job else "the position"
+
+                personalized_body = body.replace("{{candidate_name}}", candidate_name).replace("{{job_title}}", job_title)
+                personalized_subject = subject.replace("{{candidate_name}}", candidate_name).replace("{{job_title}}", job_title)
+
+                email_sent = False
+                recipient_email = communication.email.strip()
+                if recipient_email:
+                    try:
+                        full_body = personalized_body + f"\n\nBest regards,\n{sender_name}"
+                        email_sent = send_custom_email(
+                            subject=personalized_subject,
+                            body=full_body,
+                            recipient=recipient_email,
+                            sender=settings.smtp_from_email
+                        )
+                    except Exception as e:
+                        logger.error(f"Failed to send bulk email to {recipient_email}: {e}")
+                        email_sent = False
+
+                communication.status = "sent" if email_sent else "failed"
+                communication.subject = personalized_subject
+                communication.message = personalized_body
+                communication.sent_at = datetime.utcnow() if email_sent else None
+
+                results["successful" if email_sent else "failed"].append({
+                    "communication_id": comm_id,
+                    "candidate_id": communication.candidate_id,
+                    "candidate_name": candidate_name,
+                    "email": recipient_email,
+                    "status": communication.status
+                })
+
+                logger.info(f"Bulk email sent to {recipient_email} for communication {comm_id}")
+
+            except Exception as e:
+                logger.error(f"Bulk email error for communication {comm_id}: {e}")
+                results["failed"].append({
+                    "communication_id": comm_id,
+                    "error": str(e)
+                })
+
+        await session.commit()
+
+    return {
+        "success": True,
+        "message": f"Sent {len(results['successful'])} emails, {len(results['failed'])} failed",
+        "total_processed": len(communication_ids),
+        "total_successful": len(results["successful"]),
+        "total_failed": len(results["failed"]),
+        "results": results
+    }
+
+
+@router.get("/history-db")
+async def get_communications_history_db(
+    page: int = 1,
+    page_size: int = 25,
+    status: str | None = None,
+) -> dict:
+    """
+    Get communications history from the database (sent/failed records).
+    This is separate from the legacy email_history stored in candidate records.
+    """
+    if page < 1:
+        page = 1
+    if page_size < 1:
+        page_size = 25
+
+    async with get_db_session() as session:
+        stmt = select(Communication).options(
+            selectinload(Communication.candidate),
+            selectinload(Communication.job)
+        )
+
+        count_stmt = select(func.count(Communication.id))
+
+        if status:
+            stmt = stmt.where(Communication.status == status)
+            count_stmt = count_stmt.where(Communication.status == status)
+
+        # Total count
+        total_result = await session.execute(count_stmt)
+        total = total_result.scalar() or 0
+
+        # Pagination
+        offset = (page - 1) * page_size
+        stmt = stmt.order_by(Communication.sent_at.desc() if status == "sent" else Communication.queued_at.desc()).offset(offset).limit(page_size)
+
+        result = await session.execute(stmt)
+        communications = result.scalars().all()
+
+        items = []
+        for comm in communications:
+            items.append({
+                "id": comm.id,
+                "candidate_id": comm.candidate_id,
+                "application_id": comm.application_id,
+                "job_id": comm.job_id,
+                "candidate_name": comm.candidate.name if comm.candidate else "",
+                "candidate_email": comm.email,
+                "job_title": comm.job.title if comm.job else "",
+                "round": comm.recruitment_round,
+                "status": comm.status,
+                "subject": comm.subject,
+                "message": comm.message,
+                "queued_at": comm.queued_at.isoformat() if comm.queued_at else None,
+                "sent_at": comm.sent_at.isoformat() if comm.sent_at else None,
+            })
+
+        return {
+            "items": items,
+            "page": page,
+            "page_size": page_size,
+            "total": total,
+        }
+
+
+

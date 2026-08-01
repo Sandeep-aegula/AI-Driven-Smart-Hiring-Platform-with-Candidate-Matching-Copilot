@@ -169,7 +169,7 @@ if st.session_state.generated_report_type:
         st.markdown(f"#### <i class='fa-solid fa-magnifying-glass-chart' style='color:#6366F1;'></i> Report Preview: {report_name}", unsafe_allow_html=True)
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
         
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width="stretch")
         
         # Download Buffers
         csv_buffer = df.to_csv(index=False).encode('utf-8')
@@ -303,7 +303,7 @@ End of Report
                 data=pdf_data,
                 file_name=f"{report_name.replace(' ', '_')}.pdf",
                 mime="application/pdf",
-                use_container_width=True
+                width="stretch"
             )
         with d_col2:
             st.download_button(
@@ -311,7 +311,7 @@ End of Report
                 data=csv_buffer,
                 file_name=f"{report_name.replace(' ', '_')}.csv",
                 mime="text/csv",
-                use_container_width=True
+                width="stretch"
             )
         with d_col3:
             st.download_button(
@@ -319,9 +319,9 @@ End of Report
                 data=excel_data,
                 file_name=f"{report_name.replace(' ', '_')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True
+                width="stretch"
             )
         with d_col_close:
-            if st.button("Close Preview", use_container_width=True):
+            if st.button("Close Preview", width="stretch"):
                 st.session_state.generated_report_type = None
                 st.rerun()

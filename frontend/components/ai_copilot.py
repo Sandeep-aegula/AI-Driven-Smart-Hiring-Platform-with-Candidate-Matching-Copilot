@@ -477,7 +477,7 @@ def render_ai_copilot() -> None:
                 st.caption("Ready for AI analysis")
                 if st.button(
                     "Remove",
-                    use_container_width=True,
+                    width="stretch",
                     key="remove_resume",
                     disabled=is_thinking,
                 ):
@@ -502,7 +502,7 @@ def render_ai_copilot() -> None:
                 if st.button(
                     suggestion,
                     key=f"suggest_{hash(suggestion)}",
-                    use_container_width=True,
+                    width="stretch",
                     disabled=is_thinking,
                 ):
                     _append_and_persist("user", suggestion)
@@ -510,7 +510,7 @@ def render_ai_copilot() -> None:
                     st.rerun()
 
         # Clear Chat button.
-        if st.button("Clear Chat", use_container_width=True, disabled=is_thinking):
+        if st.button("Clear Chat", width="stretch", disabled=is_thinking):
             clear_chat()
             _clear_persisted_session(session_id)
             st.session_state["_history_restored"] = False
@@ -814,7 +814,7 @@ def render_ai_copilot() -> None:
                 st.caption("Ready for AI analysis")
                 if st.button(
                     "Remove",
-                    use_container_width=True,
+                    width="stretch",
                     key="remove_resume",
                     disabled=is_thinking,
                 ):
@@ -837,7 +837,7 @@ def render_ai_copilot() -> None:
                 if st.button(
                     suggestion,
                     key=f"suggest_{hash(suggestion)}",
-                    use_container_width=True,
+                    width="stretch",
                     disabled=is_thinking,
                 ):
                     _append_and_persist("user", suggestion)
@@ -845,7 +845,7 @@ def render_ai_copilot() -> None:
                     st.rerun()
 
         # Clear Chat button.
-        if st.button("Clear Chat", use_container_width=True, disabled=is_thinking):
+        if st.button("Clear Chat", width="stretch", disabled=is_thinking):
             clear_chat()
             _clear_persisted_session(session_id)
             st.session_state["_history_restored"] = False

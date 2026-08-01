@@ -5,6 +5,54 @@ import streamlit as st
 
 logger = logging.getLogger(__name__)
 API_URL = "http://localhost:8000"
+BASE_URL = API_URL  # alias for views that reference api_client.BASE_URL
+
+def _get_headers():
+    token = st.session_state.get("token")
+    if token:
+        return {"Authorization": f"Bearer {token}"}
+    return {}
+
+_orig_get = httpx.get
+_orig_post = httpx.post
+_orig_put = httpx.put
+_orig_delete = httpx.delete
+
+class AuthClient:
+    @staticmethod
+    def get(url, **kwargs):
+        headers = kwargs.pop("headers", {})
+        headers.update(_get_headers())
+        return _orig_get(url, headers=headers, **kwargs)
+        
+    @staticmethod
+    def post(url, **kwargs):
+        headers = kwargs.pop("headers", {})
+        headers.update(_get_headers())
+        return _orig_post(url, headers=headers, **kwargs)
+        
+    @staticmethod
+    def put(url, **kwargs):
+        headers = kwargs.pop("headers", {})
+        headers.update(_get_headers())
+        return _orig_put(url, headers=headers, **kwargs)
+        
+    @staticmethod
+    def delete(url, **kwargs):
+        headers = kwargs.pop("headers", {})
+        headers.update(_get_headers())
+        return _orig_delete(url, headers=headers, **kwargs)
+
+httpx.get = AuthClient.get
+httpx.post = AuthClient.post
+httpx.put = AuthClient.put
+httpx.delete = AuthClient.delete
+
+def login_user(email, password):
+    resp = _orig_post(f"{API_URL}/auth/login", json={"email": email, "password": password})
+    if resp.status_code == 200:
+        return resp.json().get("access_token")
+    return None
 
 
 # --- CACHED READ-ONLY API CALLS ---
@@ -13,7 +61,7 @@ API_URL = "http://localhost:8000"
 def get_jobs(search="", department="All", status="All", sort_by="updated_at"):
     try:
         resp = httpx.get(f"{API_URL}/jobs", params={"search": search, "department": department, "status": status, "sort_by": sort_by})
-        return resp.json() if resp.status_code == 200 else []
+        return normalize_list_response(resp.json() if resp.status_code == 200 else [])
     except Exception as e:
         logger.error(f"Error fetching jobs: {e}")
         return []
@@ -28,14 +76,42 @@ def get_job(job_id):
         return None
 
 @st.cache_data(ttl=30, show_spinner=False)
-def get_candidates(search="", status="All", skill="All", job_id=None, min_match_score=0, limit=100, offset=0):
+def get_candidates(search="", status="All", skill="All", job_id=None, min_match_score=0, limit=100, offset=0, raise_on_error=False):
+    """
+    Fetch candidates from the API.
+    Always returns a list of candidate dictionaries.
+    """
     try:
         params = {"search": search, "status": status, "skill": skill, "min_match_score": min_match_score, "limit": limit, "offset": offset}
-        if job_id: params["job_id"] = job_id
+        if job_id:
+            params["job_id"] = job_id
         resp = httpx.get(f"{API_URL}/candidates", params=params)
-        return resp.json() if resp.status_code == 200 else []
+        resp.raise_for_status()
+        data = resp.json()
+
+        if isinstance(data, list):
+            logger.info("GET /candidates returned list payload with %s rows", len(data))
+            return data
+
+        if isinstance(data, dict):
+            for key in ("items", "data", "candidates", "results"):
+                value = data.get(key)
+                if isinstance(value, list):
+                    logger.info("GET /candidates returned wrapped payload '%s' with %s rows", key, len(value))
+                    return value
+                if key in data and value is None:
+                    logger.info("GET /candidates returned empty wrapped payload '%s'", key)
+                    return []
+
+        message = f"Unexpected candidate response shape: {type(data).__name__}"
+        logger.error(message)
+        if raise_on_error:
+            raise ValueError(message)
+        return []
     except Exception as e:
         logger.error(f"Error fetching candidates: {e}")
+        if raise_on_error:
+            raise
         return []
 
 @st.cache_data(ttl=30, show_spinner=False)
@@ -131,9 +207,28 @@ def get_communications_history(page=1, page_size=25, email_type=None, status=Non
         if candidate_name: params["candidate_name"] = candidate_name
         if recruiter_name: params["recruiter_name"] = recruiter_name
         resp = httpx.get(f"{API_URL}/communications/history", params=params, timeout=10.0)
-        return resp.json() if resp.status_code == 200 else {"items": [], "page": page, "page_size": page_size, "total": 0}
+        data = resp.json() if resp.status_code == 200 else {}
+        if isinstance(data, dict):
+            return data.get("items", [])
+        return data
     except Exception as e:
         logger.error(f"Error fetching communications history: {e}")
+        return {"items": [], "page": page, "page_size": page_size, "total": 0}
+
+
+def get_communications_history_db(page=1, page_size=25, status=None):
+    """Fetch communications history from the database Communication table."""
+    try:
+        params = {"page": page, "page_size": page_size}
+        if status:
+            params["status"] = status
+        resp = httpx.get(f"{API_URL}/communications/history-db", params=params, timeout=10.0)
+        data = resp.json() if resp.status_code == 200 else {}
+        if isinstance(data, dict):
+            return data
+        return {"items": [], "page": page, "page_size": page_size, "total": 0}
+    except Exception as e:
+        logger.error(f"Error fetching communications history from DB: {e}")
         return {"items": [], "page": page, "page_size": page_size, "total": 0}
 
 
@@ -184,6 +279,30 @@ def save_communication_draft(payload):
         return None
     except Exception as e:
         logger.error(f"Error saving communication draft: {e}")
+        return None
+
+def send_bulk_communications(communication_ids: list[int], subject: str, body: str, sender_name: str = "Recruitment Team"):
+    """Send bulk emails to multiple pending communication records."""
+    try:
+        payload = {
+            "communication_ids": communication_ids,
+            "subject": subject,
+            "body": body,
+            "sender_name": sender_name,
+        }
+        resp = httpx.post(
+            f"{API_URL}/communications/send-bulk",
+            json=payload,
+            timeout=60.0,
+        )
+        if resp.status_code == 200:
+            clear_candidates_cache()
+            clear_interviews_cache()
+            return resp.json()
+        logger.error(f"Bulk send failed with status {resp.status_code}: {resp.text}")
+        return None
+    except Exception as e:
+        logger.error(f"Error sending bulk communications: {e}")
         return None
 
 # --- Resumes (New Resume Management) ---
@@ -345,6 +464,42 @@ def create_job(payload):
         return None
     except Exception as e:
         logger.error(f"Error creating job: {e}")
+        return None
+
+
+# --- Candidate Shortlist Endpoints ---
+def shortlist_candidate(application_id: int):
+    """Shortlist a single candidate by application ID."""
+    try:
+        resp = httpx.post(
+            f"{API_URL}/candidates/applications/{application_id}/shortlist",
+            timeout=30.0,
+        )
+        if resp.status_code == 200:
+            clear_candidates_cache()
+            return resp.json()
+        logger.error(f"Shortlist failed with status {resp.status_code}: {resp.text}")
+        return None
+    except Exception as e:
+        logger.error(f"Error shortlisting candidate: {e}")
+        return None
+
+
+def shortlist_bulk(application_ids: list[int]):
+    """Bulk shortlist multiple candidates by their application IDs."""
+    try:
+        resp = httpx.post(
+            f"{API_URL}/candidates/applications/shortlist-bulk",
+            json=application_ids,
+            timeout=30.0,
+        )
+        if resp.status_code in (200, 207):
+            clear_candidates_cache()
+            return resp.json()
+        logger.error(f"Bulk shortlist failed with status {resp.status_code}: {resp.text}")
+        return None
+    except Exception as e:
+        logger.error(f"Error bulk shortlisting: {e}")
         return None
 
 def update_job(job_id, payload):
@@ -824,3 +979,407 @@ def get_assistant_suggestions():
     except Exception as e:
         logger.error(f"Error getting assistant suggestions: {e}")
         return []
+
+# --- PUBLIC CAREERS & APPLICATIONS API ---
+
+@st.cache_data(ttl=60, show_spinner=False)
+def get_public_jobs(search="", department="All", location="All", employment_type="All"):
+    try:
+        params = {"search": search, "department": department, "location": location, "employment_type": employment_type}
+        resp = httpx.get(f"{API_URL}/public/jobs", params=params, timeout=10.0)
+        return resp.json() if resp.status_code == 200 else []
+    except Exception as e:
+        logger.error(f"Error fetching public jobs: {e}")
+        return []
+
+@st.cache_data(ttl=60, show_spinner=False)
+def get_public_job_details(job_id):
+    try:
+        resp = httpx.get(f"{API_URL}/public/jobs/{job_id}", timeout=10.0)
+        return resp.json() if resp.status_code == 200 else None
+    except Exception as e:
+        logger.error(f"Error fetching public job details: {e}")
+        return None
+
+# def submit_public_application( job_id,payload,file_bytes,filename,mime_type="application/octet-stream",):
+#     """
+#     Submit a public job application through the FastAPI API.
+
+#     The frontend sends the resume as multipart form data.
+#     The FastAPI route receives the file and forwards its
+#     bytes, original filename, and MIME type to the backend service.
+#     """
+
+#     try:
+#         files = {
+#             "resume_file": (
+#                 filename,
+#                 file_bytes,
+#                 mime_type or "application/octet-stream",
+#             )
+#         }
+
+#         data = {
+#             key: str(value) if value is not None else ""
+#             for key, value in payload.items()
+#         }
+
+#         response = httpx.post(
+#             f"{API_URL}/public/jobs/{job_id}/apply",
+#             files=files,
+#             data=data,
+#             timeout=90.0,
+#         )
+
+#         if response.status_code in (200, 201):
+#             return response.json()
+
+#         logger.error(
+#             "Public application failed. "
+#             "Status: %s | Response: %s",
+#             response.status_code,
+#             response.text,
+#         )
+
+#         return None
+
+#     except Exception:
+#         logger.exception(
+#             "Unexpected error while submitting public "
+#             "application for job_id=%s",
+#             job_id,
+#         )
+
+#         return None
+def submit_public_application(
+    job_id,
+    payload,
+    file_bytes,
+    filename,
+    mime_type="application/octet-stream"
+):
+    try:
+        # IMPORTANT:
+        # The key "resume" must match the FastAPI backend parameter name.
+        files = {
+            "resume": (
+                filename,
+                file_bytes,
+                mime_type
+            )
+        }
+
+        data = {
+            key: str(value) if value is not None else ""
+            for key, value in payload.items()
+        }
+
+        resp = httpx.post(
+            f"{API_URL}/public/jobs/{job_id}/apply",
+            files=files,
+            data=data,
+            timeout=60.0
+        )
+
+        if resp.status_code in (200, 201):
+            return resp.json()
+
+        logger.error(
+            "Public application failed. "
+            f"Status: {resp.status_code} | "
+            f"Response: {resp.text}"
+        )
+
+        return None
+
+    except Exception as e:
+        logger.exception(
+            f"Error submitting public application: {e}"
+        )
+        return None
+# --- HR APPLICATIONS API ---
+
+@st.cache_data(ttl=30, show_spinner=False)
+def get_hr_applications(job_id=None, search="", status="All", recommendation="All"):
+    try:
+        params = {"search": search, "status": status, "recommendation": recommendation}
+        if job_id: params["job_id"] = job_id
+        resp = httpx.get(f"{API_URL}/applications", params=params, timeout=10.0)
+        return resp.json() if resp.status_code == 200 else []
+    except Exception as e:
+        logger.error(f"Error fetching HR applications: {e}")
+        return []
+
+def update_application_status(application_id, status, notes="", reviewer=""):
+    try:
+        payload = {"status": status, "recruiter_notes": notes, "reviewed_by": reviewer}
+        resp = httpx.patch(f"{API_URL}/applications/{application_id}/status", json=payload, timeout=10.0)
+        if resp.status_code == 200:
+            get_hr_applications.clear()
+            return resp.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error updating application status: {e}")
+        return None
+
+# --- JOB LIFECYCLE (Additional for publish/pause/close) ---
+
+def publish_job(job_id):
+    try:
+        resp = httpx.post(f"{API_URL}/jobs/{job_id}/publish", timeout=10.0)
+        if resp.status_code == 200:
+            clear_jobs_cache()
+            get_public_jobs.clear()
+            get_public_job_details.clear()
+            return resp.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error publishing job: {e}")
+        return None
+
+def pause_job(job_id):
+    try:
+        resp = httpx.post(f"{API_URL}/jobs/{job_id}/pause", timeout=10.0)
+        if resp.status_code == 200:
+            clear_jobs_cache()
+            get_public_jobs.clear()
+            get_public_job_details.clear()
+            return resp.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error pausing job: {e}")
+        return None
+
+def close_job(job_id):
+    try:
+        resp = httpx.post(f"{API_URL}/jobs/{job_id}/close", timeout=10.0)
+        if resp.status_code == 200:
+            clear_jobs_cache()
+            get_public_jobs.clear()
+            get_public_job_details.clear()
+            return resp.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error closing job: {e}")
+        return None
+
+# --- ONBOARDING OPERATIONS ---
+
+@st.cache_data(ttl=30, show_spinner=False)
+def get_onboarding_candidates(search="", job_id=None, status="All", verification_status="All"):
+    """Fetch list of onboarding candidates."""
+    try:
+        params = {"search": search, "status": status, "verification_status": verification_status}
+        if job_id:
+            params["job_id"] = job_id
+        resp = httpx.get(f"{API_URL}/onboarding", params=params, timeout=10.0)
+        return resp.json() if resp.status_code == 200 else []
+    except Exception as e:
+        logger.error(f"Error fetching onboarding candidates: {e}")
+        return []
+
+
+@st.cache_data(ttl=30, show_spinner=False)
+def get_onboarding_details(onboarding_id):
+    """Fetch detailed onboarding information."""
+    try:
+        resp = httpx.get(f"{API_URL}/onboarding/{onboarding_id}", timeout=10.0)
+        return resp.json() if resp.status_code == 200 else None
+    except Exception as e:
+        logger.error(f"Error fetching onboarding details: {e}")
+        return None
+
+
+@st.cache_data(ttl=30, show_spinner=False)
+def get_onboarding_progress(onboarding_id):
+    """Fetch onboarding progress summary."""
+    try:
+        resp = httpx.get(f"{API_URL}/onboarding/{onboarding_id}/progress", timeout=10.0)
+        return resp.json() if resp.status_code == 200 else None
+    except Exception as e:
+        logger.error(f"Error fetching onboarding progress: {e}")
+        return None
+
+
+def create_onboarding(candidate_id, application_id, job_id, department="", designation="", joining_date=""):
+    """Create a new onboarding record."""
+    try:
+        payload = {
+            "candidate_id": candidate_id,
+            "application_id": application_id,
+            "job_id": job_id,
+            "department": department,
+            "designation": designation,
+            "joining_date": joining_date,
+        }
+        resp = httpx.post(f"{API_URL}/onboarding", json=payload, timeout=10.0)
+        if resp.status_code == 200:
+            get_onboarding_candidates.clear()
+            return resp.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error creating onboarding: {e}")
+        return None
+
+
+def add_document_requirement(onboarding_id, document_type, document_name, required=True):
+    """Add a custom document requirement."""
+    try:
+        data = {
+            "document_type": document_type,
+            "document_name": document_name,
+            "required": required,
+        }
+        resp = httpx.post(f"{API_URL}/onboarding/{onboarding_id}/requirements", data=data, timeout=10.0)
+        if resp.status_code == 200:
+            get_onboarding_details.clear()
+            get_onboarding_candidates.clear()
+            return resp.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error adding document requirement: {e}")
+        return None
+
+
+def update_document_requirement(onboarding_id, requirement_id, required):
+    """Update document requirement."""
+    try:
+        payload = {"required": required}
+        resp = httpx.patch(
+            f"{API_URL}/onboarding/{onboarding_id}/requirements/{requirement_id}",
+            json=payload,
+            timeout=10.0
+        )
+        if resp.status_code == 200:
+            get_onboarding_details.clear()
+            get_onboarding_candidates.clear()
+            return resp.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error updating document requirement: {e}")
+        return None
+
+
+def delete_document_requirement(onboarding_id, requirement_id):
+    """Delete a custom document requirement."""
+    try:
+        resp = httpx.delete(
+            f"{API_URL}/onboarding/{onboarding_id}/requirements/{requirement_id}",
+            timeout=10.0
+        )
+        if resp.status_code == 200:
+            get_onboarding_details.clear()
+            get_onboarding_candidates.clear()
+            return resp.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error deleting document requirement: {e}")
+        return None
+
+
+def upload_onboarding_document(requirement_id, file_bytes, filename, mime_type="application/octet-stream"):
+    """Upload a document for onboarding."""
+    try:
+        files = {"file": (filename, file_bytes, mime_type)}
+        resp = httpx.post(
+            f"{API_URL}/onboarding/documents/{requirement_id}/upload",
+            files=files,
+            timeout=90.0
+        )
+        if resp.status_code == 200:
+            get_onboarding_details.clear()
+            get_onboarding_candidates.clear()
+            get_onboarding_progress.clear()
+            return resp.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error uploading onboarding document: {e}")
+        return None
+
+
+def verify_onboarding_document(document_id, verified_by="HR"):
+    """Verify a document."""
+    try:
+        data = {"verified_by": verified_by}
+        resp = httpx.post(
+            f"{API_URL}/onboarding/documents/{document_id}/verify",
+            data=data,
+            timeout=10.0
+        )
+        if resp.status_code == 200:
+            get_onboarding_details.clear()
+            get_onboarding_candidates.clear()
+            get_onboarding_progress.clear()
+            return resp.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error verifying document: {e}")
+        return None
+
+
+def reject_onboarding_document(document_id, rejection_reason, rejected_by="HR"):
+    """Reject a document."""
+    try:
+        data = {
+            "rejection_reason": rejection_reason,
+            "rejected_by": rejected_by,
+        }
+        resp = httpx.post(
+            f"{API_URL}/onboarding/documents/{document_id}/reject",
+            data=data,
+            timeout=10.0
+        )
+        if resp.status_code == 200:
+            get_onboarding_details.clear()
+            get_onboarding_candidates.clear()
+            get_onboarding_progress.clear()
+            return resp.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error rejecting document: {e}")
+        return None
+
+
+def request_document_reupload(document_id, reupload_message):
+    """Request a document to be re-uploaded."""
+    try:
+        data = {"reupload_message": reupload_message}
+        resp = httpx.post(
+            f"{API_URL}/onboarding/documents/{document_id}/request-reupload",
+            data=data,
+            timeout=10.0
+        )
+        if resp.status_code == 200:
+            get_onboarding_details.clear()
+            get_onboarding_candidates.clear()
+            get_onboarding_progress.clear()
+            return resp.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error requesting document re-upload: {e}")
+        return None
+
+
+def clear_onboarding_cache():
+    """Clear onboarding-related caches."""
+    get_onboarding_candidates.clear()
+    get_onboarding_details.clear()
+    get_onboarding_progress.clear()
+
+def normalize_list_response(data):
+    """Normalize API list responses into list[dict].
+
+    Handles:
+    - list -> returned as-is
+    - dict with keys: items, data, candidates, results -> extract the list value
+    - anything else -> []
+    """
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        for key in ("items", "data", "candidates", "results"):
+            value = data.get(key)
+            if isinstance(value, list):
+                return value
+    return []
+

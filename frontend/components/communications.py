@@ -13,27 +13,148 @@ EMAIL_TYPE_OPTIONS = [
 ]
 
 
+def fetch_pending_communications():
+    """Fetch pending communications via the shared API client."""
+    try:
+        return api_client.get_pending_communications()
+    except Exception as e:
+        st.error(f"Error fetching pending communications: {e}")
+        return []
+
+
+def fetch_communications_history(page: int = 1, page_size: int = 25, status: str = None):
+    """Fetch communications history from the database Communication table."""
+    try:
+        return api_client.get_communications_history_db(page=page, page_size=page_size, status=status)
+    except Exception as e:
+        st.error(f"Error fetching history: {e}")
+        return {"items": [], "total": 0}
+
+
+def send_bulk_communications(communication_ids: list, subject: str, body: str, sender_name: str = "Recruitment Team"):
+    """Send bulk emails to selected candidates via the shared API client."""
+    try:
+        return api_client.send_bulk_communications(
+            communication_ids=communication_ids,
+            subject=subject,
+            body=body,
+            sender_name=sender_name,
+        )
+    except Exception as e:
+        st.error(f"Error sending bulk emails: {e}")
+        return None
+
+
 def _render_pending_queue():
-    st.markdown("### Pending Communications")
-    st.write("Use this queue to follow up on important candidate decisions.")
-    pending = api_client.get_pending_communications()
+    st.markdown("### Pending Queue")
+    st.write("Candidates shortlisted and waiting for communication.")
+    st.caption("Select candidates to send emails in bulk.")
+
+    pending = fetch_pending_communications()
+
     if not pending:
-        st.info("No pending communications at this time.")
+        st.info("No pending shortlisted candidates. Shortlist candidates from the Candidate Management page.")
         return
 
+    st.markdown(f"**{len(pending)} candidates awaiting communication**")
+
+    # Initialize selection
+    if "comm_selected_ids" not in st.session_state:
+        st.session_state.comm_selected_ids = []
+
+    # Bulk action section
+    col_b1, col_b2, col_b3 = st.columns([3, 1, 1])
+
+    with col_b1:
+        select_all = st.checkbox("Select All", key="select_all_pending")
+
+    with col_b2:
+        if st.button("Select All Selected", width="stretch"):
+            st.session_state.comm_selected_ids = [p.get("id") for p in pending]
+            st.rerun()
+
+    with col_b3:
+        if st.button("Clear Selection", width="stretch"):
+            st.session_state.comm_selected_ids = []
+            st.rerun()
+
+    st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+
+    # Display pending candidates
     for item in pending:
-        with st.expander(f"{item.get('candidate_name')} — {item.get('decision')} ({item.get('days_pending')}d pending)"):
-            st.markdown(f"**Job:** {item.get('job_title')}  ")
-            st.markdown(f"**Round:** {item.get('round') or 'N/A'}  ")
-            st.markdown(f"**Email Type:** {item.get('implied_email_type')}  ")
-            st.markdown(f"**Draft Saved:** {'Yes' if item.get('draft_saved') else 'No'}  ")
-            if st.button("Draft Email", key=f"draft_pending_{item.get('candidate_id')}_{item.get('interview_id')}"):
-                st.session_state["comm_draft_candidate_id"] = item.get('candidate_id')
-                st.session_state["comm_draft_job_id"] = item.get('job_id')
-                st.session_state["comm_draft_interview_id"] = item.get('interview_id')
-                st.session_state["comm_draft_email_type"] = item.get('implied_email_type')
-                st.session_state["comm_draft_decision"] = item.get('decision')
-                st.session_state["comm_view"] = "compose"
+        comm_id = item.get("id")
+        is_selected = comm_id in st.session_state.comm_selected_ids
+
+        with st.container():
+            col_cb, col_info = st.columns([1, 8])
+
+            with col_cb:
+                if st.checkbox("", value=is_selected, key=f"comm_chk_{comm_id}"):
+                    if comm_id not in st.session_state.comm_selected_ids:
+                        st.session_state.comm_selected_ids.append(comm_id)
+                else:
+                    if comm_id in st.session_state.comm_selected_ids:
+                        st.session_state.comm_selected_ids.remove(comm_id)
+
+            with col_info:
+                with st.expander(f"{item.get('candidate_name')} — {item.get('job_title')}"):
+                    st.markdown(f"**Email:** {item.get('candidate_email')}")
+                    st.markdown(f"**Job:** {item.get('job_title')}")
+                    st.markdown(f"**Department:** {item.get('department', 'N/A')}")
+                    st.markdown(f"**Round:** {item.get('round') or 'Initial Screening'}")
+                    st.markdown(f"**Status:** {item.get('status')}")
+                    days = item.get("days_pending", 0)
+                    st.caption(f"Queued: {days} days ago")
+
+    st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+
+    # Bulk send section
+    if len(st.session_state.comm_selected_ids) > 0:
+        st.markdown(f"""
+        <div style="background:#EEF2FF; border:1px solid #C7D2FE; border-radius:8px; padding:12px 16px; margin-bottom:16px;">
+            <span style="font-weight:600; color:#4F46E5;">{len(st.session_state.comm_selected_ids)} candidates selected</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        with st.form(key="bulk_email_form"):
+            st.markdown("#### Send Bulk Email")
+
+            col_e1, col_e2 = st.columns(2)
+            with col_e1:
+                bulk_subject = st.text_input("Email Subject", value="Interview Invitation - Next Steps")
+            with col_e2:
+                sender_name = st.text_input("Sender Name", value="HR Recruitment Team")
+
+            bulk_body = st.text_area(
+                "Email Body",
+                value="Dear {{candidate_name}},\n\nWe are pleased to inform you that your application for the position of {{job_title}} has been shortlisted for further consideration.\n\nPlease find the details for the next round of interviews below.\n\nBest regards,\nHR Team",
+                height=200
+            )
+
+            st.caption("Use {{candidate_name}} and {{job_title}} as placeholders for personalization.")
+
+            col_send, col_clear = st.columns([1, 1])
+            with col_send:
+                submit_bulk = st.form_submit_button(f"Send to {len(st.session_state.comm_selected_ids)} Candidates", type="primary", width="stretch")
+
+            with col_clear:
+                clear_btn = st.form_submit_button("Clear", width="stretch")
+
+            if submit_bulk:
+                with st.spinner(f"Sending emails to {len(st.session_state.comm_selected_ids)} candidates..."):
+                    result = send_bulk_communications(
+                        st.session_state.comm_selected_ids,
+                        bulk_subject,
+                        bulk_body,
+                        sender_name
+                    )
+                    if result and result.get("success"):
+                        st.success(f"✅ {result.get('message')}")
+                        st.session_state.comm_selected_ids = []
+                        st.rerun()
+
+            if clear_btn:
+                st.session_state.comm_selected_ids = []
                 st.rerun()
 
 

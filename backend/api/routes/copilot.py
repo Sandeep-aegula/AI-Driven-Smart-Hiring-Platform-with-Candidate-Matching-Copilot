@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from backend.services.chat_service import chat_service
+from backend.services.context_retrieval_service import detect_intent, retrieve_context, build_rag_prompt
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -13,6 +14,7 @@ router = APIRouter()
 class ChatRequest(BaseModel):
     message: str
     session_id: Optional[str] = None
+    current_page: Optional[str] = None
 
 
 class ChatResponse(BaseModel):
@@ -37,7 +39,12 @@ async def chat_with_copilot(req: ChatRequest):
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
 
     try:
-        reply = await chat_service.chat(session_id, req.message)
+        # RAG context retrieval flow
+        intents = await detect_intent(req.message)
+        db_context = await retrieve_context(intents)
+        rag_prompt = build_rag_prompt(req.message, db_context, req.current_page)
+        
+        reply = await chat_service.chat_rag(session_id, req.message, rag_prompt)
     except Exception as exc:
         logger.exception("Chat endpoint error: %s", exc)
         raise HTTPException(status_code=500, detail="Failed to process chat message.")

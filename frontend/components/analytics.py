@@ -61,7 +61,7 @@ def render_analytics() -> None:
                 ))
                 fig.update_layout(margin=dict(l=10,r=10,t=10,b=10), height=240,
                                   paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-                st.plotly_chart(fig, use_container_width=True, config={"displayModeBar":False})
+                st.plotly_chart(fig, width="stretch", config={"displayModeBar":False})
             st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
             with st.container(border=True):
                 st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Average Time to Hire</h4>",
@@ -73,7 +73,7 @@ def render_analytics() -> None:
                 fig2.update_layout(margin=dict(l=10,r=10,t=10,b=10), height=230,
                                    xaxis_title="Avg Days", yaxis_title=None, coloraxis_showscale=False,
                                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-                st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar":False})
+                st.plotly_chart(fig2, width="stretch", config={"displayModeBar":False})
 
         with col_r:
             with st.container(border=True):
@@ -87,7 +87,7 @@ def render_analytics() -> None:
                 fig3.update_layout(margin=dict(l=10,r=10,t=10,b=10), height=530,
                                    showlegend=True, legend=dict(orientation="h",yanchor="bottom",y=-0.15,xanchor="center",x=0.5),
                                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-                st.plotly_chart(fig3, use_container_width=True, config={"displayModeBar":False})
+                st.plotly_chart(fig3, width="stretch", config={"displayModeBar":False})
 
     with tab_trends:
         col_l, col_r = st.columns(2)
@@ -102,7 +102,7 @@ def render_analytics() -> None:
                 fig.update_layout(margin=dict(l=20,r=20,t=10,b=10), height=230,
                                   xaxis=dict(showgrid=False), yaxis=dict(showgrid=True,gridcolor="#F1F5F9"),
                                   paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-                st.plotly_chart(fig, use_container_width=True, config={"displayModeBar":False})
+                st.plotly_chart(fig, width="stretch", config={"displayModeBar":False})
             st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
             with st.container(border=True):
                 st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Department Distribution</h4>",
@@ -113,7 +113,7 @@ def render_analytics() -> None:
                 fig2.update_layout(margin=dict(l=10,r=10,t=10,b=10), height=230,
                                    xaxis_title=None, yaxis_title="Total Hires", coloraxis_showscale=False,
                                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-                st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar":False})
+                st.plotly_chart(fig2, width="stretch", config={"displayModeBar":False})
         with col_r:
             with st.container(border=True):
                 st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Applications Over Time</h4>",
@@ -124,7 +124,7 @@ def render_analytics() -> None:
                 fig3.update_layout(margin=dict(l=20,r=20,t=10,b=10), height=510,
                                    xaxis=dict(showgrid=False), yaxis=dict(showgrid=True,gridcolor="#F1F5F9"),
                                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-                st.plotly_chart(fig3, use_container_width=True, config={"displayModeBar":False})
+                st.plotly_chart(fig3, width="stretch", config={"displayModeBar":False})
 
     with tab_talent:
         col_l, col_r = st.columns(2)
@@ -140,7 +140,7 @@ def render_analytics() -> None:
                                   xaxis_title="JDs requiring skill", yaxis_title=None, coloraxis_showscale=False,
                                   paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
                 fig.update_yaxes(autorange="reversed")
-                st.plotly_chart(fig, use_container_width=True, config={"displayModeBar":False})
+                st.plotly_chart(fig, width="stretch", config={"displayModeBar":False})
             st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
             with st.container(border=True):
                 st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Offer Acceptance</h4>",
@@ -151,7 +151,7 @@ def render_analytics() -> None:
                 fig2.update_layout(margin=dict(l=10,r=10,t=10,b=10), height=230,
                                    showlegend=True, legend=dict(orientation="h",yanchor="bottom",y=-0.15,xanchor="center",x=0.5),
                                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-                st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar":False})
+                st.plotly_chart(fig2, width="stretch", config={"displayModeBar":False})
         with col_r:
             with st.container(border=True):
                 st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>Candidate Acquisition Sources</h4>",
@@ -163,7 +163,7 @@ def render_analytics() -> None:
                 fig3.update_layout(margin=dict(l=10,r=10,t=10,b=10), height=510,
                                    showlegend=True, legend=dict(orientation="h",yanchor="bottom",y=-0.15,xanchor="center",x=0.5),
                                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-                st.plotly_chart(fig3, use_container_width=True, config={"displayModeBar":False})
+                st.plotly_chart(fig3, width="stretch", config={"displayModeBar":False})
 
     with tab_recruiters:
         with st.container(border=True):
@@ -178,4 +178,4 @@ def render_analytics() -> None:
             fig.update_layout(barmode="group", margin=dict(l=20,r=20,t=20,b=20), height=450,
                               xaxis_title="Recruiter", yaxis_title="Count",
                               paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar":False})
+            st.plotly_chart(fig, width="stretch", config={"displayModeBar":False})

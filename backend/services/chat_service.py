@@ -61,6 +61,28 @@ class ChatService:
         self._append(session_id, "assistant", reply)
         return reply
 
+    async def chat_rag(self, session_id: str, original_message: str, rag_prompt: str) -> str:
+        """
+        Process a user message using a RAG prompt.
+        """
+        if not original_message.strip():
+            return "Please enter a message so I can help you."
+
+        history = self._get_history(session_id)
+
+        try:
+            reply = await self.ollama.chat_rag(rag_prompt, history)
+        except OllamaServiceError as exc:
+            logger.warning("Chat error for session %s: %s", session_id, exc)
+            return str(exc)
+        except Exception as exc:
+            logger.exception("Unexpected chat error for session %s", session_id)
+            return "Sorry, I encountered an unexpected error. Please try again."
+
+        self._append(session_id, "user", original_message)
+        self._append(session_id, "assistant", reply)
+        return reply
+
     async def get_history(self, session_id: str) -> list[dict]:
         return list(self._get_history(session_id))
 

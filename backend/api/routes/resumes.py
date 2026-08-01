@@ -3,12 +3,13 @@ import asyncio
 import aiofiles
 from pathlib import Path
 from typing import List, Optional
-
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile, BackgroundTasks
-
+from sqlalchemy import desc, select
 from backend.core.config import settings
-from backend.schemas.entities import CandidateCreate, CandidateRead, BatchUploadStatus, ResumeDraftResponse
+from backend.database.session import get_db_session
 from backend.database.data_store import data_store
+from backend.models.entities import ResumeData
+from backend.schemas.entities import CandidateCreate, CandidateRead, BatchUploadStatus, ResumeDraftResponse
 from backend.services.resume_parser_service import extract_text_from_document
 from backend.services.ai_resume_service import parse_resume_to_json, evaluate_candidate_match
 
@@ -200,28 +201,24 @@ async def update_candidate(candidate_id: int, payload: CandidateCreate):
 @router.get("/history")
 async def get_resume_history(limit: int = 50):
     """Get recent resume uploads with parsed data for the frontend history panel."""
-    if data_store._data is None:
-        await data_store._load_storage()
-    
-    resumes = data_store._data.get("resume_data", [])
-    # Sort by created_at descending (newest first)
-    resumes_sorted = sorted(resumes, key=lambda r: r.get("created_at", ""), reverse=True)
-    
-    history = []
-    for r in resumes_sorted[:limit]:
-        candidate = data_store._candidates_by_id.get(r.get("candidate_id"))
-        history.append({
-            "id": r.get("id"),
-            "candidate_id": r.get("candidate_id"),
-            "filename": r.get("filename"),
-            "name": r.get("name") or (candidate.get("name") if candidate else "Unknown"),
-            "email": r.get("email") or (candidate.get("email") if candidate else ""),
-            "extracted_text": r.get("extracted_text", ""),
-            "parsed_json": r.get("parsed_json", {}),
-            "created_at": r.get("created_at"),
-            "status": r.get("status", "Parsed")
-        })
-    return history
+    async with get_db_session() as session:
+        stmt = select(ResumeData).order_by(desc(ResumeData.created_at)).limit(limit)
+        res = await session.execute(stmt)
+        resumes = res.scalars().all()
+        history = []
+        for r in resumes:
+            history.append({
+                "id": r.id,
+                "candidate_id": r.candidate_id,
+                "filename": r.filename,
+                "name": r.name or "Unknown",
+                "email": r.email or "",
+                "extracted_text": r.extracted_text or "",
+                "parsed_json": r.parsed_json or {},
+                "created_at": str(r.created_at) if r.created_at else "",
+                "status": r.status or "Parsed"
+            })
+        return history
 
 
 @router.post("/parse-text")

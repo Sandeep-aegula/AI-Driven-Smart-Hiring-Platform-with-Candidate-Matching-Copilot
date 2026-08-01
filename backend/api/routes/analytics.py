@@ -30,21 +30,21 @@ async def get_funnel(department: str = "All"):
     jobs = await data_store.list_jobs(department=department if department != "All" else "All")
     cands = await data_store.list_candidates()
     ivs = await data_store.list_interviews()
-    apps = data_store._data.get("applications", []) if data_store._data else []
+    apps = await data_store.list_applications()
     return get_pipeline_funnel(jobs, apps, ivs, cands, department)
 
 @router.get("/hiring-velocity")
 async def get_velocity(days: int = 30):
     cands = await data_store.list_candidates()
     ivs = await data_store.list_interviews()
-    apps = data_store._data.get("applications", []) if data_store._data else []
+    apps = await data_store.list_applications()
     return get_hiring_velocity(apps, ivs, cands, days)
 
 @router.get("/source-quality")
 async def get_quality(department: str = "All"):
     jobs = await data_store.list_jobs(department=department if department != "All" else "")
     cands = await data_store.list_candidates()
-    apps = data_store._data.get("applications", []) if data_store._data else []
+    apps = await data_store.list_applications()
     return get_source_quality(cands, apps, jobs, department)
 
 @router.get("/interview-load")
@@ -66,7 +66,7 @@ async def get_dashboard_bundle(department: str = "All", days: int = 30):
     cands = await data_store.list_candidates()
     ivs = await data_store.list_interviews()
     emps = await data_store.list_employees()
-    apps = data_store._data.get("applications", []) if data_store._data else []
+    apps = await data_store.list_applications()
     
     # In a real heavy app we might offload these to a thread pool executor.
     # Here they run sequentially since pandas over memory dicts is fast enough.

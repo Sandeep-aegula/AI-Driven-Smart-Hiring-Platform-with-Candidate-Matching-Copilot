@@ -184,7 +184,7 @@ with col_top_left:
             progress_bar = st.progress(0)
             status_text = st.empty()
             
-            if st.button("Parse Resumes with Ollama AI", type="primary", use_container_width=True):
+            if st.button("Parse Resumes with Ollama AI", type="primary", width="stretch"):
                 success_count = 0
                 for idx, file in enumerate(uploaded_files):
                     status_text.markdown(f"AI parsing: *{file.name}* (Ollama qwen2.5-coder)...")
@@ -222,7 +222,7 @@ with col_top_left:
                 label_visibility="collapsed",
                 key="pasted_resume_text"
             )
-            if st.button("Parse Pasted Text", type="secondary", use_container_width=True, disabled=not st.session_state.get("pasted_resume_text", "").strip()):
+            if st.button("Parse Pasted Text", type="secondary", width="stretch", disabled=not st.session_state.get("pasted_resume_text", "").strip()):
                 with st.spinner("Parsing with Ollama AI..."):
                     res = api_client.parse_resume_text(st.session_state.get("pasted_resume_text", ""))
                     if res:

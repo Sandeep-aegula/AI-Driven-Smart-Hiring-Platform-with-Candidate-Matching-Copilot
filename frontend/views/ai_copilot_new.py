@@ -136,7 +136,7 @@ for i, (label, prompt) in enumerate(QUICK_ACTIONS.items()):
         if st.button(
             f"{icon_char} {clean_label}",
             key=f"quick_action_{i}",
-            use_container_width=True,
+            width="stretch",
             help=prompt
         ):
             st.session_state.pending_user_message = prompt
@@ -201,7 +201,7 @@ col_attach, col_input, col_send = st.columns([0.08, 0.84, 0.08], gap="small")
 
 with col_attach:
     # Attachment button that triggers the hidden file uploader
-    if st.button("📎", key="attach_btn", help="Attach file", use_container_width=True):
+    if st.button("📎", key="attach_btn", help="Attach file", width="stretch"):
         # This will be handled by JavaScript to click the hidden file input
         pass
 
@@ -218,7 +218,7 @@ with col_input:
     )
 
 with col_send:
-    send_clicked = st.button("➤", key="send_btn", use_container_width=True, disabled=not user_input.strip())
+    send_clicked = st.button("➤", key="send_btn", width="stretch", disabled=not user_input.strip())
 
 st.markdown('</div>', unsafe_allow_html=True)  # Close input bar
 st.markdown('</div>', unsafe_allow_html=True)  # Close chat container

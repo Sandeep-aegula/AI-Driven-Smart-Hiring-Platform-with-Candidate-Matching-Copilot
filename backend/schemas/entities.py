@@ -5,6 +5,8 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from backend.models.entities import OnboardingDocumentStatus, OnboardingStatus
+
 
 class SkillRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -14,204 +16,6 @@ class SkillRead(BaseModel):
     category: str
 
 
-class JobBase(BaseModel):
-    title: str
-    department: str
-    location: str = "Remote"
-    experience_min: int = 0
-    experience_max: int = 0
-    salary_min: int = 0
-    salary_max: int = 0
-    employment_type: str = "Full-time"
-    hiring_manager: str = ""
-    deadline: str = ""
-    status: str = "Active"
-    description: str = ""
-    responsibilities: list[str] = Field(default_factory=list)
-    requirements: list[str] = Field(default_factory=list)
-    preferred_skills: list[str] = Field(default_factory=list)
-    nice_to_have_skills: list[str] = Field(default_factory=list)
-    pass
-
-
-class JobRead(JobBase):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    applications_count: int = 0
-    created_at: datetime | None = None
-    updated_at: datetime | None = None
-    skills: list[SkillRead] = Field(default_factory=list)
-
-
-class CandidateBase(BaseModel):
-    name: str
-    email: str
-    phone: str = ""
-    linkedin: str = ""
-    github: str = ""
-    portfolio: str = ""
-    current_title: str = ""
-    years_experience: int = 0
-    location: str = ""
-    status: str = "New"
-    match_score: int = 0
-    skill_match_breakdown: dict = Field(default_factory=dict)
-    hire_recommendation: str = ""
-    tags: list[str] = Field(default_factory=list)
-    summary: str = ""
-
-
-class BatchUploadStatus(BaseModel):
-    batch_id: str
-    total_files: int
-    processed_files: int
-    successful: int
-    failed: int
-    is_complete: bool
-
-
-class ResumeDraftResponse(BaseModel):
-    candidate_id: int
-    raw_text: str
-    parsed_json: dict
-
-
-class CandidateCreate(CandidateBase):
-    pass
-
-
-class CandidateRead(CandidateBase):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    notes: list[dict[str, Any]] = Field(default_factory=list)
-    avatar_url: str = ""
-    created_at: datetime | None = None
-    updated_at: datetime | None = None
-    skills: list[SkillRead] = Field(default_factory=list)
-
-
-class CompareCandidatesRequest(BaseModel):
-    candidate_ids: list[int]
-    job_id: int
-
-
-class CommunicationDraftRequest(BaseModel):
-    candidate_id: int
-    email_type: str
-    job_id: int | None = None
-    interview_id: int | None = None
-    sender_name: str = ""
-    reply_to_email: str = ""
-
-
-class CommunicationSendRequest(BaseModel):
-    candidate_id: int
-    subject: str
-    body: str
-    email_type: str
-    decision: str
-    interview_id: int | None = None
-    sender_name: str = ""
-    reply_to_email: str = ""
-
-
-class EmailDraftRequest(BaseModel):
-    email_type: str
-    job_id: int
-
-
-class EmailSendRequest(BaseModel):
-    subject: str
-    body: str
-
-
-class EmailRecord(BaseModel):
-    id: int
-    subject: str
-    body: str
-    status: str
-    sent_at: str
-    email_type: str = ""
-    decision: str = ""
-    interview_id: int | None = None
-    job_id: int | None = None
-    job_title: str = ""
-    round_name: str = ""
-    sender_name: str = ""
-    reply_to_email: str = ""
-    draft_saved: bool = False
-
-
-class ApplicationCreate(BaseModel):
-    candidate_id: int
-    job_id: int
-    status: str = "Applied"
-    match_score: int = 0
-    ai_summary: str = ""
-    recruiter_notes: str = ""
-
-
-class ApplicationRead(ApplicationCreate):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    created_at: datetime | None = None
-    updated_at: datetime | None = None
-
-
-class ResumeUploadResponse(BaseModel):
-    id: int
-    candidate_id: int
-    filename: str
-    status: str
-    parsed_json: dict[str, Any] = Field(default_factory=dict)
-
-
-class ResumeParseResponse(BaseModel):
-    name: str = ""
-    email: str = ""
-    phone: str = ""
-    linkedin: str = ""
-    github: str = ""
-    portfolio: str = ""
-    education: list[str] = Field(default_factory=list)
-    skills: list[str] = Field(default_factory=list)
-    experience: list[str] = Field(default_factory=list)
-    projects: list[str] = Field(default_factory=list)
-    certifications: list[str] = Field(default_factory=list)
-    languages: list[str] = Field(default_factory=list)
-    achievements: list[str] = Field(default_factory=list)
-    extracted_text: str = ""
-
-
-class ScreeningResponse(BaseModel):
-    candidate_id: int
-    job_id: int
-    resume_summary: str
-    skill_match: int
-    experience_match: int
-    education_match: int
-    projects_match: int
-    strengths: list[str]
-    weaknesses: list[str]
-    missing_skills: list[str]
-    overall_recommendation: str
-    overall_match_percent: int
-    explanation: str
-class InterviewCreate(BaseModel):
-    candidate_id: int
-    job_id: int
-    date: str
-    time: str
-    duration: int = 60
-    round: str
-    type: str = "Online"
-    meeting_platform: str = "Google Meet"
-    meeting_link: str = ""
-    panel_members: list[str] = Field(default_factory=list)
-    recruiter_name: str = ""
 class JobBase(BaseModel):
     title: str
     department: str
@@ -313,6 +117,65 @@ class CandidateRead(CandidateBase):
     updated_at: datetime | None = None
     skills: list[SkillRead] = Field(default_factory=list)
 
+class CompareCandidatesRequest(BaseModel):
+    candidate_ids: list[int]
+    job_id: int
+
+
+class CommunicationDraftRequest(BaseModel):
+    candidate_id: int
+    email_type: str
+    job_id: int | None = None
+    interview_id: int | None = None
+    sender_name: str = ""
+    reply_to_email: str = ""
+
+
+class CommunicationSendRequest(BaseModel):
+    candidate_id: int
+    subject: str
+    body: str
+    email_type: str
+    decision: str
+    interview_id: int | None = None
+    sender_name: str = ""
+    reply_to_email: str = ""
+
+
+class EmailDraftRequest(BaseModel):
+    email_type: str
+    job_id: int
+
+
+class EmailSendRequest(BaseModel):
+    subject: str
+    body: str
+
+
+class EmailRecord(BaseModel):
+    id: int
+    subject: str
+    body: str
+    status: str
+    sent_at: str
+    email_type: str = ""
+    decision: str = ""
+    interview_id: int | None = None
+    job_id: int | None = None
+    job_title: str = ""
+    round_name: str = ""
+    sender_name: str = ""
+    reply_to_email: str = ""
+    draft_saved: bool = False
+
+class ApplicationCreate(BaseModel):
+    candidate_id: int
+    job_id: int
+    status: str = "Applied"
+    match_score: int = 0
+    ai_summary: str = ""
+    recruiter_notes: str = ""
+
 class ApplicationRead(ApplicationCreate):
     model_config = ConfigDict(from_attributes=True)
 
@@ -360,6 +223,7 @@ class ScreeningResponse(BaseModel):
     overall_recommendation: str
     overall_match_percent: int
     explanation: str
+
 class InterviewCreate(BaseModel):
     candidate_id: int
     job_id: int
@@ -460,3 +324,72 @@ class EmployeeBase(BaseModel):
     notes: list[dict] = Field(default_factory=list)
     resume_id: int | None = None
     candidate_id: int | None = None
+
+
+class OnboardingDocumentBase(BaseModel):
+    original_filename: str
+    stored_filename: str
+    storage_path: str
+    mime_type: str | None = None
+    file_size: int
+    status: OnboardingDocumentStatus
+    rejection_reason: str | None = None
+    reupload_message: str | None = None
+    is_current: bool = True
+
+
+class OnboardingDocumentCreate(OnboardingDocumentBase):
+    onboarding_id: int
+    requirement_id: int
+
+
+class OnboardingDocumentRead(OnboardingDocumentBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    version: int
+    uploaded_at: datetime
+    verified_at: datetime | None = None
+    verified_by: str | None = None
+    rejected_at: datetime | None = None
+    rejected_by: str | None = None
+
+
+class OnboardingDocumentRequirementBase(BaseModel):
+    document_type: str
+    document_name: str
+    is_required: bool = True
+    display_order: int = 0
+
+
+class OnboardingDocumentRequirementCreate(OnboardingDocumentRequirementBase):
+    onboarding_id: int
+
+
+class OnboardingDocumentRequirementRead(OnboardingDocumentRequirementBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    documents: list[OnboardingDocumentRead] = Field(default_factory=list)
+
+
+class OnboardingBase(BaseModel):
+    department: str
+    designation: str
+    joining_date: str
+    status: OnboardingStatus
+
+
+class OnboardingCreate(OnboardingBase):
+    candidate_id: int
+    application_id: int
+    job_id: int
+
+
+class OnboardingRead(OnboardingBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    candidate: CandidateRead
+    job: JobRead
+    document_requirements: list[OnboardingDocumentRequirementRead] = Field(default_factory=list)
+    created_at: datetime
+    updated_at: datetime
+    completed_at: datetime | None = None

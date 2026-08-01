@@ -65,7 +65,7 @@ else:
     st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
 
     # 2. Trigger Evaluation
-    if st.button("🤖 Run AI Match Analysis", type="primary", use_container_width=True):
+    if st.button("🤖 Run AI Match Analysis", type="primary", width="stretch"):
         with st.spinner("Ollama qwen2.5-coder:7b is running evaluation... This may take up to 20 seconds..."):
             result = api_client.screen_candidate(candidate_id, job_id)
             if result:
@@ -131,7 +131,7 @@ else:
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(0,0,0,0)'
                 )
-                st.plotly_chart(fig_gauge, use_container_width=True, config={'displayModeBar': False})
+                st.plotly_chart(fig_gauge, width="stretch", config={'displayModeBar': False})
                 
                 st.markdown(f"<div style='text-align:center; font-weight:700; color:{rec_color}; font-size:1.1rem;'>Recommendation: {rec}</div>", unsafe_allow_html=True)
 
@@ -175,7 +175,7 @@ else:
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(0,0,0,0)'
                 )
-                st.plotly_chart(fig_radar, use_container_width=True, config={'displayModeBar': False})
+                st.plotly_chart(fig_radar, width="stretch", config={'displayModeBar': False})
 
         with col_bars:
             with st.container(border=True):
@@ -262,19 +262,19 @@ else:
             st.markdown("#### Recruiters Decisions Dashboard")
             act_cols = st.columns(3)
             with act_cols[0]:
-                if st.button("Shortlist Candidate", use_container_width=True, key="ai_short_btn"):
+                if st.button("Shortlist Candidate", width="stretch", key="ai_short_btn"):
                     res = api_client.update_candidate_status(candidate_id, "Shortlisted")
                     if res:
                         st.toast("Candidate Shortlisted!", icon="✅")
                         st.rerun()
             with act_cols[1]:
-                if st.button("Approve & Advance", type="primary", use_container_width=True, key="ai_appr_btn"):
+                if st.button("Approve & Advance", type="primary", width="stretch", key="ai_appr_btn"):
                     res = api_client.update_candidate_status(candidate_id, "Approved")
                     if res:
                         st.toast("Candidate Approved!", icon="🎉")
                         st.rerun()
             with act_cols[2]:
-                if st.button("Reject Candidate", use_container_width=True, key="ai_rej_btn"):
+                if st.button("Reject Candidate", width="stretch", key="ai_rej_btn"):
                     res = api_client.update_candidate_status(candidate_id, "Rejected")
                     if res:
                         st.toast("Candidate Rejected.", icon="❌")

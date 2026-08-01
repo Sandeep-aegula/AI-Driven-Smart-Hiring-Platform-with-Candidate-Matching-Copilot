@@ -175,10 +175,7 @@ def _render_single_upload(job_id: int):
             st.subheader("Resume Upload")
             
             uploaded_file = st.file_uploader(
-                "",
-                type=["pdf", "docx", "txt"],
-                key="single_upload",
-                label_visibility="collapsed"
+                "Upload candidate resume", type=["pdf", "docx", "txt"], key="single_upload", label_visibility="collapsed"
             )
             
             st.caption("Supported formats: PDF, DOCX, TXT • Maximum file size: 20 MB")
@@ -192,7 +189,7 @@ def _render_single_upload(job_id: int):
                 """, unsafe_allow_html=True)
                 
                 if not st.session_state.single_candidate_id:
-                    if st.button("🪄 Upload & Analyze", type="primary", use_container_width=True, key="analyze_file_btn"):
+                    if st.button("🪄 Upload & Analyze", type="primary", width="stretch", key="analyze_file_btn"):
                         with st.spinner("AI is analyzing the resume and computing a match score... (up to 30s)"):
                             res = api_client.upload_single_resume(uploaded_file.getvalue(), uploaded_file.name, job_id)
                             if res and "candidate_id" in res:
@@ -219,7 +216,7 @@ def _render_single_upload(job_id: int):
             
             has_text = bool(pasted_text.strip())
             
-            if st.button("🪄 Parse & Analyze Text", type="primary", use_container_width=True, disabled=not has_text, key="analyze_text_btn"):
+            if st.button("🪄 Parse & Analyze Text", type="primary", width="stretch", disabled=not has_text, key="analyze_text_btn"):
                 with st.spinner("AI is parsing the resume text and computing a match score... (up to 30s)"):
                     res = api_client.parse_resume_text(pasted_text, "pasted_resume.txt")
                     if res and "candidate_id" in res:

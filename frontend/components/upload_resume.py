@@ -47,10 +47,10 @@ def render_upload_resume():
             # Action Buttons
             u_btn_col1, u_btn_col2 = st.columns(2)
             with u_btn_col1:
-                if st.button("Upload Resume", use_container_width=True, key="upload_resume_btn_restruct"):
+                if st.button("Upload Resume", width="stretch", key="upload_resume_btn_restruct"):
                     st.toast("File uploaded successfully to HR portal!", icon="📤")
             with u_btn_col2:
-                if st.button("Analyze Resume", type="primary", use_container_width=True, key="analyze_resume_btn_restruct"):
+                if st.button("Analyze Resume", type="primary", width="stretch", key="analyze_resume_btn_restruct"):
                     # Simulate Analysis Loading Animation
                     progress_text = "Parsing resume formatting..."
                     loading_bar = st.progress(0, text=progress_text)

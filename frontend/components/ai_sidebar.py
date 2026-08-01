@@ -65,7 +65,7 @@ def render_ai_sidebar() -> None:
         if st.button(
             suggestion,
             key=f"suggest_{hash(suggestion)}",
-            use_container_width=True,
+            width="stretch",
         ):
             process_user_input(suggestion)
             st.rerun()

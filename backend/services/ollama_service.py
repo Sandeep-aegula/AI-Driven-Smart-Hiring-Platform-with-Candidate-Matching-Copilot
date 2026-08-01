@@ -386,6 +386,67 @@ class OllamaService:
         """High-level chat helper that builds prompt and returns response."""
         return await self.generate(message, history, stream=False)
 
+    async def generate_rag(
+        self,
+        rag_prompt: str,
+        history: list[dict],
+        *,
+        stream: bool = False,
+    ) -> str:
+        """
+        Send a pre-built RAG prompt to Ollama.
+        Prepends SYSTEM_PROMPT and history to the RAG prompt.
+        """
+        await self.ensure_model_available()
+        
+        parts = [f"SYSTEM: {SYSTEM_PROMPT}"]
+        for msg in history[-10:]:
+            role = msg.get("role", "user").upper()
+            content = msg.get("content", "")
+            parts.append(f"{role}: {content}")
+        parts.append(f"USER: {rag_prompt}")
+        parts.append("ASSISTANT:")
+        final_prompt = "\n\n".join(parts)
+
+        payload = {
+            "model": MODEL_NAME,
+            "prompt": final_prompt,
+            "stream": stream,
+            "options": {"temperature": 0.2, "num_predict": 1024},
+        }
+
+        try:
+            if stream:
+                return await self._generate_stream(final_prompt, payload)
+            resp = await self.client.post(
+                OLLAMA_URL,
+                json=payload,
+                timeout=120.0,
+            )
+        except httpx.ConnectError:
+            raise OllamaServiceError("Ollama server is not running.")
+        except httpx.TimeoutException:
+            raise OllamaServiceError("Ollama request timed out.")
+        except Exception as exc:
+            logger.error("Ollama generate failed: %s", exc)
+            raise OllamaServiceError("Failed to get response from AI service.")
+
+        if resp.status_code == 404:
+            raise OllamaServiceError(f"Model {MODEL_NAME} not found.")
+        if resp.status_code != 200:
+            raise OllamaServiceError(f"Ollama returned status {resp.status_code}.")
+
+        data = resp.json()
+        return data.get("response", "").strip()
+
+    async def chat_rag(
+        self,
+        rag_prompt: str,
+        history: list[dict],
+    ) -> str:
+        """High-level chat helper for RAG flow."""
+        return await self.generate_rag(rag_prompt, history, stream=False)
+
 
 # Module-level singleton used by FastAPI routes
 ollama_service = OllamaService()

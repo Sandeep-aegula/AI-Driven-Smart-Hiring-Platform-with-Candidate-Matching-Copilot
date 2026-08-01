@@ -36,7 +36,7 @@ def render_sidebar():
             # if st.button(
             #     label,
             #     key=f"nav_{page}",
-            #     use_container_width=True,
+            #     width="stretch",
             #     type="tertiary",
             # ):
                 st.session_state.current_page = page
@@ -49,7 +49,7 @@ def render_sidebar():
         if st.button(
             "Logout",
             key="logout",
-            use_container_width=True,
+            width="stretch",
             type="tertiary",
         ):
             st.session_state.current_page = "Dashboard"

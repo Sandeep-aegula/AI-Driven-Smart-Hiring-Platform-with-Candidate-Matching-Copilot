@@ -98,15 +98,37 @@ def get_jobs_cached(search="", department="All", status="All", sort_by="updated_
 
 @st.cache_data(ttl=30, show_spinner=False)
 def get_candidates_cached(search="", status="All", skill="All"):
-    """Cached candidate list. Refreshes every 30 seconds."""
+    """Cached candidate list. Refreshes every 30 seconds.
+
+    Returns a list of candidate dictionaries.
+    """
+    def _normalize_response(data):
+        """Normalize API response to list of candidates."""
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            # Check for items first (from get_candidates api_client)
+            items = data.get("items")
+            if isinstance(items, list):
+                return items
+            # Check other common keys
+            for key in ("data", "candidates", "results"):
+                val = data.get(key)
+                if isinstance(val, list):
+                    return val
+        return []
+
     try:
         import httpx
         resp = httpx.get(
             "http://localhost:8000/candidates",
             params={"search": search, "status": status, "skill": skill},
-            timeout=5.0
+            timeout=5.0,
         )
-        return resp.json() if resp.status_code == 200 else []
+        if resp.status_code != 200:
+            return []
+        data = resp.json()
+        return _normalize_response(data)
     except Exception:
         return []
 
