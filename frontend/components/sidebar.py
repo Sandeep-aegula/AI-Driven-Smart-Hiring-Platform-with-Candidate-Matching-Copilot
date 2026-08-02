@@ -1,4 +1,9 @@
+import logging
 import streamlit as st
+
+from frontend.components.api_client import clear_hr_session_state, logout_user
+
+logger = logging.getLogger(__name__)
 
 _NAV_ITEMS = [
     "Dashboard",
@@ -33,12 +38,12 @@ def render_sidebar():
             else:
                 label = page
 
-            # if st.button(
-            #     label,
-            #     key=f"nav_{page}",
-            #     width="stretch",
-            #     type="tertiary",
-            # ):
+            if st.button(
+                label,
+                key=f"nav_{page}",
+                width="stretch",
+                type="tertiary",
+            ):
                 st.session_state.current_page = page
                 st.rerun()
 
@@ -52,5 +57,9 @@ def render_sidebar():
             width="stretch",
             type="tertiary",
         ):
-            st.session_state.current_page = "Dashboard"
+            try:
+                logout_user()
+            except Exception as exc:
+                logger.warning("Backend logout call failed: %s", exc)
+            clear_hr_session_state()
             st.rerun()

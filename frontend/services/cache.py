@@ -32,21 +32,62 @@ def _load_css_files(css_revision: float = 0) -> str:
     return combined
 
 
+@st.cache_resource(show_spinner=False)
+def _load_public_css(public_css_revision: float = 0) -> str:
+    """Read the public-portal marketing CSS once per server process."""
+    _HERE = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.normpath(
+        os.path.join(_HERE, "..", "public", "styles", "public_portal.css")
+    )
+    if not os.path.exists(path):
+        return ""
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
 def inject_css_once():
     """
-    Inject the combined CSS bundle into the page on every rerun.
+    Inject the combined HR-portal CSS bundle into the page on every rerun.
     """
     css_dir = os.path.normpath(
         os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "css")
     )
-    css_revision = max(
-        (os.path.getmtime(os.path.join(css_dir, name)) for name in os.listdir(css_dir)),
-        default=0,
-    )
+    try:
+        css_revision = max(
+            (os.path.getmtime(os.path.join(css_dir, name)) for name in os.listdir(css_dir)),
+            default=0,
+        )
+    except Exception:
+        css_revision = 0
     css = _load_css_files(css_revision)
     if css:
         st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
     st.markdown(
+        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">',
+        unsafe_allow_html=True
+    )
+
+
+def inject_public_css_once():
+    """
+    Inject the public-portal marketing CSS (navbar, hero, sections, footer).
+    Idempotent — safe to call on every rerun.
+    """
+    _HERE = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.normpath(
+        os.path.join(_HERE, "..", "public", "styles", "public_portal.css")
+    )
+    try:
+        rev = os.path.getmtime(path) if os.path.exists(path) else 0
+    except Exception:
+        rev = 0
+    css = _load_public_css(rev)
+    if css:
+        st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+    st.markdown(
+        '<link rel="preconnect" href="https://fonts.googleapis.com">'
+        '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+        '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">'
         '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">',
         unsafe_allow_html=True
     )
@@ -97,11 +138,8 @@ def get_jobs_cached(search="", department="All", status="All", sort_by="updated_
 
 
 @st.cache_data(ttl=30, show_spinner=False)
-def get_candidates_cached(search="", status="All", skill="All"):
-    """Cached candidate list. Refreshes every 30 seconds.
-
-    Returns a list of candidate dictionaries.
-    """
+def get_candidates_cached(search="", status="All", skill="All", job_id=None):
+    """Cached candidate list. Refreshes every 30 seconds. Returns a list of candidate dictionaries."""
     def _normalize_response(data):
         """Normalize API response to list of candidates."""
         if isinstance(data, list):
@@ -117,12 +155,14 @@ def get_candidates_cached(search="", status="All", skill="All"):
                 if isinstance(val, list):
                     return val
         return []
-
     try:
         import httpx
+        params = {"search": search, "status": status, "skill": skill}
+        if job_id is not None:
+            params["job_id"] = job_id
         resp = httpx.get(
             "http://localhost:8000/candidates",
-            params={"search": search, "status": status, "skill": skill},
+            params=params,
             timeout=5.0,
         )
         if resp.status_code != 200:

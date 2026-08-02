@@ -96,7 +96,7 @@ def _render_schedule_view():
         st.warning("Please ensure there are Candidates and Jobs in the system before scheduling.")
         return
         
-    c_map = {c.get("name", "Unknown"): c.get("id") for c in cands if isinstance(c, dict)}
+    c_data_map = {c.get("name", "Unknown"): c for c in cands if isinstance(c, dict)}
     j_map = {j["title"]: j["id"] for j in jobs}
     
     # Pre-fill logic
@@ -111,7 +111,7 @@ def _render_schedule_view():
     with st.container(border=True):
         col1, col2 = st.columns(2)
         with col1:
-            sel_cand_name = st.selectbox("Candidate *", list(c_map.keys()), index=default_c_idx)
+            sel_cand_name = st.selectbox("Candidate *", list(c_data_map.keys()), index=default_c_idx)
             sel_job_title = st.selectbox("Job *", list(j_map.keys()))
             iv_round = st.selectbox("Round *", ["HR Screen", "Technical", "Coding", "Behavioral", "System Design", "Managerial"])
             iv_type = st.selectbox("Type", ["Online", "Offline"])
@@ -123,13 +123,33 @@ def _render_schedule_view():
             timezone = st.selectbox("Timezone", ["UTC", "America/New_York", "America/Los_Angeles", "Europe/London", "Asia/Kolkata"])
             
         link = st.text_input("Meeting Link (if Online)")
+        location = st.text_input("Location (if In-person)")
         recruiter = st.text_input("Interviewer Name(s) (comma separated)")
         instructions = st.text_area("Instructions for Candidate")
         
         if st.button("Schedule Interview", type="primary"):
+            selected_cand = c_data_map.get(sel_cand_name, {})
+            candidate_id = selected_cand.get("id")
+            selected_job_id = j_map.get(sel_job_title)
+            # Resolve the correct application_id for the selected candidate + job.
+            # get_candidates_cached() without job_id returns each candidate's first
+            # application; if that does not match the selected job we do a targeted
+            # lookup with job_id so the backend receives the right application_id.
+            application_id = None
+            if selected_cand.get("job_id") == selected_job_id:
+                application_id = selected_cand.get("application_id")
+            else:
+                for c in get_candidates_cached(job_id=selected_job_id):
+                    if isinstance(c, dict) and c.get("id") == candidate_id:
+                        application_id = c.get("application_id")
+                        break
+            if not application_id:
+                st.error("No application was found for the selected candidate and job. Please select a candidate from an existing application.")
+                return
             payload = {
-                "candidate_id": c_map[sel_cand_name],
-                "job_id": j_map[sel_job_title],
+                "application_id": application_id,
+                "candidate_id": candidate_id,
+                "job_id": selected_job_id,
                 "date": date.isoformat(),
                 "time": time.strftime("%H:%M"),
                 "duration": duration,
@@ -137,10 +157,11 @@ def _render_schedule_view():
                 "type": iv_type,
                 "meeting_platform": platform,
                 "meeting_link": link,
+                "location": location,
                 "panel_members": [x.strip() for x in recruiter.split(",") if x.strip()],
                 "recruiter_name": recruiter,
                 "instructions": instructions,
-                "timezone": timezone
+                "timezone": timezone,
             }
             res = api_client.schedule_interview(payload)
             if res:
@@ -251,15 +272,27 @@ def _render_detail_view():
         dec_opts = ["", "Selected", "Rejected", "Hold", "Next Round"]
         idx = dec_opts.index(cur_dec) if cur_dec in dec_opts else 0
         new_dec = st.selectbox("Decision", dec_opts, index=idx)
-        if st.button("Log Decision"):
-            if new_dec:
-                res = api_client.log_interview_decision(iv_id, new_dec)
-                if res:
-                    st.success(f"Decision '{new_dec}' logged!")
-                    api_client.clear_interviews_cache()
-                    st.rerun()
+        button_label = "Select Candidate" if new_dec == "Selected" else "Log Decision"
+        button_disabled = not bool(new_dec)
+        
+        if button_disabled:
+            st.caption("Please select a decision to enable this button.")
+            
+        if st.button(button_label, disabled=button_disabled):
+            res = api_client.log_interview_decision(iv_id, new_dec)
+            if res and res.get("success"):
+                data = res.get("data", {})
+                if data.get("onboarding_id"):
+                    st.success(f"Candidate selected and moved to Onboarding!")
+                elif data.get("next_interview_id"):
+                    st.success(f"Candidate selected and moved to the next interview round.")
+                else:
+                    st.success(f"Decision '{new_dec}' logged successfully.")
+                api_client.clear_interviews_cache()
+                st.rerun()
             else:
-                st.error("Please select a decision.")
+                error_msg = res.get("error", "Failed to log decision.") if res else "Failed to log decision."
+                st.error(f"Failed to log decision: {error_msg}")
 
     with t4:
         st.markdown("Draft an email to the candidate regarding this interview.")

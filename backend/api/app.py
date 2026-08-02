@@ -30,6 +30,11 @@ logger = logging.getLogger("backend.api")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    smtp_issues = settings.validate_smtp_configuration()
+    if smtp_issues:
+        logger.warning("SMTP configuration validation issues: %s", "; ".join(smtp_issues))
+    else:
+        logger.info("SMTP configuration validation passed.")
     await initialize_database()
     await data_store.initialize()
     yield

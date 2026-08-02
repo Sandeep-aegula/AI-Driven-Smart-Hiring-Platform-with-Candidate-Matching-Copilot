@@ -25,6 +25,7 @@ from backend.models.entities import (
     OnboardingStatus,
     OnboardingDocumentStatus,
 )
+from backend.services.onboarding_workflow_service import complete_onboarding
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -100,6 +101,8 @@ async def list_onboarding_candidates(
         # Calculate document completion
         total_required = sum(1 for req in onboarding.document_requirements if req.required)
         verified_count = 0
+        pending_count = 0
+        rejected_count = 0
 
         for req in onboarding.document_requirements:
             if not req.required:
@@ -107,8 +110,23 @@ async def list_onboarding_candidates(
             current_docs = [d for d in req.documents if d.is_current]
             if current_docs and current_docs[0].status == OnboardingDocumentStatus.verified.value:
                 verified_count += 1
+            elif current_docs and current_docs[0].status in {
+                OnboardingDocumentStatus.uploaded.value,
+                OnboardingDocumentStatus.under_review.value,
+                OnboardingDocumentStatus.re_upload_requested.value,
+            }:
+                pending_count += 1
+            elif current_docs and current_docs[0].status == OnboardingDocumentStatus.rejected.value:
+                rejected_count += 1
+            elif not current_docs:
+                pending_count += 1
 
         completion_percentage = (verified_count / total_required * 100) if total_required > 0 else 0
+        ready_for_onboarding = bool(onboarding.ready_for_onboarding or (total_required > 0 and verified_count == total_required and rejected_count == 0 and pending_count == 0))
+        verification_status = "Complete" if ready_for_onboarding else "Incomplete"
+
+        if verification_status != "All" and verification_status != ("Complete" if ready_for_onboarding else "Incomplete"):
+            continue
 
         response.append({
             "id": onboarding.id,
@@ -121,10 +139,15 @@ async def list_onboarding_candidates(
             "department": onboarding.department or onboarding.job.department,
             "designation": onboarding.designation,
             "joining_date": onboarding.joining_date,
+            "selected_date": onboarding.selected_at.isoformat() if onboarding.selected_at else (onboarding.application.final_decision_at.isoformat() if onboarding.application and onboarding.application.final_decision_at else onboarding.created_at.isoformat() if onboarding.created_at else None),
             "status": onboarding.status,
+            "ready_for_onboarding": ready_for_onboarding,
+            "verification_status": verification_status,
             "completion_percentage": round(completion_percentage, 1),
             "total_required": total_required,
             "verified_count": verified_count,
+            "pending_count": pending_count,
+            "rejected_count": rejected_count,
             "created_at": onboarding.created_at.isoformat() if onboarding.created_at else None,
         })
 
@@ -176,7 +199,7 @@ async def get_onboarding_details(
                     verified_count += 1
                 elif current_doc.status == OnboardingDocumentStatus.rejected.value:
                     rejected_count += 1
-                elif current_doc.status == OnboardingDocumentStatus.reupload_requested.value:
+                elif current_doc.status == OnboardingDocumentStatus.re_upload_requested.value:
                     pending_count += 1
         else:
             if req.required:
@@ -228,11 +251,7 @@ async def get_onboarding_details(
         })
 
     completion_percentage = (verified_count / total_required * 100) if total_required > 0 else 0
-    ready_for_onboarding = (
-        total_required > 0
-        and verified_count == total_required
-        and missing_count == 0
-    )
+    ready_for_onboarding = bool(onboarding.ready_for_onboarding or (total_required > 0 and verified_count == total_required and missing_count == 0 and rejected_count == 0))
 
     return {
         "id": onboarding.id,
@@ -244,6 +263,7 @@ async def get_onboarding_details(
             "location": onboarding.candidate.location,
         },
         "application_id": onboarding.application_id,
+        "selected_date": onboarding.selected_at.isoformat() if onboarding.selected_at else (onboarding.application.final_decision_at.isoformat() if onboarding.application and onboarding.application.final_decision_at else onboarding.created_at.isoformat() if onboarding.created_at else None),
         "job": {
             "id": onboarding.job.id,
             "title": onboarding.job.title,
@@ -253,6 +273,7 @@ async def get_onboarding_details(
         "designation": onboarding.designation,
         "joining_date": onboarding.joining_date,
         "status": onboarding.status,
+        "ready_for_onboarding": ready_for_onboarding,
         "created_at": onboarding.created_at.isoformat() if onboarding.created_at else None,
         "updated_at": onboarding.updated_at.isoformat() if onboarding.updated_at else None,
         "progress": {
@@ -264,6 +285,7 @@ async def get_onboarding_details(
             "missing": missing_count,
             "completion_percentage": round(completion_percentage, 1),
             "ready_for_onboarding": ready_for_onboarding,
+            "verification_status": "Complete" if ready_for_onboarding else "Incomplete",
         },
         "document_requirements": requirements_list,
     }
@@ -290,11 +312,12 @@ async def create_onboarding(
             )
         )
     )
-    if existing.scalar_one_or_none():
-        raise HTTPException(
-            status_code=400,
-            detail="Active onboarding record already exists for this candidate and application",
-        )
+    existing_onboarding = existing.scalar_one_or_none()
+    if existing_onboarding:
+        return {
+            "id": existing_onboarding.id,
+            "message": "Onboarding record already exists",
+        }
 
     # Create onboarding record
     onboarding = Onboarding(
@@ -305,6 +328,7 @@ async def create_onboarding(
         designation=designation,
         joining_date=joining_date,
         status=OnboardingStatus.pending.value,
+        ready_for_onboarding=False,
     )
     db.add(onboarding)
     await db.flush()
@@ -477,6 +501,7 @@ async def upload_document(
     onboarding = await db.get(Onboarding, requirement.onboarding_id)
     if onboarding and onboarding.status == OnboardingStatus.pending.value:
         onboarding.status = OnboardingStatus.documents_uploaded.value
+        onboarding.ready_for_onboarding = False
 
     await db.commit()
     await db.refresh(document)
@@ -555,8 +580,16 @@ async def verify_document(
 
         if all_verified:
             onboarding.status = OnboardingStatus.documents_verified.value
+            onboarding.ready_for_onboarding = True
+            await db.commit() # Commit before completing onboarding because complete_onboarding uses its own session
+            try:
+                await complete_onboarding(onboarding.id, verified_by)
+            except Exception as e:
+                logger.error(f"Failed to auto-complete onboarding for {onboarding.id}: {e}")
+            return {"message": "Document verified successfully. Onboarding completed and employee created."}
         else:
             onboarding.status = OnboardingStatus.under_review.value
+            onboarding.ready_for_onboarding = False
 
     await db.commit()
     return {"message": "Document verified successfully"}
@@ -592,6 +625,7 @@ async def reject_document(
     onboarding = await db.get(Onboarding, document.onboarding_id)
     if onboarding:
         onboarding.status = OnboardingStatus.documents_rejected.value
+        onboarding.ready_for_onboarding = False
 
     await db.commit()
     return {"message": "Document rejected successfully"}
@@ -617,13 +651,14 @@ async def request_document_reupload(
     if not reupload_message.strip():
         raise HTTPException(status_code=400, detail="Re-upload message is required")
 
-    document.status = OnboardingDocumentStatus.reupload_requested.value
+    document.status = OnboardingDocumentStatus.re_upload_requested.value
     document.reupload_message = reupload_message
 
     # Update onboarding status
     onboarding = await db.get(Onboarding, document.onboarding_id)
     if onboarding:
         onboarding.status = OnboardingStatus.documents_incomplete.value
+        onboarding.ready_for_onboarding = False
 
     await db.commit()
     return {"message": "Re-upload requested successfully"}
@@ -671,7 +706,7 @@ async def get_onboarding_progress(
                 uploaded += 1
 
     completion_percentage = (verified / total_required * 100) if total_required > 0 else 0
-    ready_for_onboarding = total_required > 0 and verified == total_required and missing == 0
+    ready_for_onboarding = bool(onboarding.ready_for_onboarding or (total_required > 0 and verified == total_required and missing == 0 and rejected == 0))
 
     return {
         "total_required": total_required,
@@ -682,3 +717,16 @@ async def get_onboarding_progress(
         "completion_percentage": round(completion_percentage, 1),
         "ready_for_onboarding": ready_for_onboarding,
     }
+
+
+@router.post("/{onboarding_id}/complete")
+async def complete_onboarding_endpoint(onboarding_id: int, completed_by: str = Form("HR")) -> dict:
+    try:
+        return await complete_onboarding(onboarding_id, completed_by=completed_by)
+    except ValueError as exc:
+        detail = str(exc)
+        if "not found" in detail.lower():
+            raise HTTPException(status_code=404, detail=detail) from exc
+        if "already completed" in detail.lower():
+            raise HTTPException(status_code=409, detail=detail) from exc
+        raise HTTPException(status_code=400, detail=detail) from exc

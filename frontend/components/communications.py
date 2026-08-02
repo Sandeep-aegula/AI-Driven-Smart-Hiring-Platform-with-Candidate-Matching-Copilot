@@ -3,6 +3,7 @@ from __future__ import annotations
 import streamlit as st
 from frontend.components import api_client
 from frontend.services.cache import get_candidates_cached, get_jobs_cached
+from frontend.components.file_uploader import file_uploader_simple
 
 EMAIL_TYPE_OPTIONS = [
     "Interview Invitation",
@@ -31,6 +32,27 @@ def fetch_communications_history(page: int = 1, page_size: int = 25, status: str
         return {"items": [], "total": 0}
 
 
+def _display_send_result(result: dict | None) -> bool:
+    if not result:
+        st.error("Email service failed to send the message.")
+        return False
+
+    sent = int(result.get("sent", 0) or 0)
+    failed = int(result.get("failed", 0) or 0)
+    message = result.get("message") or result.get("error_message") or "Email service failed to send the message."
+
+    if sent > 0 and failed == 0 and result.get("success"):
+        st.success(message)
+        return True
+
+    if sent > 0 and failed > 0:
+        st.warning(f"{sent} emails sent successfully. {failed} emails failed.")
+        return True
+
+    st.error(message)
+    return False
+
+
 def send_bulk_communications(communication_ids: list, subject: str, body: str, sender_name: str = "Recruitment Team"):
     """Send bulk emails to selected candidates via the shared API client."""
     try:
@@ -46,122 +68,183 @@ def send_bulk_communications(communication_ids: list, subject: str, body: str, s
 
 
 def _render_pending_queue():
-    st.markdown("### Pending Queue")
-    st.write("Candidates shortlisted and waiting for communication.")
-    st.caption("Select candidates to send emails in bulk.")
+    st.markdown("### Pending Interview Communications")
+    st.write("Scheduled interviews awaiting draft generation, review, and sending.")
+    st.caption("Generate and manage one draft per communication record. Drafts remain in MySQL until sent or cancelled.")
 
     pending = fetch_pending_communications()
-
     if not pending:
-        st.info("No pending shortlisted candidates. Shortlist candidates from the Candidate Management page.")
+        st.info("No pending interview communications found.")
         return
 
-    st.markdown(f"**{len(pending)} candidates awaiting communication**")
-
-    # Initialize selection
     if "comm_selected_ids" not in st.session_state:
         st.session_state.comm_selected_ids = []
 
-    # Bulk action section
-    col_b1, col_b2, col_b3 = st.columns([3, 1, 1])
+    current_selection = set(st.session_state.comm_selected_ids)
+    select_all = st.checkbox("Select All", value=len(current_selection) == len(pending) and len(pending) > 0, key="comm_select_all")
+    if select_all:
+        st.session_state.comm_selected_ids = [item.get("id") for item in pending]
+        current_selection = set(st.session_state.comm_selected_ids)
 
-    with col_b1:
-        select_all = st.checkbox("Select All", key="select_all_pending")
-
-    with col_b2:
-        if st.button("Select All Selected", width="stretch"):
-            st.session_state.comm_selected_ids = [p.get("id") for p in pending]
-            st.rerun()
-
-    with col_b3:
+    bulk_left, bulk_right = st.columns([2, 1])
+    with bulk_left:
         if st.button("Clear Selection", width="stretch"):
             st.session_state.comm_selected_ids = []
             st.rerun()
+    with bulk_right:
+        generate_label = f"Generate Drafts ({len(current_selection)})" if current_selection else "Generate Drafts"
+        generate_bulk = st.button(generate_label, type="primary", width="stretch", disabled=not current_selection)
 
+    if generate_bulk and current_selection:
+        with st.spinner("Generating personalized interview drafts..."):
+            result = api_client.generate_bulk_interview_drafts(sorted(current_selection))
+        if result:
+            st.success(result.get("message") or "Interview drafts generated successfully.")
+            for failure in result.get("results", []):
+                if failure.get("status") == "failed":
+                    st.warning(f"{failure.get('communication_id')}: {failure.get('error_message')}")
+            api_client.clear_interviews_cache()
+            st.rerun()
+        else:
+            st.error("Draft generation failed.")
+
+    st.markdown(f"**{len(pending)} communications awaiting action**")
     st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
 
-    # Display pending candidates
     for item in pending:
         comm_id = item.get("id")
-        is_selected = comm_id in st.session_state.comm_selected_ids
+        is_selected = comm_id in current_selection
+        draft_open = st.session_state.get(f"comm_preview_{comm_id}", False)
+        edit_open = st.session_state.get(f"comm_edit_{comm_id}", False)
+        regen_open = st.session_state.get(f"comm_regen_{comm_id}", False)
 
-        with st.container():
-            col_cb, col_info = st.columns([1, 8])
-
-            with col_cb:
-                if st.checkbox("", value=is_selected, key=f"comm_chk_{comm_id}"):
+        with st.container(border=True):
+            row_left, row_right = st.columns([0.15, 0.85])
+            with row_left:
+                if st.checkbox("Select", value=is_selected, key=f"comm_select_{comm_id}", label_visibility="collapsed"):
                     if comm_id not in st.session_state.comm_selected_ids:
                         st.session_state.comm_selected_ids.append(comm_id)
-                else:
-                    if comm_id in st.session_state.comm_selected_ids:
-                        st.session_state.comm_selected_ids.remove(comm_id)
+                elif comm_id in st.session_state.comm_selected_ids:
+                    st.session_state.comm_selected_ids.remove(comm_id)
 
-            with col_info:
-                with st.expander(f"{item.get('candidate_name')} — {item.get('job_title')}"):
-                    st.markdown(f"**Email:** {item.get('candidate_email')}")
-                    st.markdown(f"**Job:** {item.get('job_title')}")
-                    st.markdown(f"**Department:** {item.get('department', 'N/A')}")
-                    st.markdown(f"**Round:** {item.get('round') or 'Initial Screening'}")
-                    st.markdown(f"**Status:** {item.get('status')}")
-                    days = item.get("days_pending", 0)
-                    st.caption(f"Queued: {days} days ago")
+            with row_right:
+                st.markdown(f"**{item.get('candidate_name')}**  ")
+                st.caption(
+                    f"{item.get('job_title') or 'Unknown role'} | Round {item.get('round') or 'N/A'} | {item.get('interview_date') or 'N/A'} {item.get('interview_time') or ''} | {item.get('interview_mode') or 'N/A'} | Status: {item.get('status') or 'pending'}"
+                )
+                if item.get("invitation_email_status"):
+                    st.caption(f"Interview status: {item.get('invitation_email_status')}")
 
-    st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+                action_cols = st.columns(5)
+                with action_cols[0]:
+                    if st.button("Generate Draft", key=f"gen_{comm_id}", width="stretch"):
+                        with st.spinner("Generating draft..."):
+                            draft = api_client.generate_interview_draft(comm_id, regenerate=False)
+                        if draft:
+                            st.success("Interview invitation draft generated successfully.")
+                            st.session_state[f"comm_preview_{comm_id}"] = True
+                            st.session_state[f"comm_edit_{comm_id}"] = False
+                            st.session_state[f"comm_regen_{comm_id}"] = False
+                            api_client.clear_interviews_cache()
+                            st.rerun()
+                        else:
+                            st.error("Failed to generate draft.")
 
-    # Bulk send section
-    if len(st.session_state.comm_selected_ids) > 0:
-        st.markdown(f"""
-        <div style="background:#EEF2FF; border:1px solid #C7D2FE; border-radius:8px; padding:12px 16px; margin-bottom:16px;">
-            <span style="font-weight:600; color:#4F46E5;">{len(st.session_state.comm_selected_ids)} candidates selected</span>
-        </div>
-        """, unsafe_allow_html=True)
-
-        with st.form(key="bulk_email_form"):
-            st.markdown("#### Send Bulk Email")
-
-            col_e1, col_e2 = st.columns(2)
-            with col_e1:
-                bulk_subject = st.text_input("Email Subject", value="Interview Invitation - Next Steps")
-            with col_e2:
-                sender_name = st.text_input("Sender Name", value="HR Recruitment Team")
-
-            bulk_body = st.text_area(
-                "Email Body",
-                value="Dear {{candidate_name}},\n\nWe are pleased to inform you that your application for the position of {{job_title}} has been shortlisted for further consideration.\n\nPlease find the details for the next round of interviews below.\n\nBest regards,\nHR Team",
-                height=200
-            )
-
-            st.caption("Use {{candidate_name}} and {{job_title}} as placeholders for personalization.")
-
-            col_send, col_clear = st.columns([1, 1])
-            with col_send:
-                submit_bulk = st.form_submit_button(f"Send to {len(st.session_state.comm_selected_ids)} Candidates", type="primary", width="stretch")
-
-            with col_clear:
-                clear_btn = st.form_submit_button("Clear", width="stretch")
-
-            if submit_bulk:
-                with st.spinner(f"Sending emails to {len(st.session_state.comm_selected_ids)} candidates..."):
-                    result = send_bulk_communications(
-                        st.session_state.comm_selected_ids,
-                        bulk_subject,
-                        bulk_body,
-                        sender_name
-                    )
-                    if result and result.get("success"):
-                        st.success(f"✅ {result.get('message')}")
-                        st.session_state.comm_selected_ids = []
+                with action_cols[1]:
+                    if st.button("Preview", key=f"prev_{comm_id}", width="stretch"):
+                        st.session_state[f"comm_preview_{comm_id}"] = not draft_open
                         st.rerun()
 
-            if clear_btn:
-                st.session_state.comm_selected_ids = []
-                st.rerun()
+                with action_cols[2]:
+                    if st.button("Edit Draft", key=f"edit_{comm_id}", width="stretch"):
+                        st.session_state[f"comm_edit_{comm_id}"] = True
+                        st.session_state[f"comm_preview_{comm_id}"] = True
+                        st.rerun()
+
+                with action_cols[3]:
+                    if st.button("Regenerate", key=f"regen_{comm_id}", width="stretch"):
+                        st.session_state[f"comm_regen_{comm_id}"] = True
+                        st.rerun()
+
+                with action_cols[4]:
+                    if st.button("Send", key=f"send_{comm_id}", width="stretch"):
+                        result = api_client.send_interview_draft(comm_id)
+                        if result and result.get("success"):
+                            st.success(result.get("message") or "Interview invitation sent successfully.")
+                            st.session_state.pop(f"comm_preview_{comm_id}", None)
+                            st.session_state.pop(f"comm_edit_{comm_id}", None)
+                            st.session_state.pop(f"comm_regen_{comm_id}", None)
+                            api_client.clear_interviews_cache()
+                            st.rerun()
+                        elif result:
+                            st.error(result.get("message") or result.get("error_message") or "Failed to send interview invitation.")
+
+                if regen_open:
+                    st.warning("Regenerating will replace the current draft. Continue?")
+                    regen_confirm, regen_cancel = st.columns(2)
+                    with regen_confirm:
+                        if st.button("Yes, regenerate", key=f"regen_yes_{comm_id}", type="primary", width="stretch"):
+                            draft = api_client.generate_interview_draft(comm_id, regenerate=True)
+                            if draft:
+                                st.success("Interview invitation draft generated successfully.")
+                                st.session_state[f"comm_preview_{comm_id}"] = True
+                                st.session_state[f"comm_regen_{comm_id}"] = False
+                                st.session_state[f"comm_edit_{comm_id}"] = False
+                                api_client.clear_interviews_cache()
+                                st.rerun()
+                            else:
+                                st.error("Failed to regenerate draft.")
+                    with regen_cancel:
+                        if st.button("Cancel", key=f"regen_no_{comm_id}", width="stretch"):
+                            st.session_state[f"comm_regen_{comm_id}"] = False
+                            st.rerun()
+
+                if item.get("status") == "draft" or draft_open or edit_open:
+                    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+                    if edit_open and item.get("status") == "draft":
+                        edited_subject = st.text_input("Email Subject", value=item.get("subject") or "", key=f"subject_edit_{comm_id}")
+                        edited_body = st.text_area("Email Body", value=item.get("message") or "", height=260, key=f"body_edit_{comm_id}")
+                        save_col, cancel_col = st.columns(2)
+                        with save_col:
+                            if st.button("Save Draft", key=f"save_{comm_id}", type="primary", width="stretch"):
+                                saved = api_client.save_interview_draft(comm_id, edited_subject, edited_body)
+                                if saved:
+                                    st.success("Draft saved.")
+                                    st.session_state[f"comm_edit_{comm_id}"] = False
+                                    st.session_state[f"comm_preview_{comm_id}"] = True
+                                    api_client.clear_interviews_cache()
+                                    st.rerun()
+                                else:
+                                    st.error("Failed to save draft.")
+                        with cancel_col:
+                            if st.button("Cancel Edit", key=f"cancel_edit_{comm_id}", width="stretch"):
+                                st.session_state[f"comm_edit_{comm_id}"] = False
+                                st.rerun()
+                    else:
+                        st.markdown(f"**Subject:** {item.get('subject') or ''}")
+                        st.text_area(
+                            "Email Body Preview",
+                            value=item.get("message") or "",
+                            height=220,
+                            key=f"body_preview_{comm_id}",
+                            disabled=True,
+                            label_visibility="collapsed",
+                        )
+
+                if st.button("Cancel Communication", key=f"cancel_comm_{comm_id}", width="stretch"):
+                    cancelled = api_client.cancel_interview_communication(comm_id)
+                    if cancelled:
+                        st.success("Communication cancelled.")
+                        api_client.clear_interviews_cache()
+                        st.rerun()
+                    else:
+                        st.error("Failed to cancel communication.")
 
 
 def _render_history():
     st.markdown("### Sent & Draft History")
     query = st.text_input("Filter by candidate name, subject or email type")
-    status = st.selectbox("Status", ["All", "Sent", "Draft"], index=0)
+    status = st.selectbox("Status", ["All", "Sent", "Draft", "Failed"], index=0)
     page = st.session_state.get("comm_history_page", 1)
     if st.button("Refresh History"):
         api_client.clear_candidates_cache()
@@ -175,12 +258,24 @@ def _render_history():
         st.info("No communications records match the current filters.")
         return
 
+    if status == "Failed":
+        if st.button("Retry Failed", type="primary", width="stretch"):
+            retry_ids = [item.get("id") for item in items]
+            retry_result = api_client.send_bulk_communications(retry_ids, "", "", "Recruitment Team")
+            if retry_result:
+                _display_send_result(retry_result)
+                st.rerun()
+            else:
+                st.error("Email service failed to send the message.")
+
     for item in items:
         with st.expander(f"{item.get('sent_at')} — {item.get('candidate_name')} — {item.get('subject')}"):
             st.markdown(f"**Email Type:** {item.get('email_type')}  ")
             st.markdown(f"**Decision:** {item.get('decision')}  ")
             st.markdown(f"**Job:** {item.get('job_title')}  ")
             st.markdown(f"**Status:** {item.get('status')}  ")
+            if item.get("error_message"):
+                st.caption(item.get("error_message"))
             st.text(item.get('subject') or "")
             st.write(item.get('body') or "")
 
@@ -258,7 +353,12 @@ def _render_compose():
         if email_type == "Offer Letter":
             st.divider()
             st.markdown("### Offer Letter Attachment")
-            uploaded_file = st.file_uploader("Upload Offer Letter", type=["pdf", "docx"], label_visibility="collapsed")
+            uploaded_file = file_uploader_simple(
+                label="Drag and drop offer letter here",
+                accepted_types=["pdf", "docx"],
+                max_size_mb=200,
+                key="offer_letter_upload"
+            )
             st.divider()
             
         col1, col2 = st.columns(2)
@@ -288,13 +388,14 @@ def _render_compose():
                         res = api_client.send_communication_email_with_attachment(payload, uploaded_file)
                     else:
                         res = api_client.send_communication_email(payload)
-                        
-                    if res:
+                    if res and res.get("success"):
                         st.success("Email sent and recorded.")
                         st.session_state["comm_draft"] = None
                         api_client.clear_candidates_cache()
                         api_client.clear_interviews_cache()
                         st.rerun()
+                    elif res:
+                        st.error(res.get("message") or res.get("error_message") or "Email service failed to send the message.")
         with col2:
             if st.button("Clear Draft"):
                 st.session_state["comm_draft"] = None

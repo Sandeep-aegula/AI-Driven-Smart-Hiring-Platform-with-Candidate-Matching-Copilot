@@ -14,6 +14,7 @@ from frontend.components import api_client
 from frontend.services.cache import get_uploads_cached, invalidate_uploads
 from frontend.services.app_state import AppState
 from frontend.components.page_utils import setup_page, render_sidebar_footer
+from frontend.components.file_uploader import file_uploader_simple
 
 # Page Config
 st.set_page_config(
@@ -172,12 +173,12 @@ with col_top_left:
         st.markdown("#### <i class='fa-solid fa-cloud-arrow-up' style='color:#6366F1;'></i> Upload Resumes", unsafe_allow_html=True)
         st.markdown("<p style='font-size: 0.82rem; color: #64748B; margin-bottom: 16px;'>PDF, DOCX, TXT • Bulk upload supported</p>", unsafe_allow_html=True)
         
-        uploaded_files = st.file_uploader(
-            "Select files",
-            type=["pdf", "docx", "txt"],
-            accept_multiple_files=True,
-            label_visibility="collapsed",
-            key="bulk_resume_file_uploader"
+        uploaded_files = file_uploader_simple(
+            label="Drag and drop resumes here",
+            accepted_types=["pdf", "docx", "txt"],
+            max_size_mb=200,
+            key="bulk_resume_file_uploader",
+            multiple=True
         )
         
         if uploaded_files:
@@ -250,7 +251,7 @@ with col_top_right:
                 with st.container():
                     col_radio, col_info = st.columns([0.08, 0.92], gap="small")
                     with col_radio:
-                        if st.radio("", [u["id"]], index=0 if is_selected else None, key=f"hist_radio_{u['id']}", label_visibility="collapsed", horizontal=True):
+                        if st.radio("Select upload", [u["id"]], index=0 if is_selected else None, key=f"hist_radio_{u['id']}", label_visibility="collapsed", horizontal=True):
                             st.session_state.selected_resume_id = u["id"]
                             st.rerun()
                     with col_info:

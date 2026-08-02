@@ -10,6 +10,7 @@ import streamlit as st
 from frontend.components import api_client
 from frontend.services.cache import get_jobs_cached, invalidate_jobs
 from frontend.components.api_client import publish_job, pause_job, close_job
+from frontend.components.file_uploader import file_uploader_simple
 
 def render_jobs() -> None:
     st.markdown("""
@@ -156,7 +157,12 @@ def _render_ai_upload():
     st.markdown("### Upload Document (AI Generate)")
     st.info("Upload a job requisition or raw notes (PDF, DOCX, TXT) and let AI generate a polished job description.")
     
-    uploaded_file = st.file_uploader("Upload Document", type=["pdf", "docx", "txt"])
+    uploaded_file = file_uploader_simple(
+        label="Drag and drop document here",
+        accepted_types=["pdf", "docx", "txt"],
+        max_size_mb=200,
+        key="ai_upload_document"
+    )
     
     if "ai_draft_generated" not in st.session_state:
         st.session_state.ai_draft_generated = False

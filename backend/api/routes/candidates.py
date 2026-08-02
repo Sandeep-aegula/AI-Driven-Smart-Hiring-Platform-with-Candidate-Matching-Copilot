@@ -5,9 +5,12 @@ import logging
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, HTTPException, Response
+from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from backend.core.config import settings
+from backend.core.constants import SHORTLISTABLE_APPLICATION_STATUSES
 from backend.schemas.entities import CandidateCreate, CandidateRead, CompareCandidatesRequest, EmailDraftRequest, EmailSendRequest, EmailRecord
 from backend.database.data_store import data_store
 from backend.services.ai_candidate_service import generate_ranking_explanation, analyze_skill_gap, compare_candidates
@@ -522,24 +525,18 @@ async def send_candidate_email(candidate_id: int, payload: EmailSendRequest):
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate not found")
 
-    # Actually send the email via SMTP (with Sent folder support)
-    email_sent = False
     recipient_email = candidate.get("email", "").strip()
+    send_result = {"success": False, "status_code": 500, "error_message": "Email service failed to send the message."}
     if recipient_email:
-        try:
-            email_sent = send_custom_email(
-                subject=payload.subject,
-                body=payload.body,
-                recipient=recipient_email,
-                sender=settings.smtp_from_email
-            )
-        except Exception as e:
-            logger.error(f"Failed to send email to {recipient_email}: {e}")
-            email_sent = False
+        send_result = send_custom_email(
+            subject=payload.subject,
+            body=payload.body,
+            recipient=recipient_email,
+            sender=settings.smtp_from_email,
+        )
 
-    # Save to history regardless
-    status = "Sent" if email_sent else "Failed"
-    return await data_store.add_email_history(
+    status = "Sent" if send_result.get("success") else "Failed"
+    history = await data_store.add_email_history(
         candidate_id,
         payload.subject,
         payload.body,
@@ -547,6 +544,18 @@ async def send_candidate_email(candidate_id: int, payload: EmailSendRequest):
         email_type=payload.email_type if hasattr(payload, 'email_type') else "",
         draft_saved=False
     )
+    if not send_result.get("success"):
+        return JSONResponse(
+            status_code=send_result.get("status_code", 502),
+            content={
+                "success": False,
+                "message": send_result.get("error_message", "Email service failed to send the message."),
+                "error_message": send_result.get("error_message", "Email service failed to send the message."),
+                "status": status,
+                "sent_at": history.get("sent_at", ""),
+            },
+        )
+    return history
 
 
 @router.get("/{candidate_id}/email-history", response_model=list[EmailRecord])
@@ -683,7 +692,7 @@ async def shortlist_candidates_bulk(application_ids: list[int]) -> dict:
                     continue
 
                 # Validate application is awaiting HR review
-                if application.status not in ["submitted", "parsed", "under_review", "applied"]:
+                if application.status not in SHORTLISTABLE_APPLICATION_STATUSES:
                     error_msg = f"Application {app_id} is in status '{application.status}', not awaiting HR review"
                     logger.warning(error_msg)
                     failures.append({"id": app_id, "error": error_msg})

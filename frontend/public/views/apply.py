@@ -3,6 +3,7 @@ from frontend.public.utils import inject_public_css
 from frontend.public.components.public_navbar import render_public_navbar
 from frontend.public.components.public_footer import render_public_footer
 from frontend.components.api_client import get_public_job_details, submit_public_application
+from frontend.components.file_uploader import file_uploader_simple
 
 def render_page():
     """Render the Job Application page for the public website."""
@@ -71,7 +72,12 @@ def render_page():
                 github = st.text_input("GitHub Profile URL")
                 portfolio = st.text_input("Portfolio or Personal Website URL")
                 st.markdown("<h3 style='color: #0F172A; margin-bottom: 1rem; margin-top: 2rem;'>Resume</h3>", unsafe_allow_html=True)
-                resume = st.file_uploader("Resume Upload *", type=["pdf", "doc", "docx"])
+                resume = file_uploader_simple(
+                    label="Drag and drop resume here",
+                    accepted_types=["pdf", "doc", "docx"],
+                    max_size_mb=200,
+                    key="resume_upload"
+                )
                 
                 st.markdown("<h3 style='color: #0F172A; margin-bottom: 1rem; margin-top: 2rem;'>Additional Information</h3>", unsafe_allow_html=True)
                 cover_letter = st.text_area("Cover Letter (Optional)")

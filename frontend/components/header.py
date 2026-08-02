@@ -50,10 +50,6 @@ def render_header():
             profile_path = os.path.join(current_dir, "assets", "images", "profile.png")
             avatar_html = f'<div style="width: 32px; height: 32px; border-radius: 50%; background-color: #E2E8F0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #475569; border: 1px solid #CBD5E1;">AD</div>'
             
-            if st.button("🚪 Logout", key="logout_btn", width="content"):
-                st.session_state.token = None
-                st.rerun()
-                
             st.markdown(f"""
             <div style="text-align: right; font-size: 11px; color: #64748B; font-weight: 600; margin-top: 2px;">
                 {today_str}

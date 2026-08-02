@@ -117,6 +117,7 @@ class Job(Base):
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    interview_rounds: Mapped[int] = mapped_column(Integer, default=1)
 
     skills: Mapped[list[Skill]] = relationship(secondary=job_skills, lazy="selectin")
 
@@ -185,6 +186,7 @@ class Application(Base):
     candidate_id: Mapped[int] = mapped_column(ForeignKey("candidates.id", ondelete="CASCADE"), nullable=False, index=True)
     job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False, index=True)
     status: Mapped[str] = mapped_column(String(50), default=ApplicationWorkflowStatus.submitted.value, index=True)
+    current_stage: Mapped[str] = mapped_column(String(100), default="Applied")
     source: Mapped[str] = mapped_column(String(80), default="careers_page")
     cover_letter: Mapped[str] = mapped_column(Text, default="")
     match_score: Mapped[int] = mapped_column(Integer, default=0)
@@ -192,6 +194,9 @@ class Application(Base):
     recruiter_notes: Mapped[str] = mapped_column(Text, default="")
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     reviewed_by: Mapped[str] = mapped_column(String(200), default="")
+    final_decision: Mapped[str] = mapped_column(String(50), default="")
+    final_decision_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    final_selected_by: Mapped[str] = mapped_column(String(200), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -279,11 +284,17 @@ class Interview(Base):
     job_id: Mapped[int | None] = mapped_column(ForeignKey("jobs.id", ondelete="SET NULL"), nullable=True, index=True)
     date: Mapped[str] = mapped_column(String(50), default="")
     time: Mapped[str] = mapped_column(String(50), default="")
+    timezone: Mapped[str] = mapped_column(String(80), default="UTC")
     duration: Mapped[int] = mapped_column(Integer, default=60)
     round: Mapped[str] = mapped_column(String(100), default="")
+    instructions: Mapped[str] = mapped_column(Text, default="")
     type: Mapped[str] = mapped_column(String(50), default="Online")
     meeting_platform: Mapped[str] = mapped_column(String(100), default="Google Meet")
     meeting_link: Mapped[str] = mapped_column(String(500), default="")
+    location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    interviewer_designation: Mapped[str] = mapped_column(String(120), default="")
+    invitation_email_status: Mapped[str] = mapped_column(String(50), default="pending", nullable=False)
+    invitation_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     panel_members: Mapped[list[str]] = mapped_column(JSON, default=list)
     recruiter_name: Mapped[str] = mapped_column(String(100), default="")
     status: Mapped[str] = mapped_column(String(50), default="Scheduled")
@@ -294,6 +305,10 @@ class Interview(Base):
 
     candidate: Mapped[Candidate] = relationship(lazy="selectin")
     job: Mapped[Job | None] = relationship(lazy="selectin")
+    application_id: Mapped[int | None] = mapped_column(ForeignKey("applications.id", ondelete="SET NULL"), nullable=True, index=True)
+    round_number: Mapped[int] = mapped_column(Integer, default=1)
+    interviewer_email: Mapped[str] = mapped_column(String(255), default="")
+    application: Mapped[Application | None] = relationship(lazy="selectin")
 
 
 class Employee(Base):
@@ -301,6 +316,9 @@ class Employee(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     candidate_id: Mapped[int | None] = mapped_column(ForeignKey("candidates.id", ondelete="SET NULL"), nullable=True, index=True)
+    application_id: Mapped[int | None] = mapped_column(ForeignKey("applications.id", ondelete="SET NULL"), nullable=True, index=True)
+    job_id: Mapped[int | None] = mapped_column(ForeignKey("jobs.id", ondelete="SET NULL"), nullable=True, index=True)
+    onboarding_id: Mapped[int | None] = mapped_column(ForeignKey("onboardings.id", ondelete="SET NULL"), nullable=True, index=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     phone: Mapped[str] = mapped_column(String(80), default="")
@@ -358,7 +376,7 @@ class OnboardingDocumentStatus(str, Enum):
 
 
 class Onboarding(Base):
-    __tablename__ = "onboarding"
+    __tablename__ = "onboardings"
     __table_args__ = (UniqueConstraint("application_id", name="uq_onboarding_application_id"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -368,7 +386,9 @@ class Onboarding(Base):
     department: Mapped[str] = mapped_column(String(120), default="")
     designation: Mapped[str] = mapped_column(String(120), default="")
     joining_date: Mapped[str] = mapped_column(String(50), default="")
+    selected_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     status: Mapped[str] = mapped_column(String(50), default=OnboardingStatus.pending.value, index=True)
+    ready_for_onboarding: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -384,11 +404,12 @@ class OnboardingDocumentRequirement(Base):
     __tablename__ = "onboarding_document_requirements"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    onboarding_id: Mapped[int] = mapped_column(ForeignKey("onboarding.id", ondelete="CASCADE"), nullable=False, index=True)
+    onboarding_id: Mapped[int] = mapped_column(ForeignKey("onboardings.id", ondelete="CASCADE"), nullable=False, index=True)
     document_type: Mapped[str] = mapped_column(String(120), nullable=False)
     document_name: Mapped[str] = mapped_column(String(200), nullable=False)
-    is_required: Mapped[bool] = mapped_column(Boolean, default=True)
+    required: Mapped[bool] = mapped_column(Boolean, default=True)
     display_order: Mapped[int] = mapped_column(Integer, default=0)
+    is_custom: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -400,7 +421,7 @@ class OnboardingDocument(Base):
     __tablename__ = "onboarding_documents"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    onboarding_id: Mapped[int] = mapped_column(ForeignKey("onboarding.id", ondelete="CASCADE"), nullable=False, index=True)
+    onboarding_id: Mapped[int] = mapped_column(ForeignKey("onboardings.id", ondelete="CASCADE"), nullable=False, index=True)
     requirement_id: Mapped[int] = mapped_column(ForeignKey("onboarding_document_requirements.id", ondelete="CASCADE"), nullable=False, index=True)
     version: Mapped[int] = mapped_column(Integer, default=1)
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -426,8 +447,11 @@ class OnboardingDocument(Base):
 
 class CommunicationStatus(str, Enum):
     pending = "pending"
+    draft = "draft"
+    sending = "sending"
     sent = "sent"
     failed = "failed"
+    cancelled = "cancelled"
     read = "read"
 
 
@@ -438,13 +462,17 @@ class Communication(Base):
     candidate_id: Mapped[int] = mapped_column(ForeignKey("candidates.id", ondelete="CASCADE"), nullable=False, index=True)
     application_id: Mapped[int] = mapped_column(ForeignKey("applications.id", ondelete="CASCADE"), nullable=False, index=True)
     job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False, index=True)
+    interview_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     recruitment_round: Mapped[str] = mapped_column(String(200), default="Initial Screening")
     status: Mapped[str] = mapped_column(String(50), default=CommunicationStatus.pending.value, index=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     subject: Mapped[str] = mapped_column(String(500), default="")
     message: Mapped[str] = mapped_column(Text, default="")
+    error_message: Mapped[str] = mapped_column(Text, default="")
     email_template: Mapped[str] = mapped_column(String(100), default="")
+    communication_type: Mapped[str] = mapped_column(String(100), default="interview_invitation")
     queued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    generated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

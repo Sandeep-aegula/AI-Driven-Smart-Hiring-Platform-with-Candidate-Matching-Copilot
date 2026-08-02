@@ -61,6 +61,56 @@ async def draft_communication_email(
     sender_name: str = "",
     reply_to_email: str = "",
 ) -> dict:
+    if email_type == "Interview Invitation":
+        if not interview_context:
+            raise ValueError("No interview scheduled for this invitation.")
+        
+        job_title = job_context.get("title", "the position")
+        candidate_name = candidate.get("name", "Candidate")
+        round_name = interview_context.get("round", "Interview")
+        date = interview_context.get("date")
+        time = interview_context.get("time")
+        mode = interview_context.get("type", "Online")
+        interviewer = interview_context.get("recruiter_name", "Recruiter")
+        meeting_link = interview_context.get("meeting_link")
+        location = interview_context.get("location")
+        
+        if not date or not time or not mode:
+            raise ValueError("Required interview details (date, time, mode) are missing.")
+            
+        if mode.lower() == "online" and not meeting_link:
+            raise ValueError("Meeting link is required for Online interviews.")
+        if mode.lower() == "in-person" and not location:
+            raise ValueError("Location is required for In-Person interviews.")
+
+        subject = f"Interview Invitation — {job_title} — {round_name}"
+        
+        body_location_or_link = ""
+        if mode.lower() == "online":
+            body_location_or_link = f"Meeting Link:\n{meeting_link}"
+        else:
+            body_location_or_link = f"Location:\n{location}"
+            
+        body = f"""Dear {candidate_name},
+
+Thank you for progressing to the next stage of the recruitment process for the {job_title} position.
+
+Your interview has been scheduled with the following details:
+
+Interview Round: {round_name}
+Date: {date}
+Time: {time}
+Mode: {mode}
+Interviewer: {interviewer}
+
+{body_location_or_link}
+
+Please join the interview on time.
+
+Best regards,
+HirePilot Recruitment Team"""
+        return {"subject": subject, "body": body}
+
     round_label = interview_context.get("round") if interview_context else "N/A"
     match_score = candidate.get("match_score", 0)
     current_title = candidate.get("current_title") or candidate.get("summary", "Candidate")
@@ -85,9 +135,7 @@ Respond EXACTLY in this JSON format:
     result = await _call_ollama(prompt, json_format=True)
     if "error" in result:
         body_prefix = f"Dear {candidate.get('name')},\n\n"
-        if email_type == "Interview Invitation":
-            body_suffix = f"We are excited to invite you to the next step for the {job_context.get('title')} role."
-        elif email_type == "Offer Letter":
+        if email_type == "Offer Letter":
             body_suffix = f"We are pleased to offer you the {job_context.get('title')} position."
         elif email_type == "Rejection":
             body_suffix = "After careful consideration, we are unable to move forward with your application at this time."

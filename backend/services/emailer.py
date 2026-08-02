@@ -12,6 +12,68 @@ from backend.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+SAFE_AUTH_FAILURE_MESSAGE = "Email service authentication failed. Check the configured SMTP credentials."
+SAFE_SEND_FAILURE_MESSAGE = "Email service failed to send the message."
+SAFE_CONFIGURATION_FAILURE_MESSAGE = "Email service configuration is incomplete. Check the SMTP settings."
+
+
+def validate_smtp_configuration() -> list[str]:
+    """Return missing or invalid SMTP settings without exposing secrets."""
+    return settings.validate_smtp_configuration()
+
+
+def _normalize_smtp_password() -> str:
+    return settings.smtp_password.replace(" ", "") if settings.smtp_password else ""
+
+
+def _failure_result(message: str, status_code: int, error_type: str) -> dict[str, Any]:
+    return {
+        "success": False,
+        "status_code": status_code,
+        "error_type": error_type,
+        "error_message": message,
+    }
+
+
+def _success_result() -> dict[str, Any]:
+    return {
+        "success": True,
+        "status_code": 200,
+        "error_type": "",
+        "error_message": "",
+    }
+
+
+def _send_via_smtp(email: EmailMessage, recipient: str) -> dict[str, Any]:
+    issues = validate_smtp_configuration()
+    if issues:
+        logger.warning("Email was not sent because SMTP configuration is incomplete: %s", "; ".join(issues))
+        return _failure_result(SAFE_CONFIGURATION_FAILURE_MESSAGE, 500, "configuration")
+
+    smtp_password = _normalize_smtp_password()
+
+    try:
+        logger.info("Connecting to SMTP server for recipient %s", recipient)
+        with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30) as server:
+            server.ehlo()
+            if settings.smtp_use_tls:
+                server.starttls(context=ssl.create_default_context())
+                server.ehlo()
+
+            server.login(settings.smtp_username, smtp_password)
+            server.send_message(email)
+
+        return _success_result()
+    except smtplib.SMTPAuthenticationError:
+        logger.error("SMTP authentication failed for recipient %s", recipient)
+        return _failure_result(SAFE_AUTH_FAILURE_MESSAGE, 502, "authentication")
+    except smtplib.SMTPException:
+        logger.exception("SMTP error occurred while sending to %s", recipient)
+        return _failure_result(SAFE_SEND_FAILURE_MESSAGE, 502, "smtp")
+    except Exception:
+        logger.exception("Unexpected error sending email to %s", recipient)
+        return _failure_result(SAFE_SEND_FAILURE_MESSAGE, 500, "unexpected")
+
 _DECISION_MESSAGES = {
     "Approved": (
         "Your application is moving forward",
@@ -36,7 +98,7 @@ def _save_to_sent_folder(email: EmailMessage) -> bool:
     try:
         # Connect to Gmail IMAP
         imap = imaplib.IMAP4_SSL("imap.gmail.com", 993)
-        imap.login(settings.smtp_username, settings.smtp_password)
+        imap.login(settings.smtp_username, _normalize_smtp_password())
         
         # Select the Sent folder (Gmail uses [Gmail]/Sent Mail)
         imap.select('[Gmail]/Sent Mail')
@@ -77,53 +139,12 @@ def send_recruiter_decision_email(candidate: dict[str, Any], decision: str) -> b
     email["To"] = recipient
     email.set_content(f"Hello {candidate.get('name', 'Candidate')},\n\n{message}\n\nBest regards,\nRecruitment Team")
 
-    # Clean the password (remove spaces if any)
-    smtp_password = settings.smtp_password.replace(" ", "") if settings.smtp_password else ""
-    
-    logger.info(f"Attempting to send decision email via SMTP")
-    logger.info(f"SMTP Host: {settings.smtp_host}")
-    logger.info(f"SMTP Port: {settings.smtp_port}")
-    logger.info(f"SMTP Username: {settings.smtp_username}")
-    logger.info(f"SMTP From: {settings.smtp_from_email}")
-    logger.info(f"SMTP To: {recipient}")
-    logger.info(f"SMTP Use TLS: {settings.smtp_use_tls}")
-    logger.info(f"Subject: {subject}")
-
-    try:
-        logger.info("Connecting to SMTP server...")
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30) as server:
-            server.set_debuglevel(1)  # Enable SMTP debug output
-            
-            if settings.smtp_use_tls:
-                logger.info("Starting TLS...")
-                server.starttls(context=ssl.create_default_context())
-            
-            logger.info("Attempting SMTP login...")
-            server.login(settings.smtp_username, smtp_password)
-            logger.info("SMTP login successful!")
-            
-            logger.info("Sending email...")
-            server.send_message(email)
-            logger.info("Email sent successfully via SMTP!")
-        
+    result = _send_via_smtp(email, recipient)
+    if result["success"]:
         # Save to Sent folder
-        logger.info("Attempting to save to Sent folder...")
         _save_to_sent_folder(email)
-        logger.info("Email processing completed successfully")
         return True
-    except smtplib.SMTPAuthenticationError as e:
-        logger.error(f"SMTP Authentication failed: {e}")
-        logger.error(f"Error code: {e.smtp_code}, Error message: {e.smtp_error}")
-        return False
-    except smtplib.SMTPConnectError as e:
-        logger.error(f"SMTP Connection failed: {e}")
-        return False
-    except smtplib.SMTPException as e:
-        logger.error(f"SMTP error occurred: {e}")
-        return False
-    except Exception as e:
-        logger.exception(f"Unexpected error sending decision email to {recipient}: {e}")
-        return False
+    return False
 
 
 def send_custom_email(
@@ -133,23 +154,12 @@ def send_custom_email(
     sender: str | None = None,
     attachment_filename: str | None = None,
     attachment_bytes: bytes | None = None
-) -> bool:
+) -> dict[str, Any]:
     """Send a custom email and save to Sent folder, optionally with an attachment."""
-    if not settings.smtp_host or not settings.smtp_from_email:
-        logger.warning("Custom email was not sent: SMTP_HOST and SMTP_FROM_EMAIL are required.")
-        return False
-
-    # Clean the password (remove spaces if any)
-    smtp_password = settings.smtp_password.replace(" ", "") if settings.smtp_password else ""
-    
-    logger.info(f"Attempting to send email via SMTP")
-    logger.info(f"SMTP Host: {settings.smtp_host}")
-    logger.info(f"SMTP Port: {settings.smtp_port}")
-    logger.info(f"SMTP Username: {settings.smtp_username}")
-    logger.info(f"SMTP From: {sender or settings.smtp_from_email}")
-    logger.info(f"SMTP To: {recipient}")
-    logger.info(f"SMTP Use TLS: {settings.smtp_use_tls}")
-    logger.info(f"Subject: {subject}")
+    issues = validate_smtp_configuration()
+    if issues:
+        logger.warning("Custom email was not sent because SMTP configuration is incomplete: %s", "; ".join(issues))
+        return _failure_result(SAFE_CONFIGURATION_FAILURE_MESSAGE, 500, "configuration")
 
     email = EmailMessage()
     email["Subject"] = subject
@@ -169,38 +179,8 @@ def send_custom_email(
             filename=attachment_filename
         )
 
-    try:
-        logger.info("Connecting to SMTP server...")
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30) as server:
-            server.set_debuglevel(1)  # Enable SMTP debug output
-            
-            if settings.smtp_use_tls:
-                logger.info("Starting TLS...")
-                server.starttls(context=ssl.create_default_context())
-            
-            logger.info("Attempting SMTP login...")
-            server.login(settings.smtp_username, smtp_password)
-            logger.info("SMTP login successful!")
-            
-            logger.info("Sending email...")
-            server.send_message(email)
-            logger.info("Email sent successfully via SMTP!")
-        
+    result = _send_via_smtp(email, recipient)
+    if result["success"]:
         # Save to Sent folder
-        logger.info("Attempting to save to Sent folder...")
         _save_to_sent_folder(email)
-        logger.info("Email processing completed successfully")
-        return True
-    except smtplib.SMTPAuthenticationError as e:
-        logger.error(f"SMTP Authentication failed: {e}")
-        logger.error(f"Error code: {e.smtp_code}, Error message: {e.smtp_error}")
-        return False
-    except smtplib.SMTPConnectError as e:
-        logger.error(f"SMTP Connection failed: {e}")
-        return False
-    except smtplib.SMTPException as e:
-        logger.error(f"SMTP error occurred: {e}")
-        return False
-    except Exception as e:
-        logger.exception(f"Unexpected error sending email to {recipient}: {e}")
-        return False
+    return result

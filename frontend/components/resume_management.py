@@ -3,6 +3,7 @@ import pandas as pd
 import streamlit as st
 from frontend.components import api_client
 from frontend.services.cache import get_jobs_cached, invalidate_candidates
+from frontend.components.file_uploader import file_uploader_simple
 
 # Inject custom CSS for better alignment
 _RESUME_CSS = """
@@ -174,11 +175,14 @@ def _render_single_upload(job_id: int):
         with st.container(border=True):
             st.subheader("Resume Upload")
             
-            uploaded_file = st.file_uploader(
-                "Upload candidate resume", type=["pdf", "docx", "txt"], key="single_upload", label_visibility="collapsed"
+            uploaded_file = file_uploader_simple(
+                label="Drag and drop resume here",
+                accepted_types=["pdf", "docx", "txt"],
+                max_size_mb=200,
+                key="single_upload"
             )
             
-            st.caption("Supported formats: PDF, DOCX, TXT • Maximum file size: 20 MB")
+            st.caption("Supported formats: PDF, DOCX, TXT • Maximum file size: 200 MB")
             
             if uploaded_file:
                 st.markdown(f"""
@@ -239,7 +243,13 @@ def _render_bulk_upload(job_id: int):
     st.markdown("#### Bulk Upload")
     st.info("Upload multiple resumes at once. AI will process them concurrently in the background.")
     
-    uploaded_files = st.file_uploader("Choose files (PDF, DOCX, TXT)", type=["pdf", "docx", "txt"], accept_multiple_files=True, key="bulk_upload")
+    uploaded_files = file_uploader_simple(
+        label="Drag and drop multiple resumes here",
+        accepted_types=["pdf", "docx", "txt"],
+        max_size_mb=200,
+        key="bulk_upload",
+        multiple=True
+    )
     
     if "batch_id" not in st.session_state:
         st.session_state.batch_id = None

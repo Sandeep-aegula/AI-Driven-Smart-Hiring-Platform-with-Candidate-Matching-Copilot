@@ -15,6 +15,7 @@ from frontend.components.page_utils import setup_page, render_sidebar_footer
 from frontend.services.ai_service import get_client as get_ollama_client
 from frontend.components.header import render_header
 from frontend.components.sidebar import render_sidebar
+from frontend.components.file_uploader import file_uploader_simple
 
 # Page Config
 st.set_page_config(
@@ -172,11 +173,11 @@ st.markdown('<div class="ai-copilot-input-bar">', unsafe_allow_html=True)
 
 # Hidden file uploader (triggered by attachment button)
 st.markdown('<div class="ai-copilot-hidden-uploader">', unsafe_allow_html=True)
-uploaded_file = st.file_uploader(
-    "Upload Resume",
-    type=["pdf", "docx", "doc", "txt"],
-    key="copilot_resume_uploader",
-    label_visibility="collapsed"
+uploaded_file = file_uploader_simple(
+    label="Drag and drop resume here",
+    accepted_types=["pdf", "docx", "doc", "txt"],
+    max_size_mb=200,
+    key="copilot_resume_uploader"
 )
 st.markdown('</div>', unsafe_allow_html=True)
 

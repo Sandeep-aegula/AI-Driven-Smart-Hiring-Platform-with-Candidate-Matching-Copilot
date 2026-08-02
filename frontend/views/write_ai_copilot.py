@@ -1,4 +1,5 @@
 import streamlit as st
+from frontend.components.file_uploader import file_uploader_simple
 
 def _render_candidate_table():
     """Render mock candidate recommendation table."""
@@ -134,7 +135,13 @@ def render_ai_copilot():
         # Chat input area (sticky at bottom of left column)
         st.markdown('<div class="ai-copilot-input-wrapper">', unsafe_allow_html=True)
         col_attach, col_input = st.columns([0.08, 0.92])
-        col_attach.file_uploader("📎", type=["pdf", "docx", "doc", "txt", "xlsx", "csv"], label_visibility="collapsed", key="ai_copilot_upload")
+        with col_attach:
+            file_uploader_simple(
+                label="Drag and drop file here",
+                accepted_types=["pdf", "docx", "doc", "txt", "xlsx", "csv"],
+                max_size_mb=200,
+                key="ai_copilot_upload"
+            )
         user_input = col_input.chat_input("Ask anything about candidates, jobs, interviews...", key="ai_copilot_input")
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)

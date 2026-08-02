@@ -5,6 +5,9 @@ Rendered when no user token is present (before login).
 """
 
 import streamlit as st
+from frontend.components.api_client import get_public_jobs
+from frontend.public.components.public_navbar import render_public_navbar
+from frontend.public.components.public_footer import render_public_footer
 
 
 def render_page():
@@ -35,14 +38,17 @@ def render_page():
         return
 
     # Render public content sections (navbar and footer are handled elsewhere)
+    render_public_navbar(active_page="home")
     _render_hero()
     _render_stats()
     _render_about()
     _render_features()
     _render_workflow()
+    _render_featured_jobs()
     _render_for_candidates()
     _render_for_companies()
     _render_contact()
+    render_public_footer()
 
 
 # ---------------------------------------------------------------------------
@@ -56,43 +62,11 @@ def _get_public_css_path():
     return os.path.join(current_dir, "styles", "public_portal.css")
 
 
-def _nav_link(label, anchor, key):
-    """Render a single navigation link."""
-    current = st.session_state.get("public_nav", "home")
-    is_active = (current == key)
-    css_class = "active" if is_active else ""
-    st.markdown(
-        f'<a href="#{anchor}" class="hp-navbar-links {css_class}" '
-        f'onclick="document.getElementById(\'hp-mobile-menu\').classList.toggle(\'open\')">'
-        f'{label}</a>',
-        unsafe_allow_html=True,
-    )
+# ---------------------------------------------------------------------------
+# Section renderers
+# ---------------------------------------------------------------------------
 
-
-def _render_navbar():
-    """Render the fixed top navigation bar."""
-    st.markdown(
-        """
-        <nav class="hp-navbar" id="hp-navbar">
-          <div class="hp-navbar-inner">
-            <a href="#home" class="hp-navbar-logo" onclick="document.getElementById('hp-mobile-menu').classList.remove('open')">
-              <div class="logo-icon">HP</div>
-              HIREPILOT
-              <div class="logo-subtext">AI Recruitment Platform</div>
-            </a>
-            <button class="hp-navbar-toggle" onclick="document.getElementById('hp-mobile-menu').classList.toggle('open')" aria-label="Toggle menu">
-              <span></span><span></span><span></span>
-            </button>
-            <div class="hp-navbar-links" id="hp-mobile-menu">
-        """,
-        unsafe_allow_html=True,
-    )
-
-    _nav_link("Home", "home", "home")
-    _nav_link("About Us", "about", "about")
-    _nav_link("Careers", "careers", "careers")
-    _nav_link("How It Works", "how-it-works", "how_it_works")
-    _nav_link("Contact", "contact", "contact")
+def _render_hero():
 
     st.markdown(
         """
@@ -338,6 +312,85 @@ def _render_workflow():
         )
 
     st.markdown("</div></div></section>", unsafe_allow_html=True)
+
+
+def _render_featured_jobs():
+    """Render the Featured Job Openings section with live jobs from the API."""
+    st.markdown(
+        """
+        <section class="hp-section hp-section-alt" id="featured-jobs">
+          <div class="hp-container">
+            <div class="hp-section-header">
+              <div class="hp-section-tag">Featured Opportunities</div>
+              <h2>Featured Job Openings</h2>
+              <p>Explore our latest openings and find your next career move.</p>
+            </div>
+            <div class="hp-jobs-grid" id="featured-jobs-grid">
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Fetch live jobs from the API
+    with st.spinner("Loading featured jobs..."):
+        jobs = get_public_jobs()
+
+    if jobs:
+        # Display up to 4 featured jobs
+        featured_jobs = jobs[:4]
+        for job in featured_jobs:
+            st.markdown(
+                f"""
+                <div class="hp-job-card">
+                  <div class="hp-job-header">
+                    <h3>{job.get('title', 'N/A')}</h3>
+                    <span class="hp-job-badge">{job.get('employment_type', 'Full-time')}</span>
+                  </div>
+                  <div class="hp-job-meta">
+                    <div class="hp-job-meta-item">
+                      <span class="hp-job-meta-icon">🏢</span>
+                      <span>{job.get('department', 'N/A')}</span>
+                    </div>
+                    <div class="hp-job-meta-item">
+                      <span class="hp-job-meta-icon">📍</span>
+                      <span>{job.get('location', 'N/A')}</span>
+                    </div>
+                    <div class="hp-job-meta-item">
+                      <span class="hp-job-meta-icon">💼</span>
+                      <span>{job.get('experience_required', 'N/A')}</span>
+                    </div>
+                  </div>
+                  <div class="hp-job-description">
+                    <p>{job.get('description', 'No description available')[:200]}...</p>
+                  </div>
+                  <div class="hp-job-footer">
+                    <a href="#careers" class="hp-btn hp-btn-primary hp-btn-sm" onclick="window.location.href='#careers'">View Job</a>
+                  </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+    else:
+        st.markdown(
+            """
+            <div class="hp-no-jobs">
+              <p>No featured jobs available at the moment. Please check back later!</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown(
+        """
+              </div>
+              <div class="hp-jobs-cta">
+                <a href="#careers" class="hp-btn hp-btn-secondary hp-btn-lg">View All Open Positions</a>
+              </div>
+            </div>
+          </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def _render_for_candidates():

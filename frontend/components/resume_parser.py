@@ -8,6 +8,7 @@ import streamlit as st
 
 from frontend.components import api_client
 from frontend.services.cache import get_uploads_cached, invalidate_uploads, invalidate_candidates
+from frontend.components.file_uploader import file_uploader_simple
 
 
 def render_resume_parser() -> None:
@@ -40,11 +41,12 @@ def render_resume_parser() -> None:
             st.markdown("<p style='font-size:0.82rem;color:#64748B;margin-bottom:12px;'>"
                         "Upload one or more PDF/DOCX files below.</p>", unsafe_allow_html=True)
 
-            uploaded_files = st.file_uploader(
-                "Upload Resume(s)",
-                type=["pdf", "docx"],
-                accept_multiple_files=True,
-                key="bulk_resume_uploader"
+            uploaded_files = file_uploader_simple(
+                label="Drag and drop resumes here",
+                accepted_types=["pdf", "docx"],
+                max_size_mb=200,
+                key="bulk_resume_uploader",
+                multiple=True
             )
 
             if uploaded_files:

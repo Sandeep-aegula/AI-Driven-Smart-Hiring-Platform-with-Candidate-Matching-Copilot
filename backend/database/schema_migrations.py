@@ -28,6 +28,7 @@ JOB_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
     ("experience_required", "experience_required VARCHAR(120) NOT NULL DEFAULT ''"),
     ("salary_range", "salary_range VARCHAR(120) NOT NULL DEFAULT ''"),
     ("published_at", "published_at DATETIME NULL"),
+    ("interview_rounds", "interview_rounds INT NOT NULL DEFAULT 1"),
 )
 
 APPLICATION_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
@@ -35,10 +36,44 @@ APPLICATION_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
     ("cover_letter", "cover_letter TEXT NULL"),
     ("reviewed_at", "reviewed_at DATETIME NULL"),
     ("reviewed_by", "reviewed_by VARCHAR(200) NOT NULL DEFAULT ''"),
+    ("final_decision", "final_decision VARCHAR(50) NOT NULL DEFAULT ''"),
+    ("final_decision_at", "final_decision_at DATETIME NULL"),
+    ("final_selected_by", "final_selected_by VARCHAR(200) NOT NULL DEFAULT ''"),
+    ("current_stage", "current_stage VARCHAR(100) NOT NULL DEFAULT 'Applied'"),
 )
 
 CANDIDATE_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
     ("current_company", "current_company VARCHAR(200) NOT NULL DEFAULT ''"),
+)
+
+COMMUNICATION_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
+    ("error_message", "error_message TEXT NULL"),
+    ("interview_id", "interview_id INT NULL"),
+    ("communication_type", "communication_type VARCHAR(100) NOT NULL DEFAULT 'interview_invitation'"),
+    ("generated_at", "generated_at DATETIME NULL"),
+)
+
+EMPLOYEE_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
+    ("application_id", "application_id INT NULL"),
+    ("job_id", "job_id INT NULL"),
+    ("onboarding_id", "onboarding_id INT NULL"),
+)
+
+ONBOARDING_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
+    ("selected_at", "selected_at DATETIME NULL"),
+    ("ready_for_onboarding", "ready_for_onboarding TINYINT(1) NOT NULL DEFAULT 0"),
+)
+
+INTERVIEW_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
+    ("application_id", "application_id INTEGER NULL"),
+    ("round_number", "round_number INT NOT NULL DEFAULT 1"),
+    ("interviewer_email", "interviewer_email VARCHAR(255) NOT NULL DEFAULT ''"),
+    ("timezone", "timezone VARCHAR(80) NOT NULL DEFAULT 'UTC'"),
+    ("location", "location VARCHAR(255) NULL"),
+    ("instructions", "instructions TEXT NULL"),
+    ("interviewer_designation", "interviewer_designation VARCHAR(120) NOT NULL DEFAULT ''"),
+    ("invitation_email_status", "invitation_email_status VARCHAR(50) NOT NULL DEFAULT 'pending'"),
+    ("invitation_sent_at", "invitation_sent_at DATETIME NULL"),
 )
 
 
@@ -63,6 +98,16 @@ async def ensure_jobs_schema() -> None:
     await _ensure_columns("jobs", JOB_COLUMN_MIGRATIONS)
 
 
+async def ensure_communications_schema() -> None:
+    """Add missing communication tracking columns on existing MySQL tables."""
+    await _ensure_columns("communications", COMMUNICATION_COLUMN_MIGRATIONS)
+
+
+async def ensure_employee_schema() -> None:
+    """Add missing employee relationship columns on existing MySQL tables."""
+    await _ensure_columns("employees", EMPLOYEE_COLUMN_MIGRATIONS)
+
+
 ONBOARDING_TABLE_MIGRATIONS = """
 -- Onboarding tables for HirePilot
 -- Safe to run multiple times - only creates tables if they don't exist
@@ -75,7 +120,9 @@ CREATE TABLE IF NOT EXISTS `onboardings` (
     `department` VARCHAR(120) NOT NULL DEFAULT '',
     `designation` VARCHAR(120) NOT NULL DEFAULT '',
     `joining_date` VARCHAR(50) NOT NULL DEFAULT '',
+    `selected_at` DATETIME(6) NULL,
     `status` VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    `ready_for_onboarding` TINYINT(1) NOT NULL DEFAULT 0,
     `created_at` DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     `updated_at` DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
     `completed_at` DATETIME(6) NULL,
@@ -139,11 +186,15 @@ CREATE TABLE IF NOT EXISTS `onboarding_documents` (
 async def ensure_workflow_schema() -> None:
     """Add workflow columns and rely on create_all for new tables."""
     await ensure_jobs_schema()
+    await ensure_communications_schema()
+    await ensure_employee_schema()
     tables = await _existing_tables()
     if "applications" in tables:
         await _ensure_columns("applications", APPLICATION_COLUMN_MIGRATIONS)
     if "candidates" in tables:
         await _ensure_columns("candidates", CANDIDATE_COLUMN_MIGRATIONS)
+    if "interviews" in tables:
+        await _ensure_columns("interviews", INTERVIEW_COLUMN_MIGRATIONS)
 
 
 async def ensure_onboarding_schema() -> None:
@@ -159,7 +210,9 @@ async def ensure_onboarding_schema() -> None:
                 `department` VARCHAR(120) NOT NULL DEFAULT '',
                 `designation` VARCHAR(120) NOT NULL DEFAULT '',
                 `joining_date` VARCHAR(50) NOT NULL DEFAULT '',
+                `selected_at` DATETIME(6) NULL,
                 `status` VARCHAR(50) NOT NULL DEFAULT 'Pending',
+                `ready_for_onboarding` TINYINT(1) NOT NULL DEFAULT 0,
                 `created_at` DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
                 `updated_at` DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                 `completed_at` DATETIME(6) NULL,
@@ -225,6 +278,9 @@ async def ensure_onboarding_schema() -> None:
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         """))
 
+        await _ensure_columns("onboardings", ONBOARDING_COLUMN_MIGRATIONS)
+        await _ensure_columns("onboarding_document_requirements", (("required", "required TINYINT(1) NOT NULL DEFAULT 1"),))
+
         # Ensure default document requirements exist for each onboarding
         await conn.execute(text("""
             INSERT INTO `onboarding_document_requirements`
@@ -244,3 +300,71 @@ async def _existing_tables() -> set[str]:
         return set(
             await conn.run_sync(lambda sync_conn: inspect(sync_conn).get_table_names())
         )
+
+
+async def ensure_interview_application_id_not_null() -> None:
+    """
+    Enforce NOT NULL constraint on interviews.application_id and add foreign key.
+    This should only be run AFTER all orphaned interviews have been repaired.
+    """
+    async with engine.begin() as conn:
+        # Check if column exists and is nullable
+        result = await conn.run_sync(
+            lambda sync_conn: inspect(sync_conn).get_columns("interviews")
+        )
+        app_id_col = next((c for c in result if c["name"] == "application_id"), None)
+        
+        if not app_id_col:
+            logger.warning("interviews.application_id column does not exist, skipping NOT NULL enforcement")
+            return
+        
+        # Check if already NOT NULL
+        if not app_id_col.get("nullable", True):
+            logger.info("interviews.application_id is already NOT NULL")
+        else:
+            # First, verify no NULL values remain
+            null_count_result = await conn.execute(text(
+                "SELECT COUNT(*) FROM `interviews` WHERE `application_id` IS NULL"
+            ))
+            null_count = null_count_result.scalar()
+            
+            if null_count > 0:
+                raise RuntimeError(
+                    f"Cannot enforce NOT NULL: {null_count} interviews still have NULL application_id. "
+                    "Run the repair script first."
+                )
+            
+            # Alter column to NOT NULL
+            logger.info("Altering interviews.application_id to NOT NULL")
+            await conn.execute(text(
+                "ALTER TABLE `interviews` MODIFY COLUMN `application_id` INTEGER NOT NULL"
+            ))
+            logger.info("Successfully set interviews.application_id to NOT NULL")
+        
+        # Check if foreign key exists
+        fk_result = await conn.run_sync(
+            lambda sync_conn: inspect(sync_conn).get_foreign_keys("interviews")
+        )
+        has_fk = any(
+            fk.get("constrained_columns") == ["application_id"] 
+            and fk.get("referred_table") == "applications"
+            for fk in fk_result
+        )
+        
+        if not has_fk:
+            logger.info("Adding foreign key constraint on interviews.application_id -> applications.id")
+            await conn.execute(text("""
+                ALTER TABLE `interviews` 
+                ADD CONSTRAINT `fk_interviews_application` 
+                FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE
+            """))
+            logger.info("Successfully added foreign key constraint on interviews.application_id")
+        else:
+            logger.info("Foreign key constraint on interviews.application_id already exists")
+
+
+async def ensure_all_schemas() -> None:
+    """Run all schema migrations in order."""
+    await ensure_workflow_schema()
+    await ensure_onboarding_schema()
+    await ensure_interview_application_id_not_null()

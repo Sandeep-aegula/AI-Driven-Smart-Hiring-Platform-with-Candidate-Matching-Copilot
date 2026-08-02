@@ -27,6 +27,7 @@ gatherUsageStats = false
 headless = true
 enableCORS = false
 enableXsrfProtection = false
+maxUploadSize = 200
 
 [runner]
 fastReruns = true

@@ -31,6 +31,7 @@ async def create_communication_table():
         email VARCHAR(255) NOT NULL,
         subject VARCHAR(500) DEFAULT '',
         message TEXT,
+        error_message TEXT,
         email_template VARCHAR(100) DEFAULT '',
         queued_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         sent_at DATETIME NULL,

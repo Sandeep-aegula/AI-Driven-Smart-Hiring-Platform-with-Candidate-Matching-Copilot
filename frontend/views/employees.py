@@ -71,9 +71,12 @@ with list_col:
                         </div>
                         <div>
                             <div style="font-weight: 800; font-size: 1.05rem; color: #0F172A;">{emp.get('name')}</div>
-                            <div style="font-size: 0.8rem; color: #4F46E5; font-weight: 600;">{emp.get('role')} • {emp.get('department')}</div>
+                            <div style="font-size: 0.8rem; color: #4F46E5; font-weight: 600;">{emp.get('designation')} • {emp.get('department')}</div>
                             <div style="font-size: 0.72rem; color: #64748B; margin-top:2px;">
-                                <strong>Manager:</strong> {emp.get('manager')} • <strong>Joined:</strong> {emp.get('joining_date')}
+                                <strong>Email:</strong> {emp.get('email')} • <strong>Phone:</strong> {emp.get('phone')}
+                            </div>
+                            <div style="font-size: 0.72rem; color: #64748B; margin-top:2px;">
+                                <strong>Joined:</strong> {emp.get('joining_date')} • <strong>Status:</strong> {emp.get('status')}
                             </div>
                         </div>
                     </div>
@@ -104,7 +107,7 @@ if drawer_col and st.session_state.selected_employee_id:
                 st.markdown(f"""
                 <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px; margin-bottom: 15px;">
                     <h4 style="margin: 0; color:#0F172A; font-weight:800;">{active_emp.get('name')}</h4>
-                    <p style="margin:2px 0 0 0; font-size:0.8rem; color:#4F46E5; font-weight:600;">{active_emp.get('role')}</p>
+                    <p style="margin:2px 0 0 0; font-size:0.8rem; color:#4F46E5; font-weight:600;">{active_emp.get('designation')}</p>
                     <div style="font-size:0.75rem; color:#64748B; margin-top:6px;">Department: <strong>{active_emp.get('department')}</strong></div>
                 </div>
                 """, unsafe_allow_html=True)

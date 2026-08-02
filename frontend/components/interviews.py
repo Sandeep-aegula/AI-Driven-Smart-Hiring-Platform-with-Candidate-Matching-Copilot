@@ -123,26 +123,63 @@ def render_interviews() -> None:
             st.markdown("<h4 style='font-size:1rem;font-weight:700;color:#0F172A;margin:0 0 10px 0;'>"
                         "<i class='fa-solid fa-calendar-plus' style='color:#6366F1;'></i>"
                         " Schedule Interview</h4>", unsafe_allow_html=True)
-            if not candidates:
-                st.warning("Add candidates first.")
+            jobs = api_client.get_jobs()
+            if not candidates or not jobs:
+                st.warning("Add candidates and jobs first.")
             else:
-                cand_map   = {c["name"]: c["id"] for c in candidates}
-                sel_cand   = st.selectbox("Candidate *", list(cand_map.keys()))
-                stage      = st.selectbox("Stage", ["Technical Assessment","Coding Round","HR Culture Fit","System Design"])
-                interviewer= st.text_input("Interviewer", value="Ava Morgan")
-                dc, tc     = st.columns(2)
-                with dc: date = st.date_input("Date", value=datetime.date.today() + datetime.timedelta(days=1))
-                with tc: time = st.time_input("Time", value=datetime.time(10,0))
-                meet_link  = st.text_input("Meeting Link", value="https://meet.google.com/abc-defg-hij")
-                if st.button("Schedule Session", type="primary", width="stretch"):
-                    payload = {"candidate_id": cand_map[sel_cand], "interviewer": interviewer,
-                               "date": date.isoformat(), "time": time.strftime("%H:%M"),
-                               "stage": stage, "meeting_link": meet_link}
-                    if api_client.schedule_interview(payload):
-                        invalidate_interviews()
-                        invalidate_candidates()
-                        st.toast("Interview scheduled!", icon="🎉")
-                        st.rerun()
+                with st.form("schedule_interview_form"):
+                    cand_data_map = {f"{c['name']} — {c.get('current_title', 'No Title')}": c for c in candidates}
+                    sel_cand = st.selectbox("Candidate *", list(cand_data_map.keys()))
+                    job_map = {f"{j['title']} — {j.get('department', 'No Dept')}": j["id"] for j in jobs}
+                    sel_job = st.selectbox("Job *", list(job_map.keys()))
+                    stage = st.selectbox("Stage", ["Technical Assessment","Coding Round","HR Culture Fit","System Design"])
+                    interviewer= st.text_input("Interviewer", value="Ava Morgan")
+                    dc, tc = st.columns(2)
+                    with dc:
+                        date = st.date_input("Date", value=datetime.date.today() + datetime.timedelta(days=1))
+                    with tc:
+                        time = st.time_input("Time", value=datetime.time(10,0))
+                    meet_link = st.text_input("Meeting Link", value="https://meet.google.com/abc-defg-hij")
+                    
+                    submitted = st.form_submit_button("Schedule Session", type="primary", width="stretch")
+                    
+                if "interview_submission_in_progress" not in st.session_state:
+                    st.session_state.interview_submission_in_progress = False
+                if submitted and not st.session_state.interview_submission_in_progress:
+                    st.session_state.interview_submission_in_progress = True
+                    try:
+                        selected_cand = cand_data_map.get(sel_cand, {})
+                        candidate_id = selected_cand.get("id")
+                        selected_job_id = job_map.get(sel_job)
+                        application_id = None
+                        if selected_cand.get("job_id") == selected_job_id:
+                            application_id = selected_cand.get("application_id")
+                        else:
+                            from frontend.services.cache import get_candidates_cached as _get_cands
+                            for c in _get_cands(job_id=selected_job_id):
+                                if isinstance(c, dict) and c.get("id") == candidate_id:
+                                    application_id = c.get("application_id")
+                                    break
+                        if not application_id:
+                            st.error("No application was found for the selected candidate and job. Please select a candidate from an existing application.")
+                        else:
+                            payload = {
+                                "application_id": application_id,
+                                "candidate_id": candidate_id,
+                                "job_id": selected_job_id,
+                                "date": date.isoformat(),
+                                "time": time.strftime("%H:%M:%S"),
+                                "round": stage,
+                                "recruiter_name": interviewer,
+                                "meeting_link": meet_link,
+                            }
+                            if api_client.schedule_interview(payload):
+                                invalidate_interviews()
+                                invalidate_candidates()
+                                st.toast("Interview scheduled!", icon="🎉")
+                                st.rerun()
+                    finally:
+                        st.session_state.interview_submission_in_progress = False
 
         st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
 

@@ -6,7 +6,7 @@ from sqlalchemy import or_, and_, desc
 
 from backend.schemas.entities import JobCreate, CandidateCreate, ApplicationCreate
 from backend.database.session import get_db_session
-from backend.models.entities import Job, Candidate, Application, Resume, ResumeData, Interview, Employee, Activity, Skill
+from backend.models.entities import Job, Candidate, Application, Resume, ResumeData, Interview, Employee, Activity, Skill, Communication
 
 logger = logging.getLogger(__name__)
 
@@ -330,6 +330,7 @@ class RecruitmentDataStore:
             
             notes = list(candidate.notes) if candidate.notes else []
             kwargs["created_at"] = datetime.utcnow().isoformat()
+            kwargs["sent_at"] = kwargs.get("sent_at") or kwargs["created_at"]
             kwargs["is_email"] = True
             notes.append(kwargs)
             candidate.notes = notes
@@ -413,13 +414,48 @@ class RecruitmentDataStore:
 
     async def create_interview(self, payload: dict) -> dict:
         async with get_db_session() as session:
+            # Require application_id
+            application_id = payload.get("application_id")
+            if not application_id:
+                raise ValueError("application_id is required to create an interview")
+            
+            # Validate application exists and is in a valid state
+            stmt_app = select(Application).where(Application.id == application_id)
+            res_app = await session.execute(stmt_app)
+            app = res_app.scalar_one_or_none()
+            if not app:
+                raise ValueError(f"Application {application_id} not found")
+            
+            # Check application status allows scheduling interview
+            invalid_statuses = ["rejected", "hired", "withdrawn"]
+            if app.status in invalid_statuses:
+                raise ValueError(f"Cannot schedule interview for application with status '{app.status}'")
+            
             iv = Interview(**payload)
+            iv.invitation_email_status = "pending"
             session.add(iv)
+            await session.flush()
             
             stmt = select(Candidate).where(Candidate.id == iv.candidate_id)
             res = await session.execute(stmt)
             cand = res.scalar_one_or_none()
-            if cand: cand.status = "Interview Scheduled"
+            if cand: 
+                cand.status = "Interview Scheduled"
+            
+            # Create communication record
+            if cand:
+                comm = Communication(
+                    candidate_id=iv.candidate_id,
+                    application_id=application_id,
+                    job_id=iv.job_id,
+                    interview_id=iv.id,
+                    recruitment_round=iv.round,
+                    status="pending",
+                    email=cand.email,
+                    subject=f"Interview Invitation — {iv.round}",
+                    message="",
+                )
+                session.add(comm)
             
             await session.commit()
             await session.refresh(iv)
@@ -439,6 +475,47 @@ class RecruitmentDataStore:
             if not iv: raise ValueError("Interview not found")
             
             for k, v in payload.items(): setattr(iv, k, v)
+            
+            iv.invitation_email_status = "pending"
+            
+            stmt_comm = select(Communication).where(Communication.interview_id == interview_id)
+            res_comm = await session.execute(stmt_comm)
+            comm = res_comm.scalar_one_or_none()
+            if comm:
+                comm.status = "pending"
+                comm.recruitment_round = iv.round
+                comm.sent_at = None
+                comm.error_message = ""
+                comm.generated_at = None
+            else:
+                stmt_cand = select(Candidate).where(Candidate.id == iv.candidate_id)
+                res_cand = await session.execute(stmt_cand)
+                cand = res_cand.scalar_one_or_none()
+                
+                stmt_app = select(Application).where(Application.candidate_id == iv.candidate_id, Application.job_id == iv.job_id)
+                res_app = await session.execute(stmt_app)
+                app = res_app.scalar_one_or_none()
+                app_id = app.id if app else None
+                if not app_id:
+                    stmt_app_fallback = select(Application).where(Application.candidate_id == iv.candidate_id)
+                    res_app_fallback = await session.execute(stmt_app_fallback)
+                    app_fallback = res_app_fallback.scalar_one_or_none()
+                    app_id = app_fallback.id if app_fallback else None
+                
+                if app_id and cand:
+                    new_comm = Communication(
+                        candidate_id=iv.candidate_id,
+                        application_id=app_id,
+                        job_id=iv.job_id,
+                        interview_id=iv.id,
+                        recruitment_round=iv.round,
+                        status="pending",
+                        email=cand.email,
+                        subject=f"Interview Invitation — {iv.round}",
+                        message=""
+                    )
+                    session.add(new_comm)
+                    
             await session.commit()
             await session.refresh(iv)
             return model_to_dict(iv)

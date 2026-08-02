@@ -539,6 +539,11 @@ class ApplicationStatusUpdate(BaseModel):
     reviewed_by: str = ""
 
 
+class ApplicationSelectRequest(BaseModel):
+    reviewed_by: str = "HR"
+    selection_note: str = ""
+
+
 class ApplicationScoreRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

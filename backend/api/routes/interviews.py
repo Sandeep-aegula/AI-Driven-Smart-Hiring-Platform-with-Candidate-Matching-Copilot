@@ -1,12 +1,12 @@
 from __future__ import annotations
 import logging
+from fastapi import APIRouter, HTTPException, Query
 
-from fastapi import APIRouter, HTTPException
-
-from backend.schemas.entities import InterviewCreate, InterviewFeedback, InterviewQuestionsRequest, InterviewQuestionsResponse, InterviewEmailDraftRequest, EmailSendRequest, EmailRecord
+from backend.schemas.entities import InterviewCreate, InterviewFeedback, InterviewQuestionsRequest, InterviewQuestionsResponse, InterviewEmailDraftRequest, EmailSendRequest, EmailRecord, InterviewDecisionRequest
 from backend.database.data_store import data_store
 from backend.services.ai_interview_service import generate_interview_questions, fallback_question
 from backend.services.ai_email_service import draft_interview_email
+from backend.services.onboarding_workflow_service import record_interview_decision
 
 logger = logging.getLogger(__name__)
 
@@ -15,9 +15,11 @@ router = APIRouter()
 @router.post("")
 async def schedule_interview(payload: InterviewCreate):
     try:
+        logger.info(f"INTERVIEW REQUEST PAYLOAD: {payload.model_dump()}")
         # We should validate date/time in the future and conflicts ideally, but for now we'll just create it.
         return await data_store.create_interview(payload.model_dump())
     except Exception as exc:
+        logger.error(f"Database failure reason: {exc}")
         raise HTTPException(status_code=400, detail=str(exc))
 
 @router.get("")
@@ -40,6 +42,21 @@ async def get_interview_detail(interview_id: int):
     if not iv:
         raise HTTPException(status_code=404, detail="Interview not found")
     return iv
+
+@router.put("/{interview_id}/decision")
+async def update_interview_decision(interview_id: int, payload: InterviewDecisionRequest):
+    try:
+        logger.info(f"Interview decision request: interview_id={interview_id}, decision={payload.decision}, feedback={payload.feedback}, notes={payload.notes}")
+        result = await record_interview_decision(interview_id, payload.decision)
+        result["success"] = True
+        logger.info(f"Interview decision recorded successfully: {result}")
+        return result
+    except ValueError as ve:
+        logger.warning(f"Interview decision validation error: {ve}")
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as exc:
+        logger.error(f"Interview decision error: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
 
 @router.put("/{interview_id}")
 async def update_interview(interview_id: int, payload: dict):
@@ -89,17 +106,7 @@ async def log_interview_feedback(interview_id: int, payload: InterviewFeedback):
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
-from backend.services.employee_conversion_service import create_employee_from_candidate
 
-@router.put("/{interview_id}/decision")
-async def log_interview_decision(interview_id: int, decision: str):
-    try:
-        iv = await data_store.log_interview_decision(interview_id, decision)
-        if decision == "Selected":
-            await create_employee_from_candidate(iv.get("candidate_id"))
-        return iv
-    except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
 
 @router.post("/{interview_id}/generate-email")
 async def generate_interview_email(interview_id: int, payload: InterviewEmailDraftRequest):

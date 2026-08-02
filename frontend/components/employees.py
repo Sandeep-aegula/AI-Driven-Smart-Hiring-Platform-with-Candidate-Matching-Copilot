@@ -834,7 +834,10 @@ def render_employees() -> None:
                                 <div style="font-size:0.8rem;color:#4F46E5;font-weight:600;">
                                     {emp.get('designation', 'Employee')} | {emp.get('department', 'Unassigned')}</div>
                                 <div style="font-size:0.72rem;color:#64748B;margin-top:2px;">
-                                    <strong>Joined:</strong> {emp.get('joining_date', 'N/A')}
+                                    <strong>Email:</strong> {emp.get('email', 'N/A')} • <strong>Phone:</strong> {emp.get('phone', 'N/A')}
+                                </div>
+                                <div style="font-size:0.72rem;color:#64748B;margin-top:2px;">
+                                    <strong>Joined:</strong> {emp.get('joining_date', 'N/A')} • <strong>Status:</strong> {emp.get('status', 'Active')}
                                 </div>
                             </div>
                         </div>

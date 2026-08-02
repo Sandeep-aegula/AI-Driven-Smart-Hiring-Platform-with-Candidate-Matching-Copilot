@@ -204,8 +204,8 @@ with col_right:
         if not candidates:
             st.warning("Please add candidates first.")
         else:
-            cand_map = {c["name"]: c["id"] for c in candidates}
-            selected_cand = st.selectbox("Candidate *", list(cand_map.keys()))
+            cand_data_map = {c["name"]: c for c in candidates}
+            selected_cand_name = st.selectbox("Candidate *", list(cand_data_map.keys()))
             stage = st.selectbox("Interview Stage", ["Technical Assessment", "Coding Round", "HR Culture Fit", "System Design"])
             interviewer = st.text_input("Assign Interviewer", value="Ava Morgan")
             
@@ -218,18 +218,27 @@ with col_right:
             meet_link = st.text_input("Meeting Link", value="https://meet.google.com/abc-defg-hij")
             
             if st.button("Schedule Session", type="primary", width="stretch"):
-                payload = {
-                    "candidate_id": cand_map[selected_cand],
-                    "interviewer": interviewer,
-                    "date": date.isoformat(),
-                    "time": time.strftime("%H:%M"),
-                    "stage": stage,
-                    "meeting_link": meet_link
-                }
-                res = api_client.schedule_interview(payload)
-                if res:
-                    st.toast("Interview successfully scheduled!", icon="🎉")
-                    st.rerun()
+                selected_cand = cand_data_map.get(selected_cand_name, {})
+                candidate_id = selected_cand.get("id")
+                application_id = selected_cand.get("application_id")
+                job_id = selected_cand.get("job_id")
+                if not application_id or not job_id:
+                    st.error("No application was found for the selected candidate. Please select a candidate from an existing application.")
+                else:
+                    payload = {
+                        "application_id": application_id,
+                        "candidate_id": candidate_id,
+                        "job_id": job_id,
+                        "date": date.isoformat(),
+                        "time": time.strftime("%H:%M"),
+                        "round": stage,
+                        "recruiter_name": interviewer,
+                        "meeting_link": meet_link,
+                    }
+                    res = api_client.schedule_interview(payload)
+                    if res:
+                        st.toast("Interview successfully scheduled!", icon="🎉")
+                        st.rerun()
 
     # 2. Log Feedback Notes & Recommendation
     if st.session_state.selected_interview_id:

@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import time
+from frontend.components.file_uploader import file_uploader_simple
 
 def render_upload_resume():
     """Renders Section 4: Upload Resume Area Component."""
@@ -16,11 +17,11 @@ def render_upload_resume():
     with st.container(border=True):
         st.markdown("<p style='font-size: 0.88rem; color: #475569; margin-bottom: 12px;'>Upload an applicant's resume file to run AI matching against the job description.</p>", unsafe_allow_html=True)
         
-        # Streamlit Native File Uploader (styled by Custom CSS rules)
-        uploaded_file = st.file_uploader(
-            label="Upload candidate resume in PDF, DOCX, or DOC format",
-            type=["pdf", "docx", "doc"],
-            label_visibility="collapsed",
+        # Custom File Uploader Component
+        uploaded_file = file_uploader_simple(
+            label="Drag and drop resume here",
+            accepted_types=["pdf", "docx", "doc"],
+            max_size_mb=200,
             key="resume_file_uploader_restruct"
         )
         

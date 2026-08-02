@@ -1,4 +1,5 @@
-import streamlit.components.v1 as components
+import streamlit as st
+import base64
 
 def render_ai_assistant() -> None:
     """
@@ -489,4 +490,9 @@ def render_ai_assistant() -> None:
     </html>
     """
     
-    components.html(html_payload, height=0, width=0)
+    st.components.v1.html(
+        html_payload,
+        height=0,
+        width=0,
+        scrolling=False,
+    )

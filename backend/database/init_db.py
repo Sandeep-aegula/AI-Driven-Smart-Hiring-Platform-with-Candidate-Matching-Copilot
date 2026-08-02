@@ -19,7 +19,7 @@ from sqlalchemy import inspect, text
 
 from backend.database.base import Base
 from backend.database.session import engine
-from backend.database.schema_migrations import ensure_workflow_schema, ensure_onboarding_schema
+from backend.database.schema_migrations import ensure_all_schemas
 
 # Import all models so they register on Base.metadata before create_all().
 import backend.models.entities  # noqa: F401
@@ -32,8 +32,7 @@ async def initialize_database() -> None:
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
 
-    await ensure_workflow_schema()
-    await ensure_onboarding_schema()
+    await ensure_all_schemas()
 
     async with engine.connect() as connection:
         table_names = await connection.run_sync(

@@ -131,6 +131,39 @@ class CommunicationDraftRequest(BaseModel):
     reply_to_email: str = ""
 
 
+class CommunicationDraftGenerateRequest(BaseModel):
+    regenerate: bool = False
+
+
+class CommunicationDraftUpdateRequest(BaseModel):
+    subject: str
+    body: str
+
+
+class CommunicationBulkDraftRequest(BaseModel):
+    communication_ids: list[int] = Field(default_factory=list)
+    regenerate: bool = False
+
+
+class CommunicationDraftResponse(BaseModel):
+    communication_id: int
+    interview_id: int
+    candidate_id: int
+    candidate_name: str
+    recipient_email: str
+    subject: str
+    body: str
+    status: str
+    generated_at: str
+    job_id: int | None = None
+    job_title: str = ""
+    round_name: str = ""
+    interview_mode: str = ""
+    interview_date: str = ""
+    interview_time: str = ""
+    timezone: str = ""
+
+
 class CommunicationSendRequest(BaseModel):
     candidate_id: int
     subject: str
@@ -167,6 +200,33 @@ class EmailRecord(BaseModel):
     sender_name: str = ""
     reply_to_email: str = ""
     draft_saved: bool = False
+from pydantic import field_validator
+from typing import Literal
+
+
+class InterviewDecisionRequest(BaseModel):
+    decision: Literal["selected", "rejected", "hold", "next_round"]
+    feedback: dict | None = None
+    notes: str | None = None
+
+    @field_validator("decision", mode="before")
+    @classmethod
+    def normalize_decision(cls, v):
+        if isinstance(v, str):
+            return v.strip().lower().replace(" ", "_")
+        return v
+
+
+class InterviewDecisionResponse(BaseModel):
+    interview_id: int
+    application_id: int
+    decision: str
+    status: str
+    onboarding_id: int | None = None
+    communication_id: int | None = None
+    next_interview_id: int | None = None
+    model_config = ConfigDict(from_attributes=True)
+
 
 class ApplicationCreate(BaseModel):
     candidate_id: int
@@ -227,18 +287,22 @@ class ScreeningResponse(BaseModel):
 class InterviewCreate(BaseModel):
     candidate_id: int
     job_id: int
+    application_id: int
     date: str
     time: str
+    timezone: str = "UTC"
     duration: int = 60
     round: str
+    instructions: str = ""
     type: str = "Online"
     meeting_platform: str = "Google Meet"
     meeting_link: str = ""
+    location: str | None = None
+    interviewer_designation: str = ""
+    invitation_email_status: str = "pending"
     panel_members: list[str] = Field(default_factory=list)
     recruiter_name: str = ""
-    instructions: str = ""
-    required_documents: list[str] = Field(default_factory=list)
-    timezone: str = "UTC"
+
 
 
 class InterviewFeedback(BaseModel):
@@ -324,6 +388,9 @@ class EmployeeBase(BaseModel):
     notes: list[dict] = Field(default_factory=list)
     resume_id: int | None = None
     candidate_id: int | None = None
+    application_id: int | None = None
+    job_id: int | None = None
+    onboarding_id: int | None = None
 
 
 class OnboardingDocumentBase(BaseModel):
@@ -357,7 +424,7 @@ class OnboardingDocumentRead(OnboardingDocumentBase):
 class OnboardingDocumentRequirementBase(BaseModel):
     document_type: str
     document_name: str
-    is_required: bool = True
+    required: bool = True
     display_order: int = 0
 
 
@@ -376,6 +443,8 @@ class OnboardingBase(BaseModel):
     designation: str
     joining_date: str
     status: OnboardingStatus
+    selected_at: datetime | None = None
+    ready_for_onboarding: bool = False
 
 
 class OnboardingCreate(OnboardingBase):
@@ -390,6 +459,8 @@ class OnboardingRead(OnboardingBase):
     candidate: CandidateRead
     job: JobRead
     document_requirements: list[OnboardingDocumentRequirementRead] = Field(default_factory=list)
+    application_id: int | None = None
     created_at: datetime
     updated_at: datetime
+    completed_at: datetime | None = None
     completed_at: datetime | None = None

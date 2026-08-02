@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 from frontend.components import api_client
 from frontend.services.cache import get_jobs_cached
+from frontend.utils.constants import SHORTLISTABLE_CANDIDATE_STATUSES
 
 
 logger = logging.getLogger(__name__)
@@ -150,6 +151,16 @@ def _render_candidates_list():
                 st.rerun()
     with c3:
         shortlist_disabled = len(selected_rows) == 0
+        # Check if any selected candidates are in non-shortlistable status
+        non_shortlistable_selected = False
+        if selected_rows:
+            for r in selected_rows:
+                candidate_status = df.iloc[r]["Status"]
+                if candidate_status not in SHORTLISTABLE_CANDIDATE_STATUSES:
+                    non_shortlistable_selected = True
+                    break
+        if non_shortlistable_selected:
+            shortlist_disabled = True
         shortlist_label = (
             f"Shortlist Selected ({len(selected_rows)})" if selected_rows else "Shortlist Selected"
         )
@@ -157,6 +168,7 @@ def _render_candidates_list():
             shortlist_label,
             disabled=shortlist_disabled,
             width="stretch",
+            help="Cannot shortlist candidates that are already Hired, Rejected, Shortlisted, or Interviewed" if non_shortlistable_selected else None,
         ):
             selected_app_ids = [int(df.iloc[r]["App ID"]) for r in selected_rows]
             with st.spinner(f"Shortlisting {len(selected_app_ids)} candidate(s)..."):
@@ -477,12 +489,14 @@ def _render_candidate_profile(candidate_id: int):
                     )
                     if st.button("Send Email", type="primary"):
                         res = api_client.send_candidate_email(candidate_id, subj, body)
-                        if res:
+                        if res and res.get("success"):
                             st.success("Email sent and saved to history.")
                             st.session_state.pop(subj_key, None)
                             st.session_state.pop(body_key, None)
                             api_client.clear_candidates_cache()
                             st.rerun()
+                        elif res:
+                            st.error(res.get("message") or res.get("error_message") or "Email service failed to send the message.")
 
             st.markdown("---")
             st.markdown("#### Email History")

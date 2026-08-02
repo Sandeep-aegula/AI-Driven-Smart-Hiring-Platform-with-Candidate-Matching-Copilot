@@ -3,6 +3,7 @@ from __future__ import annotations
 import streamlit as st
 from frontend.components import api_client
 from frontend.services.cache import get_jobs_cached
+from frontend.components.file_uploader import file_uploader_simple
 
 
 def render_onboarding():
@@ -40,9 +41,12 @@ def render_onboarding():
 
     # Calculate summary metrics
     total_candidates = len(onboarding_candidates)
-    docs_pending = sum(1 for c in onboarding_candidates if c.get("completion_percentage", 0) < 100)
-    docs_verified = sum(1 for c in onboarding_candidates if c.get("completion_percentage", 0) >= 100)
-    ready_count = sum(1 for c in onboarding_candidates if c.get("completion_percentage", 0) >= 100)
+    docs_pending = sum(
+        max((c.get("total_required", 0) or 0) - (c.get("verified_count", 0) or 0), 0)
+        for c in onboarding_candidates
+    )
+    docs_verified = sum(c.get("verified_count", 0) or 0 for c in onboarding_candidates)
+    ready_count = sum(1 for c in onboarding_candidates if c.get("ready_for_onboarding"))
 
     # Summary cards
     col1, col2, col3, col4 = st.columns(4)
@@ -95,43 +99,18 @@ def render_onboarding():
         filtered_candidates = [c for c in filtered_candidates if c.get("job_id") == selected_job]
     if status_filter != "All":
         filtered_candidates = [c for c in filtered_candidates if c.get("status") == status_filter]
+    else:
+        # Exclude completed onboarding records from the 'All' view by default
+        filtered_candidates = [c for c in filtered_candidates if c.get("status") != "Onboarding Completed"]
+
     if verif_filter == "Complete":
-        filtered_candidates = [c for c in filtered_candidates if c.get("completion_percentage", 0) >= 100]
+        filtered_candidates = [c for c in filtered_candidates if c.get("verification_status") == "Complete" or c.get("ready_for_onboarding")]
     elif verif_filter == "Incomplete":
-        filtered_candidates = [c for c in filtered_candidates if c.get("completion_percentage", 0) < 100]
+        filtered_candidates = [c for c in filtered_candidates if c.get("verification_status") != "Complete" and not c.get("ready_for_onboarding")]
 
     # Display candidates
     if not filtered_candidates:
         st.info("No candidates are currently available for onboarding.")
-
-        # Option to create onboarding for testing
-        st.markdown("---")
-        st.subheader("Create Onboarding Record (Testing)")
-
-        with st.form("create_onboarding_form"):
-            cand_col1, cand_col2, cand_col3 = st.columns(3)
-            with cand_col1:
-                cand_name = st.text_input("Candidate Name")
-                cand_email = st.text_input("Candidate Email")
-            with cand_col2:
-                cand_phone = st.text_input("Phone")
-                cand_job = st.selectbox("Job", options=[j["id"] for j in jobs], format_func=lambda x: next((j["title"] for j in jobs if j["id"] == x), "Select Job"))
-            with cand_col3:
-                dept = st.text_input("Department")
-                desig = st.text_input("Designation")
-
-            joining_date = st.date_input("Joining Date")
-
-            create_submit = st.form_submit_button("Create Onboarding Record")
-
-            if create_submit:
-                if cand_name and cand_email and cand_job:
-                    # Find or create a candidate (for demo, create basic)
-                    # In real app, select from existing candidates
-                    st.warning("Please use the Candidates tab to select an approved candidate for onboarding.")
-                else:
-                    st.error("Please fill in required fields.")
-
         return
 
     # Candidate list table
@@ -140,7 +119,7 @@ def render_onboarding():
     # Display as table
     for candidate in filtered_candidates:
         with st.container():
-            cand_col1, cand_col2, cand_col3, cand_col4, cand_col5, cand_col6 = st.columns([2, 2, 1.5, 1.5, 1, 1])
+            cand_col1, cand_col2, cand_col3, cand_col4, cand_col5, cand_col6, cand_col7, cand_col8 = st.columns([2.1, 2, 1.5, 1.25, 1.1, 1.1, 1.1, 1])
 
             with cand_col1:
                 st.markdown(f"**{candidate.get('candidate_name', 'N/A')}**")
@@ -149,6 +128,13 @@ def render_onboarding():
                 st.markdown(f"{candidate.get('job_title', 'N/A')}")
                 st.caption(f"{candidate.get('department', '')} | {candidate.get('designation', '')}")
             with cand_col3:
+                st.markdown(f"{candidate.get('candidate_phone', 'N/A')}")
+                st.caption("Phone")
+            with cand_col4:
+                selected_date = candidate.get('selected_date') or candidate.get('created_at') or 'N/A'
+                st.markdown(f"{selected_date[:10] if isinstance(selected_date, str) and len(selected_date) >= 10 else selected_date}")
+                st.caption("Selected Date")
+            with cand_col5:
                 status = candidate.get('status', 'Pending')
                 status_emoji = {
                     'Pending': '⏳',
@@ -161,14 +147,16 @@ def render_onboarding():
                     'Onboarding Completed': '🏁',
                 }.get(status, '📋')
                 st.markdown(f"{status_emoji} {status}")
-            with cand_col4:
+            with cand_col6:
+                verification = candidate.get('verification_status', 'Incomplete')
+                st.markdown(f"**{verification}**")
+                st.caption("Verification")
+            with cand_col7:
                 pct = candidate.get('completion_percentage', 0)
                 st.progress(pct / 100)
                 st.caption(f"{pct}% Complete")
-            with cand_col5:
-                st.markdown(f"**Required:** {candidate.get('total_required', 0)}")
-                st.caption(f"Verified: {candidate.get('verified_count', 0)}")
-            with cand_col6:
+                st.caption(f"Required: {candidate.get('total_required', 0)} | Verified: {candidate.get('verified_count', 0)}")
+            with cand_col8:
                 if st.button("View Details", key=f"view_{candidate['id']}"):
                     st.session_state["selected_onboarding_id"] = candidate["id"]
                     st.session_state["onboarding_view"] = "details"
@@ -215,6 +203,7 @@ def _render_onboarding_details(onboarding_id: int):
     with info_col3:
         st.markdown("**Onboarding Information**")
         st.write(f"📅 Joining: {details['joining_date'] or 'Not set'}")
+        st.write(f"🗓️ Selected: {details.get('selected_date') or 'Not set'}")
         st.write(f"🏢 Dept: {details['department']}")
         st.write(f"📋 Role: {details['designation']}")
 
@@ -239,6 +228,18 @@ def _render_onboarding_details(onboarding_id: int):
             st.success("🎯 Ready for Onboarding")
         else:
             st.warning(f"⏳ {progress.get('completion_percentage', 0)}% Complete")
+
+    if details.get("status") != "Onboarding Completed":
+        complete_disabled = not ready or details.get("status") == "Onboarding Completed"
+        if st.button("Complete Onboarding", width="stretch", type="primary", disabled=complete_disabled):
+            result = api_client.complete_onboarding(details["id"])
+            if result and result.get("status_code") == 200:
+                st.success("Onboarding completed and employee created.")
+                st.rerun()
+            elif result:
+                st.error(result.get("message") or "Failed to complete onboarding")
+            else:
+                st.error("Failed to complete onboarding")
 
     st.divider()
 
@@ -315,9 +316,10 @@ def _render_onboarding_details(onboarding_id: int):
             # Document upload section
             with req_col3:
                 if req["current_status"] in ["Missing", "Rejected", "Re-upload Requested", None]:
-                    uploaded_file = st.file_uploader(
-                        "Upload Document",
-                        type=["pdf", "png", "jpg", "jpeg", "docx"],
+                    uploaded_file = file_uploader_simple(
+                        label="Drag and drop document here",
+                        accepted_types=["pdf", "png", "jpg", "jpeg", "docx"],
+                        max_size_mb=200,
                         key=f"upload_{req['requirement_id']}"
                     )
                     if uploaded_file:
