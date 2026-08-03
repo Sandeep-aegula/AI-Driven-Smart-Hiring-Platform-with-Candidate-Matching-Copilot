@@ -1194,13 +1194,13 @@ def render_hr_portal():
 
         render_resume_management()
 
-    # elif page == "AI Screening":
+    elif page == "AI Screening":
 
-    #     from frontend.components.ai_screening import (
-    #         render_ai_screening
-    #     )
+        from frontend.components.ai_screening import (
+            render_ai_screening
+        )
 
-    #     render_ai_screening()
+        render_ai_screening()
 
     elif page == "Interviews":
 

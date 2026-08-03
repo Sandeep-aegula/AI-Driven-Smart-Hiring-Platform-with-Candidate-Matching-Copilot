@@ -144,10 +144,13 @@ def save_interview_draft(comm_id, subject, body):
     try:
         resp = httpx.put(
             f"{API_URL}/communications/{comm_id}/draft",
-            json={"subject": subject, "message": body},
+            json={"subject": subject, "body": body},
             timeout=15.0,
         )
-        return resp.json() if resp.status_code == 200 else None
+        if resp.status_code == 200:
+            return resp.json()
+        logger.error(f"Save draft failed with status {resp.status_code}: {resp.text}")
+        return None
     except Exception as e:
         logger.error(f"Error saving interview draft: {e}")
         return None
