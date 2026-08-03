@@ -1,3 +1,8 @@
+from frontend.components.api_client import get_public_job_details, submit_public_application
+import streamlit as st
+
+
+
 def _render_job_detail_page() -> None:
     job_id = st.session_state.get("selected_public_job")
     if not job_id:
@@ -5,7 +10,6 @@ def _render_job_detail_page() -> None:
         if st.button("Back to Careers", type="primary"):
             st.session_state.public_page = "Careers"
             st.rerun()
-        _render_public_footer()
         return
     job = get_public_job_details(job_id)
     if not job:
@@ -13,7 +17,6 @@ def _render_job_detail_page() -> None:
         if st.button("Back to Careers", type="primary"):
             st.session_state.public_page = "Careers"
             st.rerun()
-        _render_public_footer()
         return
 
     title = job.get("title") or "Role"
@@ -101,11 +104,10 @@ def _render_job_detail_page() -> None:
         st.markdown("**Application Information**")
         cover_letter = st.text_area("Cover Letter (optional)", height=100)
         st.markdown("**Resume**")
-        resume_file = file_uploader_simple(
-            label="Upload your resume (PDF or DOCX)",
-            accepted_types=["pdf", "docx"],
-            max_size_mb=20,
-            key=f"public_resume_{job_id}",
+        resume_file = st.file_uploader(
+            "Upload Resume *",
+            type=["pdf", "docx"],
+            accept_multiple_files=False,
         )
         consent = st.checkbox("I consent to the processing of my application data.")
         submitted = st.form_submit_button("Submit Application", type="primary", use_container_width=True)
@@ -147,4 +149,4 @@ def _render_job_detail_page() -> None:
         st.session_state.public_page = "Careers"
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
-    _render_public_footer()
+    # _render_public_footer()

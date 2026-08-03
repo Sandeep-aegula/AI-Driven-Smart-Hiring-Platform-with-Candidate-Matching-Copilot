@@ -1,6 +1,6 @@
 import streamlit as st
 
-def render_public_footer():
+def _render_public_footer():
     """Render the shared footer for public pages."""
     st.markdown(
         """

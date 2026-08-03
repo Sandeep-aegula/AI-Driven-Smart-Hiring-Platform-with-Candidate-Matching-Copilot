@@ -1,3 +1,8 @@
+import streamlit as st
+from frontend.services.cache import get_public_jobs
+
+
+
 def _render_contact_page() -> None:
     CK = PUBLIC_CONTENT["contact"]
     st.markdown(

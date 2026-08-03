@@ -32,6 +32,45 @@ def _load_css_files(css_revision: float = 0) -> str:
     return combined
 
 
+# CSS that removes Streamlit's default chrome so the public marketing
+# site renders full-width without extra page padding / side gutters.
+_PUBLIC_CHROME_RESET = """
+/* Remove Streamlit's default page padding for the public website */
+[data-testid="stMainBlockContainer"] {
+    max-width: none !important;
+    padding-top: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 0 !important;
+}
+/* Older Streamlit selector fallback */
+.main .block-container {
+    max-width: none !important;
+    padding-top: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 0 !important;
+}
+/* Remove unnecessary top spacing */
+[data-testid="stHeader"] {
+    background: transparent !important;
+}
+/* Keep website sections full width */
+.hp-section,
+.hp-hero,
+.hp-stats,
+.hp-footer {
+    width: 100%;
+}
+/* Keep actual content centered */
+.hp-container {
+    width: min(1180px, calc(100% - 40px));
+    margin-left: auto;
+    margin-right: auto;
+}
+"""
+
+
 @st.cache_resource(show_spinner=False)
 def _load_public_css(public_css_revision: float = 0) -> str:
     """Read the public-portal marketing CSS once per server process."""
@@ -47,18 +86,15 @@ def _load_public_css(public_css_revision: float = 0) -> str:
 
 def inject_css_once():
     """
-    Inject the combined HR-portal CSS bundle into the page on every rerun.
+    Inject the combined CSS bundle into the page on every rerun.
     """
     css_dir = os.path.normpath(
         os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "css")
     )
-    try:
-        css_revision = max(
-            (os.path.getmtime(os.path.join(css_dir, name)) for name in os.listdir(css_dir)),
-            default=0,
-        )
-    except Exception:
-        css_revision = 0
+    css_revision = max(
+        (os.path.getmtime(os.path.join(css_dir, name)) for name in os.listdir(css_dir)),
+        default=0,
+    )
     css = _load_css_files(css_revision)
     if css:
         st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
@@ -70,7 +106,10 @@ def inject_css_once():
 
 def inject_public_css_once():
     """
-    Inject the public-portal marketing CSS (navbar, hero, sections, footer).
+    Inject the public-portal marketing CSS (navbar, hero, sections, footer)
+    plus a small reset that removes Streamlit's default page padding so the
+    marketing site renders full-width.
+
     Idempotent — safe to call on every rerun.
     """
     _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -82,16 +121,19 @@ def inject_public_css_once():
     except Exception:
         rev = 0
     css = _load_public_css(rev)
-    if css:
-        st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+    bundle = _PUBLIC_CHROME_RESET + (css or "")
+    if bundle.strip():
+        st.markdown(f"<style>{bundle}</style>", unsafe_allow_html=True)
     st.markdown(
         '<link rel="preconnect" href="https://fonts.googleapis.com">'
         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-        '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">'
-        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">',
-        unsafe_allow_html=True
+        '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">',
+        unsafe_allow_html=True,
     )
-
+    st.markdown(
+        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">',
+        unsafe_allow_html=True,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -138,37 +180,16 @@ def get_jobs_cached(search="", department="All", status="All", sort_by="updated_
 
 
 @st.cache_data(ttl=30, show_spinner=False)
-def get_candidates_cached(search="", status="All", skill="All", job_id=None):
-    """Cached candidate list. Refreshes every 30 seconds. Returns a list of candidate dictionaries."""
-    def _normalize_response(data):
-        """Normalize API response to list of candidates."""
-        if isinstance(data, list):
-            return data
-        if isinstance(data, dict):
-            # Check for items first (from get_candidates api_client)
-            items = data.get("items")
-            if isinstance(items, list):
-                return items
-            # Check other common keys
-            for key in ("data", "candidates", "results"):
-                val = data.get(key)
-                if isinstance(val, list):
-                    return val
-        return []
+def get_candidates_cached(search="", status="All", skill="All"):
+    """Cached candidate list. Refreshes every 30 seconds."""
     try:
         import httpx
-        params = {"search": search, "status": status, "skill": skill}
-        if job_id is not None:
-            params["job_id"] = job_id
         resp = httpx.get(
             "http://localhost:8000/candidates",
-            params=params,
-            timeout=5.0,
+            params={"search": search, "status": status, "skill": skill},
+            timeout=5.0
         )
-        if resp.status_code != 200:
-            return []
-        data = resp.json()
-        return _normalize_response(data)
+        return resp.json() if resp.status_code == 200 else []
     except Exception:
         return []
 
@@ -252,6 +273,21 @@ def cached_screen(candidate_id: str, job_id: str):
         return resp.json() if resp.status_code == 200 else None
     except Exception:
         return None
+
+
+@st.cache_data(ttl=60, show_spinner=False)
+def get_public_jobs(search="", department="All", location="All", employment_type="All"):
+    """Cached public job listings. Refreshes every 60 seconds."""
+    try:
+        import httpx
+        resp = httpx.get(
+            "http://localhost:8000/public/jobs",
+            params={"search": search, "department": department, "location": location, "employment_type": employment_type},
+            timeout=10.0,
+        )
+        return resp.json() if resp.status_code == 200 else []
+    except Exception:
+        return []
 
 
 def invalidate_jobs():

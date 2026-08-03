@@ -1,3 +1,7 @@
+import streamlit as st
+from frontend.components.api_client import get_public_jobs
+
+
 def render_careers_page(C, jobs=None):
     """Render the Careers page content."""
     J = C["featured_jobs"]
@@ -35,8 +39,12 @@ def render_careers_page(C, jobs=None):
     loc_api = "All" if location == "All Locations" else location
     etype_api = "All" if employment_type == "All Types" else employment_type
 
-    with st.spinner("Loading job listings..."):
-        all_jobs = get_public_jobs(search="", department=dept_api, location=loc_api, employment_type=etype_api) or []
+    all_jobs = []
+    try:
+        with st.spinner("Loading job listings..."):
+            all_jobs = get_public_jobs(search="", department=dept_api, location=loc_api, employment_type=etype_api) or []
+    except Exception:
+        all_jobs = []
 
     if not all_jobs:
         st.markdown(
@@ -45,62 +53,19 @@ def render_careers_page(C, jobs=None):
         )
         return
 
-    # Build all job cards first, then render once
-    job_cards = ""
+    # Render job cards using the same pattern as _render_featured_jobs_section
     for i, job in enumerate(all_jobs):
         title = job.get("title") or "Role"
         dept = job.get("department") or ""
         loc = job.get("location") or ""
         etype = job.get("employment_type") or ""
         desc = job.get("short_description") or job.get("description") or ""
-        desc = (desc[:140] + "...") if len(desc) > 140 else desc
-        job_id = job.get("id", i)
-        job_cards += f"""
-        <div class="hp-job-card">
-          <div class="hp-job-header">
-            <h3>{title}</h3>
-            <span class="hp-job-badge">{etype}</span>
-          </div>
-          <div class="hp-job-meta">
-            <div class="hp-job-meta-item">
-              <span class="hp-job-meta-icon">🏢</span>
-              <span>{dept}</span>
-            </div>
-            <div class="hp-job-meta-item">
-              <span class="hp-job-meta-icon">📍</span>
-              <span>{loc}</span>
-            </div>
-            <div class="hp-job-meta-item">
-              <span class="hp-job-meta-icon">💼</span>
-              <span>{etype}</span>
-            </div>
-          </div>
-          <div class="hp-job-description">
-            <p>{desc}</p>
-          </div>
-          <div class="hp-job-footer">
-            <button class="hp-btn hp-btn-primary hp-btn-sm" onclick="window.location.href='#apply'">Apply Now</button>
-          </div>
-        </div>
-        """
-
-    st.markdown(
-        f"""
-        <section class="hp-section hp-section-alt" id="featured-jobs">
-          <div class="hp-container">
-            <div class="hp-section-header">
-              <div class="hp-section-tag">{J["tag"]}</div>
-              <h2>{J["title"]}</h2>
-              <p>{J["subtitle"]}</p>
-            </div>
-            <div class="hp-jobs-grid" id="featured-jobs-grid">
-              {job_cards}
-            </div>
-            <div class="hp-jobs-cta">
-              <a href="#careers" class="hp-btn hp-btn-secondary hp-btn-lg">View All Open Positions</a>
-            </div>
-          </div>
-        </section>
-        """,
-        unsafe_allow_html=True,
-    )
+        desc = (desc[:140] + "…") if len(desc) > 140 else desc
+        with st.container(border=True):
+            st.markdown(f"**{title}**")
+            st.markdown(f"<small><i>{dept} · {loc} · {etype}</i></small>", unsafe_allow_html=True)
+            st.caption(desc)
+            if st.button("View Job", key=f"career_job_{job.get('id')}_{i}", type="primary"):
+                st.session_state.selected_public_job = job.get("id")
+                st.session_state.public_page = "JobDetail"
+                st.rerun()

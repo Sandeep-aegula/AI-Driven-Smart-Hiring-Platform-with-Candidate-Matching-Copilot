@@ -55,56 +55,6 @@ def login_user(email, password):
     return None
 
 
-def logout_user() -> bool:
-    """
-    Call the backend logout endpoint (if available) and always report success
-    so the caller can clear local session state. JWT is client-side stored, so
-    a backend call is best-effort; we always return True to unblock the UI.
-    """
-    import streamlit as st
-
-    token = st.session_state.get("token")
-    headers = {"Authorization": f"Bearer {token}"} if token else {}
-    cleared = False
-    try:
-        resp = _orig_post(f"{API_URL}/auth/logout", headers=headers, timeout=5.0)
-        cleared = resp.status_code < 500
-    except Exception:
-        cleared = True  # offline-safe: still wipe local state
-    return cleared
-
-
-def clear_hr_session_state() -> None:
-    """
-    Remove ALL authentication- and HR-portal-related keys from st.session_state.
-    Leaves intact public page state so the user lands cleanly on the public site.
-    """
-    import streamlit as st
-
-    auth_keys = [
-        "is_authenticated",
-        "token",
-        "hr_email",
-        "hr_name",
-        "current_page",
-        "search_query",
-        "selected_public_job",
-        "hr_role",
-    ]
-    for key in auth_keys:
-        if key in st.session_state:
-            try:
-                del st.session_state[key]
-            except Exception:
-                st.session_state[key] = None
-    try:
-        st.query_params.clear()
-    except Exception:
-        pass
-    st.session_state.app_mode = "public"
-    st.session_state.public_page = "Home"
-
-
 # --- CACHED READ-ONLY API CALLS ---
 
 @st.cache_data(ttl=30, show_spinner=False)
@@ -224,15 +174,10 @@ def send_candidate_email(candidate_id, subject, body):
     try:
         payload = {"subject": subject, "body": body}
         resp = httpx.post(f"{API_URL}/candidates/{candidate_id}/send-email", json=payload)
-        try:
-            data = resp.json()
-        except Exception:
-            data = {"success": False, "message": resp.text}
-        data["status_code"] = resp.status_code
-        return data
+        return resp.json() if resp.status_code == 200 else None
     except Exception as e:
         logger.error(f"Error sending email: {e}")
-        return {"success": False, "status_code": 500, "message": str(e)}
+        return None
 
 def get_candidate_email_history(candidate_id):
     try:
@@ -296,75 +241,17 @@ def generate_communication_email(payload):
         return None
 
 
-def generate_interview_draft(communication_id: int, regenerate: bool = False):
-    try:
-        payload = {"regenerate": regenerate}
-        resp = httpx.post(f"{API_URL}/communications/{communication_id}/generate-draft", json=payload, timeout=60.0)
-        return resp.json() if resp.status_code == 200 else None
-    except Exception as e:
-        logger.error(f"Error generating interview draft: {e}")
-        return None
-
-
-def generate_bulk_interview_drafts(communication_ids: list[int], regenerate: bool = False):
-    try:
-        payload = {"communication_ids": communication_ids, "regenerate": regenerate}
-        resp = httpx.post(f"{API_URL}/communications/generate-drafts", json=payload, timeout=120.0)
-        return resp.json() if resp.status_code in (200, 207) else None
-    except Exception as e:
-        logger.error(f"Error generating bulk interview drafts: {e}")
-        return None
-
-
-def save_interview_draft(communication_id: int, subject: str, body: str):
-    try:
-        payload = {"subject": subject, "body": body}
-        resp = httpx.put(f"{API_URL}/communications/{communication_id}/draft", json=payload, timeout=30.0)
-        return resp.json() if resp.status_code == 200 else None
-    except Exception as e:
-        logger.error(f"Error saving interview draft: {e}")
-        return None
-
-
-def cancel_interview_communication(communication_id: int):
-    try:
-        resp = httpx.put(f"{API_URL}/communications/{communication_id}/cancel", timeout=30.0)
-        return resp.json() if resp.status_code == 200 else None
-    except Exception as e:
-        logger.error(f"Error cancelling interview communication: {e}")
-        return None
-
-
-def send_interview_draft(communication_id: int):
-    try:
-        resp = httpx.post(f"{API_URL}/communications/{communication_id}/send", timeout=30.0)
-        try:
-            data = resp.json()
-        except Exception:
-            data = {"success": False, "message": resp.text}
-        data["status_code"] = resp.status_code
-        clear_candidates_cache()
-        clear_interviews_cache()
-        return data
-    except Exception as e:
-        logger.error(f"Error sending interview draft: {e}")
-        return {"success": False, "status_code": 500, "message": str(e)}
-
-
 def send_communication_email(payload):
     try:
         resp = httpx.post(f"{API_URL}/communications/send", json=payload, timeout=10.0)
-        try:
-            data = resp.json()
-        except Exception:
-            data = {"success": False, "message": resp.text}
-        data["status_code"] = resp.status_code
-        clear_candidates_cache()
-        clear_interviews_cache()
-        return data
+        if resp.status_code == 200:
+            clear_candidates_cache()
+            clear_interviews_cache()
+            return resp.json()
+        return None
     except Exception as e:
         logger.error(f"Error sending communication email: {e}")
-        return {"success": False, "status_code": 500, "message": str(e)}
+        return None
 
 
 def send_communication_email_with_attachment(payload, uploaded_file):
@@ -372,17 +259,14 @@ def send_communication_email_with_attachment(payload, uploaded_file):
         data = {k: str(v) if v is not None else "" for k, v in payload.items()}
         files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
         resp = httpx.post(f"{API_URL}/communications/send-multipart", data=data, files=files, timeout=30.0)
-        try:
-            response_data = resp.json()
-        except Exception:
-            response_data = {"success": False, "message": resp.text}
-        response_data["status_code"] = resp.status_code
-        clear_candidates_cache()
-        clear_interviews_cache()
-        return response_data
+        if resp.status_code == 200:
+            clear_candidates_cache()
+            clear_interviews_cache()
+            return resp.json()
+        return None
     except Exception as e:
         logger.error(f"Error sending communication email with attachment: {e}")
-        return {"success": False, "status_code": 500, "message": str(e)}
+        return None
 
 
 def save_communication_draft(payload):
@@ -411,17 +295,15 @@ def send_bulk_communications(communication_ids: list[int], subject: str, body: s
             json=payload,
             timeout=60.0,
         )
-        try:
-            data = resp.json()
-        except Exception:
-            data = {"success": False, "message": resp.text, "results": []}
-        data["status_code"] = resp.status_code
-        clear_candidates_cache()
-        clear_interviews_cache()
-        return data
+        if resp.status_code == 200:
+            clear_candidates_cache()
+            clear_interviews_cache()
+            return resp.json()
+        logger.error(f"Bulk send failed with status {resp.status_code}: {resp.text}")
+        return None
     except Exception as e:
         logger.error(f"Error sending bulk communications: {e}")
-        return {"success": False, "status_code": 500, "message": str(e), "results": []}
+        return None
 
 # --- Resumes (New Resume Management) ---
 
@@ -611,7 +493,7 @@ def shortlist_bulk(application_ids: list[int]):
             json=application_ids,
             timeout=30.0,
         )
-        if resp.status_code in (200, 207):
+        if resp.status_code == 200:
             clear_candidates_cache()
             return resp.json()
         logger.error(f"Bulk shortlist failed with status {resp.status_code}: {resp.text}")
@@ -789,22 +671,13 @@ def reject_candidate(candidate_id):
         return None
 
 def schedule_interview(payload):
-    print("INTERVIEW REQUEST PAYLOAD:", payload)
     try:
         resp = httpx.post(f"{API_URL}/interviews", json=payload, timeout=5.0)
         resp.raise_for_status()
-        if resp.status_code in (200, 201):
+        if resp.status_code == 200:
             clear_interviews_cache()
             clear_candidates_cache()
             return resp.json()
-        return None
-    except httpx.HTTPStatusError as exc:
-        try:
-            detail = exc.response.json().get("detail", exc.response.text)
-        except Exception:
-            detail = exc.response.text
-        st.error(f"Unable to schedule interview: {detail}")
-        print("INTERVIEW API ERROR:", exc.response.status_code, exc.response.text)
         return None
     except Exception as e:
         st.error(f"Failed to schedule interview: {e}")
@@ -857,23 +730,12 @@ def add_interview_feedback(interview_id, feedback_payload):
     except Exception:
         return None
 
-def log_interview_decision(interview_id, decision, feedback=None, notes=None):
+def log_interview_decision(interview_id, decision):
     try:
-        payload = {"decision": decision}
-        if feedback is not None:
-            payload["feedback"] = feedback
-        if notes is not None:
-            payload["notes"] = notes
-        resp = httpx.put(f"{API_URL}/interviews/{interview_id}/decision", json=payload, timeout=5.0)
-        if resp.status_code == 200:
-            return {"success": True, "data": resp.json()}
-        else:
-            error_detail = resp.json().get("detail", resp.text) if resp.text else "Unknown error"
-            logger.error(f"Failed to log interview decision: {resp.status_code} - {error_detail}")
-            return {"success": False, "error": error_detail, "status_code": resp.status_code}
-    except Exception as e:
-        logger.error(f"Error logging interview decision: {e}")
-        return {"success": False, "error": str(e), "status_code": 500}
+        resp = httpx.put(f"{API_URL}/interviews/{interview_id}/decision", params={"decision": decision}, timeout=5.0)
+        return resp.json() if resp.status_code == 200 else None
+    except Exception:
+        return None
 
 def draft_interview_email(interview_id, email_mode):
     try:
@@ -1311,10 +1173,7 @@ def get_onboarding_candidates(search="", job_id=None, status="All", verification
         if job_id:
             params["job_id"] = job_id
         resp = httpx.get(f"{API_URL}/onboarding", params=params, timeout=10.0)
-        if resp.status_code != 200:
-            return []
-        data = resp.json()
-        return normalize_list_response(data)
+        return resp.json() if resp.status_code == 200 else []
     except Exception as e:
         logger.error(f"Error fetching onboarding candidates: {e}")
         return []
@@ -1356,34 +1215,11 @@ def create_onboarding(candidate_id, application_id, job_id, department="", desig
         resp = httpx.post(f"{API_URL}/onboarding", json=payload, timeout=10.0)
         if resp.status_code == 200:
             get_onboarding_candidates.clear()
-            get_onboarding_details.clear()
-            get_onboarding_progress.clear()
             return resp.json()
         return None
     except Exception as e:
         logger.error(f"Error creating onboarding: {e}")
         return None
-
-
-def select_candidate(application_id, reviewed_by="HR", selection_note=""):
-    """Select the candidate for onboarding after the final interview."""
-    try:
-        payload = {"reviewed_by": reviewed_by, "selection_note": selection_note}
-        resp = httpx.post(f"{API_URL}/applications/{application_id}/select", json=payload, timeout=30.0)
-        try:
-            data = resp.json()
-        except Exception:
-            data = {"message": resp.text}
-        data["status_code"] = resp.status_code
-        if resp.status_code == 200:
-            clear_candidates_cache()
-            clear_interviews_cache()
-            clear_onboarding_cache()
-            clear_employees_cache()
-        return data
-    except Exception as e:
-        logger.error(f"Error selecting candidate for onboarding: {e}")
-        return {"status_code": 500, "message": str(e)}
 
 
 def add_document_requirement(onboarding_id, document_type, document_name, required=True):
@@ -1522,29 +1358,6 @@ def request_document_reupload(document_id, reupload_message):
     except Exception as e:
         logger.error(f"Error requesting document re-upload: {e}")
         return None
-
-
-def complete_onboarding(onboarding_id, completed_by="HR"):
-    """Complete onboarding and create the employee record."""
-    try:
-        resp = httpx.post(
-            f"{API_URL}/onboarding/{onboarding_id}/complete",
-            data={"completed_by": completed_by},
-            timeout=30.0,
-        )
-        try:
-            data = resp.json()
-        except Exception:
-            data = {"message": resp.text}
-        data["status_code"] = resp.status_code
-        if resp.status_code == 200:
-            clear_onboarding_cache()
-            clear_employees_cache()
-            clear_candidates_cache()
-        return data
-    except Exception as e:
-        logger.error(f"Error completing onboarding: {e}")
-        return {"status_code": 500, "message": str(e)}
 
 
 def clear_onboarding_cache():

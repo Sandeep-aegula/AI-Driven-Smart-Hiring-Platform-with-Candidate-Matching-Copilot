@@ -1,3 +1,5 @@
+import streamlit as st
+
 def render_about_page(C):
     """Render the About Us page content."""
     A = C["about"]

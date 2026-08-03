@@ -1,16 +1,12 @@
 from __future__ import annotations
-import json
 
 import logging
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, HTTPException, Response
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from backend.core.config import settings
-from backend.core.constants import SHORTLISTABLE_APPLICATION_STATUSES
 from backend.schemas.entities import CandidateCreate, CandidateRead, CompareCandidatesRequest, EmailDraftRequest, EmailSendRequest, EmailRecord
 from backend.database.data_store import data_store
 from backend.services.ai_candidate_service import generate_ranking_explanation, analyze_skill_gap, compare_candidates
@@ -525,18 +521,24 @@ async def send_candidate_email(candidate_id: int, payload: EmailSendRequest):
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate not found")
 
+    # Actually send the email via SMTP (with Sent folder support)
+    email_sent = False
     recipient_email = candidate.get("email", "").strip()
-    send_result = {"success": False, "status_code": 500, "error_message": "Email service failed to send the message."}
     if recipient_email:
-        send_result = send_custom_email(
-            subject=payload.subject,
-            body=payload.body,
-            recipient=recipient_email,
-            sender=settings.smtp_from_email,
-        )
+        try:
+            email_sent = send_custom_email(
+                subject=payload.subject,
+                body=payload.body,
+                recipient=recipient_email,
+                sender=settings.smtp_from_email
+            )
+        except Exception as e:
+            logger.error(f"Failed to send email to {recipient_email}: {e}")
+            email_sent = False
 
-    status = "Sent" if send_result.get("success") else "Failed"
-    history = await data_store.add_email_history(
+    # Save to history regardless
+    status = "Sent" if email_sent else "Failed"
+    return await data_store.add_email_history(
         candidate_id,
         payload.subject,
         payload.body,
@@ -544,18 +546,6 @@ async def send_candidate_email(candidate_id: int, payload: EmailSendRequest):
         email_type=payload.email_type if hasattr(payload, 'email_type') else "",
         draft_saved=False
     )
-    if not send_result.get("success"):
-        return JSONResponse(
-            status_code=send_result.get("status_code", 502),
-            content={
-                "success": False,
-                "message": send_result.get("error_message", "Email service failed to send the message."),
-                "error_message": send_result.get("error_message", "Email service failed to send the message."),
-                "status": status,
-                "sent_at": history.get("sent_at", ""),
-            },
-        )
-    return history
 
 
 @router.get("/{candidate_id}/email-history", response_model=list[EmailRecord])
@@ -653,56 +643,48 @@ async def shortlist_candidates_bulk(application_ids: list[int]) -> dict:
 
     if not application_ids:
         raise HTTPException(status_code=400, detail="No application IDs provided")
+
     if len(application_ids) > 100:
         raise HTTPException(status_code=400, detail="Cannot shortlist more than 100 candidates at once")
 
-    logger.info(f"Bulk shortlist request received for {len(application_ids)} application IDs: {application_ids}")
-
-    updated_ids = []
-    failures = []
-    already_shortlisted_ids = []
+    results = {
+        "successful": [],
+        "failed": [],
+        "already_shortlisted": []
+    }
 
     async with get_db_session() as session:
         for app_id in application_ids:
-            logger.info(f"Processing application_id={app_id}")
             try:
                 # Get the application with candidate and job
                 stmt = select(Application).options(
                     selectinload(Application.candidate),
                     selectinload(Application.job)
                 ).where(Application.id == app_id)
+
                 result = await session.execute(stmt)
                 application = result.scalar_one_or_none()
 
                 if not application:
-                    error_msg = f"Application {app_id} not found"
-                    logger.warning(error_msg)
-                    failures.append({"id": app_id, "error": error_msg})
+                    results["failed"].append({
+                        "application_id": app_id,
+                        "error": "Application not found"
+                    })
                     continue
-
-                logger.info(
-                    f"Application {app_id}: candidate_id={application.candidate_id}, "
-                    f"current_status={application.status}, job_id={application.job_id}"
-                )
 
                 # Check if already shortlisted
                 if application.status == "shortlisted":
-                    logger.info(f"Application {app_id} already shortlisted, skipping")
-                    already_shortlisted_ids.append(app_id)
-                    continue
-
-                # Validate application is awaiting HR review
-                if application.status not in SHORTLISTABLE_APPLICATION_STATUSES:
-                    error_msg = f"Application {app_id} is in status '{application.status}', not awaiting HR review"
-                    logger.warning(error_msg)
-                    failures.append({"id": app_id, "error": error_msg})
+                    results["already_shortlisted"].append({
+                        "application_id": app_id,
+                        "candidate_id": application.candidate_id,
+                        "candidate_name": application.candidate.name
+                    })
                     continue
 
                 # Update application status
                 application.status = "shortlisted"
-                if application.candidate:
-                    application.candidate.status = "Shortlisted"
-                logger.info(f"Application {app_id}: status updated to 'shortlisted'")
+                application.candidate.status = "Shortlisted"
+                logger.info(f"Bulk shortlist: Candidate {application.candidate_id} shortlisted for application {app_id}")
 
                 # Check if communication record already exists
                 comm_stmt = select(Communication).where(
@@ -720,64 +702,45 @@ async def shortlist_candidates_bulk(application_ids: list[int]) -> dict:
                         job_id=application.job_id,
                         recruitment_round="Initial Screening",
                         status="pending",
-                        email=application.candidate.email if application.candidate else "",
-                        subject=f"Application Update: {application.job.title if application.job else 'Job'}",
-                        message=f"Dear {application.candidate.name if application.candidate else 'Candidate'},\n\nWe are pleased to inform you that your application for the position of {application.job.title if application.job else 'the position'} has been shortlisted for further consideration.",
+                        email=application.candidate.email,
+                        subject=f"Application Update: {application.job.title}",
+                        message=f"Dear {application.candidate.name},\n\nWe are pleased to inform you that your application for the position of {application.job.title} has been shortlisted for further consideration.",
                         queued_at=datetime.utcnow()
                     )
                     session.add(communication)
-                    logger.info(f"Communication queue record created for application {app_id}")
 
-                updated_ids.append(app_id)
-                logger.info(f"Successfully processed application {app_id}")
+                results["successful"].append({
+                    "application_id": app_id,
+                    "candidate_id": application.candidate_id,
+                    "candidate_name": application.candidate.name,
+                    "job_title": application.job.title if application.job else ""
+                })
+
+                logger.info(f"Bulk shortlist: Candidate {application.candidate_id} shortlisted for application {app_id}")
 
             except Exception as e:
-                error_msg = str(e)
-                logger.error(f"Bulk shortlist error for application {app_id}: {error_msg}", exc_info=True)
-                failures.append({"id": app_id, "error": error_msg})
+                logger.error(f"Bulk shortlist error for application {app_id}: {e}")
+                results["failed"].append({
+                    "application_id": app_id,
+                    "error": str(e)
+                })
 
-        try:
-            await session.commit()
-            logger.info(f"Transaction committed: {len(updated_ids)} updated, {len(failures)} failed")
-        except Exception as e:
-            logger.error(f"Transaction commit failed: {e}", exc_info=True)
-            await session.rollback()
-            raise HTTPException(status_code=500, detail=f"Database commit failed: {str(e)}")
+        await session.commit()
 
-    # Build response
-    requested_count = len(application_ids)
-    updated_count = len(updated_ids)
-    failed_count = len(failures)
-    total_processed = updated_count + failed_count + len(already_shortlisted_ids)
+    total_success = len(results["successful"]) + len(results["already_shortlisted"])
+    if len(results["failed"]) > 0:
+        # Partial success is acceptable
+        logger.warning(f"Bulk shortlist completed with {len(results['failed'])} failures")
 
-    logger.info(
-        f"Bulk shortlist complete: requested={requested_count}, updated={updated_count}, "
-        f"already_shortlisted={len(already_shortlisted_ids)}, failed={failed_count}"
-    )
-
-    response = {
-        "success": failed_count == 0,
-        "requested_count": requested_count,
-        "updated_count": updated_count,
-        "failed_count": failed_count,
-        "updated_ids": updated_ids,
-        "already_shortlisted_ids": already_shortlisted_ids,
-        "failures": failures,
+    return {
+        "success": True,
+        "message": f"Shortlisted {len(results['successful'])} candidates ({len(results['already_shortlisted'])} already shortlisted, {len(results['failed'])} failed)",
+        "results": results,
+        "total_processed": len(application_ids),
+        "total_successful": len(results["successful"]),
+        "total_already_shortlisted": len(results["already_shortlisted"]),
+        "total_failed": len(results["failed"])
     }
-
-    # Return appropriate HTTP status
-    if failed_count == 0 and updated_count > 0:
-        return response
-    elif updated_count > 0 and failed_count > 0:
-        # Partial success
-        from fastapi import Response
-        return Response(content=json.dumps(response), status_code=207, media_type="application/json")
-    elif updated_count == 0 and failed_count > 0:
-        # All failed
-        raise HTTPException(status_code=400, detail=f"All updates failed: {failures}")
-    else:
-        # No updates needed (all already shortlisted)
-        return response
 
 
 @router.get("/applications/{application_id}")

@@ -35,6 +35,13 @@ Important rules:
 
 import os
 import sys
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(ROOT)
+
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 import streamlit as st
 import textwrap
 from components.public_careers import render_careers_page
@@ -42,11 +49,11 @@ from components.public_job_details import _render_job_detail_page
 from components.public_about import render_about_page
 from components.public_contact import _render_contact_page
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.dirname(ROOT)
 
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
+def _flatten_html(html: str) -> str:
+    """Strip leading whitespace from every line so Streamlit's markdown
+    parser never mistakes indented HTML for a fenced code block."""
+    return "\n".join(line.lstrip() for line in html.strip().splitlines())
 
 
 # ============================================================
@@ -66,7 +73,9 @@ st.set_page_config(
 # ============================================================
 
 from frontend.services.app_state import AppState
-from frontend.services.cache import inject_css_once, inject_public_css_once
+# from frontend.services.cache import inject_css_once, inject_public_css_once
+from frontend.services.cache import inject_css_once
+
 from frontend.components.api_client import (
     get_public_jobs,
     get_public_job_details,
@@ -549,7 +558,7 @@ def _render_home_page() -> None:
 
 # Render the complete HTML
     st.markdown(
-        textwrap.dedent(features_html),
+        _flatten_html(features_html),
         unsafe_allow_html=True,
     )
 
@@ -608,7 +617,7 @@ def _render_home_page() -> None:
 
 # Render the complete HTML
     st.markdown(
-        textwrap.dedent(workflow_html),
+        _flatten_html(workflow_html),
         unsafe_allow_html=True,
     )
 
@@ -883,9 +892,9 @@ def render_company_website():
     if public_page == "Home":
         _render_home_page()
     elif public_page == "About Us":
-        render_about_page()
+        render_about_page(PUBLIC_CONTENT)
     elif public_page == "Careers":
-        render_careers_page()
+        render_careers_page(PUBLIC_CONTENT)
     elif public_page == "JobDetail":
         _render_job_detail_page()
     elif public_page == "Contact":
@@ -1167,8 +1176,8 @@ def main():
     app_mode = st.session_state.get("app_mode", "public")
 
     if app_mode in ("public", "hr_login"):
-        inject_public_css_once()
-    else:
+    #     inject_public_css_once()
+    # else:
         inject_css_once()
 
     if app_mode == "public":
