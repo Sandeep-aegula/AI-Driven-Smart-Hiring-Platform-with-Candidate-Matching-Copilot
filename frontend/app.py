@@ -1103,22 +1103,38 @@ def render_hr_login():
                     st.error(
                         "Enter both your email address and password."
                     )
-
+            
                 else:
-                    # ------------------------------------------------
-                    # TEMPORARY LOGIN
-                    #
-                    # Replace this with MySQL authentication later.
-                    # ------------------------------------------------
-
-                    st.session_state.is_authenticated = True
-                    st.session_state.hr_email = email
-
-                    open_hr_portal()
+                    from frontend.components.api_client import login_user
+            
+                    try:
+                        token = login_user(email, password)
+            
+                        if token:
+                            # Save the JWT token for future API requests
+                            st.session_state.token = token
+            
+                            # Mark the HR user as authenticated
+                            st.session_state.is_authenticated = True
+            
+                            # Save the logged-in HR email
+                            st.session_state.hr_email = email
+            
+                            # Open the HR portal
+                            open_hr_portal()
+            
+                        else:
+                            st.error(
+                                "Incorrect email or password."
+                            )
+            
+                    except Exception as error:
+                        st.error(
+                            f"Unable to connect to the backend: {error}"
+                        )
 
         st.caption(
-            "MySQL-based HR authentication will be connected "
-            "in the next phase."
+                "Sign in using your authorized HR account."
         )
 
 

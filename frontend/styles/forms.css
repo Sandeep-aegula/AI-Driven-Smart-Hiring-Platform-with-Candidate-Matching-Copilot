@@ -59,7 +59,7 @@ div[data-testid="stTextArea"] textarea:focus {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
 }
 
-/* Custom file uploader border styling */
+/* Custom file uploader border styling
 div[data-testid="stFileUploader"] {
     border: 2px dashed #3B82F6 !important;
     background-color: #EFF6FF !important;
@@ -73,9 +73,9 @@ div[data-testid="stFileUploader"]:hover {
 }
 
 /* Remove inner border and background from Streamlit's native file uploader dropzone to avoid double borders */
-div[data-testid="stFileUploader"] section[data-testid="stFileUploadDropzone"] {
+/* div[data-testid="stFileUploader"] section[data-testid="stFileUploadDropzone"] {
     border: none !important;
     background: transparent !important;
     padding: 0 !important;
-}
+} */ */
 

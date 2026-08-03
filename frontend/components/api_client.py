@@ -48,12 +48,24 @@ httpx.post = AuthClient.post
 httpx.put = AuthClient.put
 httpx.delete = AuthClient.delete
 
+# def login_user(email, password):
+#     resp = _orig_post(f"{API_URL}/auth/login", json={"email": email, "password": password})
+#     if resp.status_code == 200:
+#         return resp.json().get("access_token")
+#     return None
 def login_user(email, password):
-    resp = _orig_post(f"{API_URL}/auth/login", json={"email": email, "password": password})
-    if resp.status_code == 200:
-        return resp.json().get("access_token")
-    return None
+    response = _orig_post(
+        f"{API_URL}/auth/login",
+        json={
+            "email": email,
+            "password": password,
+        },
+    )
 
+    if response.status_code == 200:
+        return response.json().get("access_token")
+
+    return None
 
 def logout_user():
     try:

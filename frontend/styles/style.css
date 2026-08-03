@@ -40,7 +40,7 @@ footer {visibility: hidden;}
 
 /* Reserve horizontal space for fixed sidebar so main content doesn't overlap */
 .block-container {
-    margin-left: 256px !important;
+    margin-left: auto !important;
 }
 
 /* Inputs: enforce white background and text across the app (global override) */
@@ -352,7 +352,7 @@ div[data-testid="stChatInputContainer"] {
   gap: 4px;
 }
 
-/* File uploader button styling for unified input */
+/* File uploader button styling for unified input
 div[data-testid="stFileUploader"] {
   border: none !important;
   background-color: transparent !important;
@@ -360,7 +360,7 @@ div[data-testid="stFileUploader"] {
   margin: 0 !important;
   min-width: 32px !important;
   min-height: 32px !important;
-}
+} */
 
 div[data-testid="stFileUploader"] section,
 div[data-testid="stFileUploader"] > div {
@@ -369,9 +369,25 @@ div[data-testid="stFileUploader"] > div {
   padding: 0 !important;
 }
 
-/* Style file uploader button like a "+" button */
-div[data-testid="stFileUploader"] button,
-div[data-testid="stFileUploader"] label {
+/* File uploader button styling for the chat composer's "+" attach icon only */
+.input-file-section div[data-testid="stFileUploader"] {
+  border: none !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+}
+
+.input-file-section div[data-testid="stFileUploader"] section,
+.input-file-section div[data-testid="stFileUploader"] > div {
+  border: none !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+.input-file-section div[data-testid="stFileUploader"] button,
+.input-file-section div[data-testid="stFileUploader"] label {
   background-color: transparent !important;
   border: 1px solid #CBD5E1 !important;
   border-radius: 6px !important;
@@ -387,6 +403,18 @@ div[data-testid="stFileUploader"] label {
   transition: all 0.2s ease !important;
 }
 
+.input-file-section div[data-testid="stFileUploader"] button:hover,
+.input-file-section div[data-testid="stFileUploader"] label:hover {
+  background-color: #F1F5F9 !important;
+  border-color: #94A3B8 !important;
+  color: #0F172A !important;
+}
+
+.input-file-section div[data-testid="stFileUploader"] > div > div:nth-child(2),
+.input-file-section div[data-testid="stFileUploader"] [role="button"],
+.input-file-section div[data-testid="stFileUploader"] p {
+  display: none !important;
+}
 div[data-testid="stFileUploader"] button:hover,
 div[data-testid="stFileUploader"] label:hover {
   background-color: #F1F5F9 !important;

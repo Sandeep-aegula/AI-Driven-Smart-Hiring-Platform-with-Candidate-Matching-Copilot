@@ -238,11 +238,12 @@ def _render_additional_analytics(metrics):
 def render_dashboard_fragment() -> None:
     # ── Welcome Banner ────────────────────────────────────────────────────
     hour = datetime.datetime.now().hour
-    greeting = "Good Morning" if hour < 12 else ("Good Afternoon" if hour < 18 else "Good Evening")
+    # greeting = "Good Morning" if hour < 12 else ("Good Afternoon" if hour < 18 else "Good Evening")
+    greeting = "Hi Hiring Team"
 
     st.markdown(f"""
     <div class="welcome-banner" style="background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%); padding:20px; border-radius:12px; margin-bottom:20px;">
-        <h2 style="margin:0; color:#1E1B4B;">👋 {greeting}, HR</h2>
+        <h2 style="margin:0; color:#1E1B4B;">👋 {greeting}</h2>
         <p style="margin:5px 0 0; color:#4338CA;">Here's what's happening with your recruitment pipelines today.</p>
     </div>
     """, unsafe_allow_html=True)

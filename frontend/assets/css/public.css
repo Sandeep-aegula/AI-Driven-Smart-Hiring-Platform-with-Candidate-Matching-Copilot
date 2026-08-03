@@ -811,13 +811,11 @@
 .hp-public-page .stTextInput input,
 .hp-public-page .stTextInput textarea,
 .hp-public-page .stSelectbox select,
-.hp-public-page .stNumberInput input,
-.hp-public-page .stFileUploader {
+.hp-public-page .stNumberInput input {
   border-radius: 10px !important;
   border: 1px solid #E2E8F0 !important;
   background-color: #FFFFFF !important;
 }
-
 .hp-public-page .stTextInput input:focus,
 .hp-public-page .stTextArea textarea:focus,
 .hp-public-page .stSelectbox select:focus {
