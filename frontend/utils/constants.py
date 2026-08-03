@@ -8,12 +8,14 @@ to ensure consistency and avoid duplication.
 # These are the candidate statuses that can be shortlisted
 # Must match the backend's SHORTLISTABLE_CANDIDATE_STATUSES exactly
 SHORTLISTABLE_CANDIDATE_STATUSES = [
+    "New",
     "Applied",
     "Under Review",
     "submitted",
     "parsed",
     "under_review",
     "applied",
+    "new",
 ]
 
 # Application statuses that are considered "final" (cannot be shortlisted)

@@ -10,7 +10,7 @@ _NAV_ITEMS = [
     "Jobs",
     "Candidates",
     "Resume Parser",
-    "AI Screening",
+    # "AI Screening",
     "Interviews",
     "Employees",
     "Analytics",

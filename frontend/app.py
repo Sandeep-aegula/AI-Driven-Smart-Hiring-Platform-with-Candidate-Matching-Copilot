@@ -48,6 +48,8 @@ from components.public_careers import render_careers_page
 from components.public_job_details import _render_job_detail_page
 from components.public_about import render_about_page
 from components.public_contact import _render_contact_page
+from public.components.public_navbar import _render_public_navbar
+
 
 
 def _flatten_html(html: str) -> str:
@@ -73,8 +75,7 @@ st.set_page_config(
 # ============================================================
 
 from frontend.services.app_state import AppState
-# from frontend.services.cache import inject_css_once, inject_public_css_once
-from frontend.services.cache import inject_css_once
+from frontend.services.cache import inject_css_once, inject_public_css_once
 
 from frontend.components.api_client import (
     get_public_jobs,
@@ -265,7 +266,7 @@ PUBLIC_CONTENT = {
         ],
         "cta": "Schedule a Demo →",
     },
-    "featured_jobs": {
+   "featured_jobs": {
         "tag": "Careers",
         "title": "Featured Open Roles",
         "subtitle": "Live positions hiring right now on the HirePilot platform. Click any card to view the full description and apply.",
@@ -298,49 +299,77 @@ PUBLIC_CONTENT = {
 }
 
 
-def _render_public_navbar(active_page: str) -> None:
-    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-    # Use a single row with proper column ratios: logo (wide), spacer, nav buttons, HR Sign In
-    col_logo, col_nav, col_hr = st.columns([4, 3, 1], vertical_alignment="center")
+# def _render_public_navbar(active_page: str) -> None:
+#     st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+#     # Use a single row with proper column ratios: logo (wide), spacer, nav buttons, HR Sign In
+#     col_logo, col_nav, col_hr = st.columns([4, 3, 1], vertical_alignment="center")
     
-    with col_logo:
-        st.markdown(
-            """
-            <div class="hp-navbar-logo" style="display: flex; align-items: center; gap: 8px; padding: 8px 0;">
-                <div style="background: #1E40AF; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1rem;">HP</div>
-                <div>
-                    <div style="font-size: 1.3rem; font-weight: 800; color: #1E40AF; line-height: 1.2;">HIREPILOT</div>
-                    <div style="font-size: 0.75rem; font-weight: 500; color: #64748B; margin-top: 2px;">AI Recruitment Platform</div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+#     with col_logo:
+#         st.markdown(
+#             """
+#             <div class="hp-navbar-logo" style="display: flex; align-items: center; gap: 8px; padding: 8px 0;">
+#                 <div style="background: #1E40AF; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1rem;">HP</div>
+#                 <div>
+#                     <div style="font-size: 1.3rem; font-weight: 800; color: #1E40AF; line-height: 1.2;">HIREPILOT</div>
+#                     <div style="font-size: 0.75rem; font-weight: 500; color: #64748B; margin-top: 2px;">AI Recruitment Platform</div>
+#                 </div>
+#             </div>
+#             """,
+#             unsafe_allow_html=True,
+#         )
     
-    with col_nav:
-        # Navigation buttons in a horizontal row
-        nav_cols = st.columns([1, 1, 1], vertical_alignment="center")
-        with nav_cols[0]:
-            if st.button("Home", key="nv_home", use_container_width=True,
-                         type="primary" if active_page == "home" else "secondary"):
-                st.session_state.public_page = "Home"
-                st.rerun()
-        with nav_cols[1]:
-            if st.button("About Us", key="nv_about", use_container_width=True,
-                         type="primary" if active_page == "about" else "secondary"):
-                st.session_state.public_page = "About Us"
-                st.rerun()
-        with nav_cols[2]:
-            if st.button("Careers", key="nv_car", use_container_width=True,
-                         type="primary" if active_page == "careers" else "secondary"):
-                st.session_state.public_page = "Careers"
-                st.rerun()
+#     with col_nav:
+#         # Navigation buttons in a horizontal row
+#         nav_cols = st.columns([1, 1, 1], vertical_alignment="center")
+#         with nav_cols[0]:
+#             if st.button("Home", key="nv_home", use_container_width=True,
+#                          type="primary" if active_page == "home" else "secondary"):
+#                 st.session_state.public_page = "Home"
+#                 st.rerun()
+#         with nav_cols[1]:
+#             if st.button("About Us", key="nv_about", use_container_width=True,
+#                          type="primary" if active_page == "about" else "secondary"):
+#                 st.session_state.public_page = "About Us"
+#                 st.rerun()
+#         with nav_cols[2]:
+#             if st.button("Careers", key="nv_car", use_container_width=True,
+#                          type="primary" if active_page == "careers" else "secondary"):
+#                 st.session_state.public_page = "Careers"
+#                 st.rerun()
     
-    with col_hr:
-        if st.button("HR Sign In", key="nv_hr", use_container_width=True, type="primary"):
-            open_hr_login()
-    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+#     with col_hr:
+#         if st.button("HR Sign In", key="nv_hr", use_container_width=True, type="primary"):
+#             open_hr_login()
+#     st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
+# def _render_public_footer() -> None:
+#     F = PUBLIC_CONTENT["footer"]
+#     cols_html = "".join(
+#         f'''
+#         <div class="hp-footer-col">
+#           <h4>{c["title"]}</h4>
+#           <ul>
+#             {''.join(
+#               f'<li><a href="?public_page={target}">{label}</a></li>'
+#               for label, target in c["links"]
+#             )}
+#           </ul>
+#         </div>
+#         '''
+#         for c in F["cols"]
+#     )
+#     bottom_links = "".join(
+#         f'<a href="?public_page={t}">{l}</a>'
+#         for l, t in F["bottom_links"]
+#     )
+#     st.markdown(
+#         _flatten_html(f"""
+#         <footer class="hp-footer">
+#           ...
+#         </footer>
+#         """),
+#         unsafe_allow_html=True,
+#     )
 
 def _render_public_footer() -> None:
     F = PUBLIC_CONTENT["footer"]
@@ -363,7 +392,7 @@ def _render_public_footer() -> None:
         for l, t in F["bottom_links"]
     )
     st.markdown(
-        f"""
+        _flatten_html(f"""
         <footer class="hp-footer">
           <div class="hp-container">
             <div class="hp-footer-grid">
@@ -379,11 +408,9 @@ def _render_public_footer() -> None:
             </div>
           </div>
         </footer>
-        """,
+        """),
         unsafe_allow_html=True,
     )
-
-
 def _render_featured_jobs_section() -> None:
     J = PUBLIC_CONTENT["featured_jobs"]
     st.markdown(
@@ -454,12 +481,6 @@ def _render_home_page() -> None:
               </div>
               <div class="hp-hero-visual">
                 <div class="hp-hero-card">
-                  <div class="stat-row">
-                    {''.join(
-                        f'<div class="stat-item"><div class="stat-value">{s["value"]}</div><div class="stat-label">{s["label"]}</div></div>'
-                        for s in H["stat_cards"]
-                    )}
-                  </div>
                   <div style="padding: 1rem; border-radius: 12px; background: linear-gradient(135deg, rgba(30,64,175,0.06), rgba(59,130,246,0.1)); border: 1px solid #DBEAFE;">
                     <div style="font-size: 0.8rem; font-weight: 700; color: #1E40AF; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem;">Live Pipeline Snapshot</div>
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
@@ -671,7 +692,7 @@ def _render_home_page() -> None:
         unsafe_allow_html=True,
     )
 
-    _render_featured_jobs_section()
+    # _render_featured_jobs_section()
 
     CK = C["contact"]
     st.markdown(
@@ -695,11 +716,27 @@ def _render_home_page() -> None:
         """,
         unsafe_allow_html=True,
     )
-    with st.container():
-        st.markdown(
-            '<div class="hp-container" style="margin-top:-2rem;"><div class="hp-contact-form">',
-            unsafe_allow_html=True,
-        )
+    # with st.container():
+    #     st.markdown(
+    #         '<div class="hp-container" style="margin-top:-2rem;"><div class="hp-contact-form">',
+    #         unsafe_allow_html=True,
+    #     )
+    #     with st.form("public_contact_form", clear_on_submit=True):
+    #         cc1, cc2 = st.columns(2)
+    #         with cc1:
+    #             c_name = st.text_input("Full Name", key="contact_name")
+    #         with cc2:
+    #             c_email = st.text_input("Email Address", key="contact_email")
+    #         c_msg = st.text_area("Message", height=130, key="contact_message")
+    #         sent = st.form_submit_button("Send Message", type="primary", use_container_width=True)
+    #         if sent:
+    #             if c_name and c_email and c_msg:
+    #                 st.success("Thanks! Your message has been queued — we'll get back to you shortly.")
+    #             else:
+    #                 st.warning("Please enter your name, email and a message before sending.")
+    #     st.markdown("</div></div>", unsafe_allow_html=True)
+    _, form_col, _ = st.columns([1, 6, 1])
+    with form_col:
         with st.form("public_contact_form", clear_on_submit=True):
             cc1, cc2 = st.columns(2)
             with cc1:
@@ -713,8 +750,7 @@ def _render_home_page() -> None:
                     st.success("Thanks! Your message has been queued — we'll get back to you shortly.")
                 else:
                     st.warning("Please enter your name, email and a message before sending.")
-        st.markdown("</div></div>", unsafe_allow_html=True)
-    _render_public_footer()
+    # _render_public_footer()
 
 
 # def _render_careers_page() -> None:
@@ -879,6 +915,70 @@ def render_company_website():
     Only one public page is rendered during each Streamlit rerun.
     The navbar and footer are shared and rendered exactly once.
     """
+    st.markdown(
+        """
+        <style>
+        /* ── Public site: horizontal centering & container width only ── */
+        /* 1. Undo the HR-portal block-container sidebar offset and asymmetric padding
+              so the root streamlit wrapper doesn't push everything toward the right. */
+        [data-testid="stMainBlockContainer"] {
+            max-width: none !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+        .main .block-container {
+            max-width: none !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+        /* 2. Section wrappers span the full viewport width so backgrounds
+              (hero gradient, alt section colors, footer) bleed edge-to-edge. */
+        .hp-section,
+        .hp-hero,
+        .hp-stats,
+        .hp-footer {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        /* 3. The content container: centered, max-width, symmetric side gutter —
+              the core rule that fixes the "lopsided left margin" symptom. */
+        .hp-container {
+            width: min(1240px, calc(100% - 4rem));
+            max-width: 1240px;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            padding-left: 0;
+            padding-right: 0;
+            box-sizing: border-box;
+        }
+        /* 4. Tighter gutter on tablet/phone so content isn't cramped. */
+        @media (max-width: 768px) {
+            .hp-container {
+                width: min(1240px, calc(100% - 2.5rem));
+            }
+        }
+         @media (max-width: 480px) {
+            .hp-container {
+                width: calc(100% - 1.5rem);
+            }
+        }
+        /* 5. Push the first section down below the now-fixed navbar. */
+        .hp-hero {
+            padding-top: 7rem !important;
+        }
+        
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
     public_page = st.session_state.get("public_page", "Home")
     active_map = {
         "Home": "home",
@@ -888,7 +988,7 @@ def render_company_website():
         "Contact": "contact",
     }
     active = active_map.get(public_page, "home")
-    _render_public_navbar(active)
+    _render_public_navbar(active, on_hr_sign_in=open_hr_login)
     if public_page == "Home":
         _render_home_page()
     elif public_page == "About Us":
@@ -917,41 +1017,45 @@ def render_hr_login():
     """
 
     st.markdown(
-        """
-        <style>
-
-        [data-testid="stSidebar"] {
-            display: none;
-        }
-
-        .login-title {
-            text-align: center;
-            font-size: 38px;
-            font-weight: 800;
-            margin-top: 50px;
-        }
-
-        .login-description {
-            text-align: center;
-            color: #6b7280;
-            margin-bottom: 30px;
-        }
-
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    """
+    <style>
+    [data-testid="stSidebar"] {
+        display: none;
+    }
+    .login-title {
+        text-align: center;
+        font-size: 38px;
+        font-weight: 800;
+        margin-top: 50px;
+    }
+    .login-description {
+        text-align: center;
+        color: #6b7280;
+        margin-bottom: 30px;
+    }
+    .main .block-container {
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+    div[class*="st-key-hr_login_back_btn_wrap"] {
+        padding-left: 17rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
     top_left, top_center, top_right = st.columns(
-        [1, 2, 1]
+    [1, 2, 1], vertical_alignment="center"
     )
-
+    
     with top_left:
-        if st.button(
-            "Back to Website",
-            key="login_back_button",
-        ):
-            return_to_company_website()
+        with st.container(key="hr_login_back_btn_wrap"):
+            if st.button(
+                "Back to Website",
+                key="login_back_button",
+            ):
+                return_to_company_website()
 
     with top_center:
         st.markdown(
@@ -1090,13 +1194,13 @@ def render_hr_portal():
 
         render_resume_management()
 
-    elif page == "AI Screening":
+    # elif page == "AI Screening":
 
-        from frontend.components.ai_screening import (
-            render_ai_screening
-        )
+    #     from frontend.components.ai_screening import (
+    #         render_ai_screening
+    #     )
 
-        render_ai_screening()
+    #     render_ai_screening()
 
     elif page == "Interviews":
 
@@ -1176,8 +1280,8 @@ def main():
     app_mode = st.session_state.get("app_mode", "public")
 
     if app_mode in ("public", "hr_login"):
-    #     inject_public_css_once()
-    # else:
+        inject_public_css_once()
+    else:
         inject_css_once()
 
     if app_mode == "public":

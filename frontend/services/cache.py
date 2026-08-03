@@ -179,20 +179,46 @@ def get_jobs_cached(search="", department="All", status="All", sort_by="updated_
         return []
 
 
+# @st.cache_data(ttl=30, show_spinner=False)
+# def get_candidates_cached(search="", status="All", skill="All"):
+#     """Cached candidate list. Refreshes every 30 seconds."""
+#     try:
+#         import httpx
+#         resp = httpx.get(
+#             "http://localhost:8000/candidates",
+#             params={"search": search, "status": status, "skill": skill},
+#             timeout=5.0
+#         )
+#         return resp.json() if resp.status_code == 200 else []
+#     except Exception:
+#         return []
+def _normalize_list_response(data):
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        for key in ("items", "data", "candidates", "results"):
+            value = data.get(key)
+            if isinstance(value, list):
+                return value
+    return []
+
+
 @st.cache_data(ttl=30, show_spinner=False)
-def get_candidates_cached(search="", status="All", skill="All"):
+def get_candidates_cached(search="", status="All", skill="All", job_id=None):
     """Cached candidate list. Refreshes every 30 seconds."""
     try:
         import httpx
+        params = {"search": search, "status": status, "skill": skill}
+        if job_id:
+            params["job_id"] = job_id
         resp = httpx.get(
             "http://localhost:8000/candidates",
-            params={"search": search, "status": status, "skill": skill},
+            params=params,
             timeout=5.0
         )
-        return resp.json() if resp.status_code == 200 else []
+        return _normalize_list_response(resp.json()) if resp.status_code == 200 else []
     except Exception:
         return []
-
 
 @st.cache_data(ttl=30, show_spinner=False)
 def get_interviews_cached():

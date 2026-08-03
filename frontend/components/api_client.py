@@ -55,6 +55,115 @@ def login_user(email, password):
     return None
 
 
+def logout_user():
+    try:
+        resp = httpx.post(f"{API_URL}/auth/logout", timeout=5.0)
+        if resp.status_code not in (200, 204, 404):
+            logger.warning(f"Logout endpoint returned {resp.status_code}: {resp.text}")
+        return resp.status_code in (200, 204)
+    except Exception as e:
+        logger.warning(f"Error calling logout endpoint: {e}")
+        return False
+
+
+def clear_hr_session_state():
+    st.session_state.is_authenticated = False
+    st.session_state.pop("hr_email", None)
+    st.session_state.pop("token", None)
+    st.session_state.app_mode = "public"
+    st.session_state.public_page = "Home"
+    st.session_state.current_page = "Dashboard"
+# def clear_hr_session_state():
+#     """
+#     Reset HR-portal session keys back to their unauthenticated / public-site
+#     defaults. Mirrors initialize_application_state() in frontend/app.py and
+#     additionally clears any keys that a real login would set.
+#     """
+#     st.session_state.pop("is_authenticated", None)
+#     st.session_state.pop("token", None)
+#     st.session_state.pop("hr_email", None)
+#     st.session_state.pop("hr_name", None)
+#     st.session_state.pop("hr_role", None)
+#     st.session_state.pop("search_query", None)
+#     st.session_state.pop("query_params", None)
+#     st.session_state.pop("current_page", None)
+#     st.session_state.app_mode = "public"
+#     st.session_state.public_page = "Home"
+#     if "current_page" not in st.session_state:
+#         st.session_state.current_page = "Dashboard"
+#     if "search_query" not in st.session_state:
+#         st.session_state.search_query = ""
+
+
+def generate_bulk_interview_drafts(communication_ids: list[int]):
+    """Generate AI drafts for multiple pending interview communications at once."""
+    try:
+        resp = httpx.post(
+            f"{API_URL}/communications/generate-drafts",
+            json={"communication_ids": communication_ids},
+            timeout=90.0,
+        )
+        if resp.status_code == 200:
+            return resp.json()
+        logger.error(f"Bulk draft generation failed with status {resp.status_code}: {resp.text}")
+        return None
+    except Exception as e:
+        logger.error(f"Error generating bulk interview drafts: {e}")
+        return None
+
+
+def generate_interview_draft(comm_id, regenerate=False):
+    """Generate (or regenerate) an AI draft for a single pending interview communication."""
+    try:
+        resp = httpx.post(
+            f"{API_URL}/communications/{comm_id}/generate-draft",
+            json={"regenerate": regenerate},
+            timeout=60.0,
+        )
+        return resp.json() if resp.status_code == 200 else None
+    except Exception as e:
+        logger.error(f"Error generating interview draft: {e}")
+        return None
+
+
+def send_interview_draft(comm_id):
+    """Send a previously generated/saved interview communication draft."""
+    try:
+        resp = httpx.post(
+            f"{API_URL}/communications/{comm_id}/send",
+            timeout=30.0,
+        )
+        return resp.json() if resp.status_code == 200 else None
+    except Exception as e:
+        logger.error(f"Error sending interview draft: {e}")
+        return None
+
+
+def save_interview_draft(comm_id, subject, body):
+    """Save edits to an interview communication draft without sending it."""
+    try:
+        resp = httpx.put(
+            f"{API_URL}/communications/{comm_id}/draft",
+            json={"subject": subject, "message": body},
+            timeout=15.0,
+        )
+        return resp.json() if resp.status_code == 200 else None
+    except Exception as e:
+        logger.error(f"Error saving interview draft: {e}")
+        return None
+
+
+def cancel_interview_communication(comm_id):
+    """Cancel a pending interview communication record."""
+    try:
+        resp = httpx.post(
+            f"{API_URL}/communications/{comm_id}/cancel",
+            timeout=15.0,
+        )
+        return resp.status_code == 200
+    except Exception as e:
+        logger.error(f"Error cancelling interview communication: {e}")
+        return False
 # --- CACHED READ-ONLY API CALLS ---
 
 @st.cache_data(ttl=30, show_spinner=False)
@@ -732,11 +841,18 @@ def add_interview_feedback(interview_id, feedback_payload):
 
 def log_interview_decision(interview_id, decision):
     try:
-        resp = httpx.put(f"{API_URL}/interviews/{interview_id}/decision", params={"decision": decision}, timeout=5.0)
-        return resp.json() if resp.status_code == 200 else None
-    except Exception:
+        resp = httpx.put(
+            f"{API_URL}/interviews/{interview_id}/decision",
+            json={"decision": decision},
+            timeout=5.0,
+        )
+        if resp.status_code == 200:
+            return resp.json()
+        logger.error(f"Log decision failed with status {resp.status_code}: {resp.text}")
         return None
-
+    except Exception as e:
+        logger.error(f"Error logging interview decision: {e}")
+        return None
 def draft_interview_email(interview_id, email_mode):
     try:
         resp = httpx.post(f"{API_URL}/interviews/{interview_id}/generate-email", json={"email_mode": email_mode}, timeout=30.0)
