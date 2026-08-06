@@ -382,9 +382,12 @@ async def complete_onboarding(onboarding_id: int, completed_by: str = "HR") -> d
             raise ValueError("Onboarding record not found")
 
         existing_employee_result = await session.execute(
-            select(Employee).where(Employee.onboarding_id == onboarding.id)
+            select(Employee)
+            .where(Employee.onboarding_id == onboarding.id)
+            .order_by(desc(Employee.id))
+            .limit(1)
         )
-        existing_employee = existing_employee_result.scalar_one_or_none()
+        existing_employee = existing_employee_result.scalars().first()
 
         ready, total_required, verified = await _required_documents_verified(onboarding)
         onboarding.ready_for_onboarding = ready

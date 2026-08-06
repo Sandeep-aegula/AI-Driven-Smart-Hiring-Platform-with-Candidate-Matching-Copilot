@@ -347,13 +347,21 @@ async def process_application_pipeline(application_id: int) -> None:
             job = await session.get(Job, application.job_id)
             candidate = await session.get(Candidate, application.candidate_id)
             resume = (
-                await session.execute(select(Resume).where(Resume.application_id == application_id))
-            ).scalar_one()
+                await session.execute(
+                    select(Resume)
+                    .where(Resume.application_id == application_id)
+                    .order_by(desc(Resume.id))
+                    .limit(1)
+                )
+            ).scalars().first()
             parse_result = (
                 await session.execute(
-                    select(ResumeParseResult).where(ResumeParseResult.application_id == application_id)
+                    select(ResumeParseResult)
+                    .where(ResumeParseResult.application_id == application_id)
+                    .order_by(desc(ResumeParseResult.id))
+                    .limit(1)
                 )
-            ).scalar_one()
+            ).scalars().first()
 
             parse_result.raw_text = raw_text
             try:

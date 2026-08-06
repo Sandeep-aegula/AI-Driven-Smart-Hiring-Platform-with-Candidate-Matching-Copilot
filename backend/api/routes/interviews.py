@@ -94,7 +94,14 @@ async def make_questions(interview_id: int, payload: InterviewQuestionsRequest):
     if not candidate:
         return {"questions": fallback_question(job.get("title", ""), "candidate record not found"), "warning": "The linked candidate could not be found."}
 
-    qs = await generate_interview_questions(job, candidate, round_type, payload.difficulty_level, payload.number_of_questions)
+    try:
+        qs = await generate_interview_questions(job, candidate, round_type, payload.difficulty_level, payload.number_of_questions)
+    except Exception as exc:
+        logger.exception("Failed to generate interview questions for interview_id=%s: %s", interview_id, exc)
+        raise HTTPException(
+            status_code=502,
+            detail="Failed to generate questions. The AI service returned an unexpected response."
+        ) from exc
     question_sets[cache_key] = qs
     await data_store.update_interview(interview_id, {"generated_question_sets": question_sets})
     return {"questions": qs, "cached": False}

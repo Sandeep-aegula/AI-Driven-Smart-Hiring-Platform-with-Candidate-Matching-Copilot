@@ -457,6 +457,7 @@ class CommunicationStatus(str, Enum):
 
 class Communication(Base):
     __tablename__ = "communications"
+    __table_args__ = (UniqueConstraint("interview_id", name="uq_communication_interview_id"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     candidate_id: Mapped[int] = mapped_column(ForeignKey("candidates.id", ondelete="CASCADE"), nullable=False, index=True)

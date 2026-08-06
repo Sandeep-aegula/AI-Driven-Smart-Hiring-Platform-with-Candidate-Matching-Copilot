@@ -843,9 +843,17 @@ def generate_interview_questions(interview_id, round_type, difficulty_level=None
     try:
         payload = {"round_type": round_type, "difficulty_level": difficulty_level, "number_of_questions": number_of_questions, "regenerate": regenerate}
         resp = httpx.post(f"{API_URL}/interviews/{interview_id}/generate-questions", json=payload, timeout=40.0)
-        return resp.json() if resp.status_code == 200 else None
-    except Exception:
-        return None
+        if resp.status_code == 200:
+            return resp.json()
+        # Surface a structured error so the caller can show a meaningful message.
+        logger.error(
+            "generate_interview_questions: backend returned %s for interview_id=%s — %s",
+            resp.status_code, interview_id, resp.text[:300],
+        )
+        return {"questions": [], "error": f"Backend error {resp.status_code}: {resp.text[:200]}"}
+    except Exception as exc:
+        logger.error("generate_interview_questions: request failed for interview_id=%s — %s", interview_id, exc)
+        return {"questions": [], "error": str(exc)}
 
 def add_interview_feedback(interview_id, feedback_payload):
     try:

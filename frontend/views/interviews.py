@@ -90,8 +90,14 @@ def render_question_generator(interview_options: list[dict]):
             response = api_client.generate_interview_questions(
                 selected_id, round_type, difficulty, int(count), regenerate=regenerate_clicked
             )
-        if response:
+        if response and response.get("questions"):
+            # Success — persist to session state keyed by (interview, round, difficulty, count)
             st.session_state.interview_question_sets[cache_key] = response
+        elif response and response.get("error"):
+            st.error(f"Question generation failed: {response['error']}")
+        elif response is not None:
+            # Backend returned 200 but questions list was empty (e.g. AI parse failure)
+            st.warning("The AI returned no questions. The backend may have fallen back to a placeholder — try regenerating.")
         else:
             st.error("Question generation could not be completed. Please try again.")
 
@@ -101,12 +107,16 @@ def render_question_generator(interview_options: list[dict]):
             st.warning(result["warning"])
         if result.get("cached"):
             st.caption("Showing the saved question set for this interview configuration.")
-        for index, question in enumerate(result.get("questions", []), start=1):
-            with st.expander(f"{index}. {question.get('question', 'Interview question')}"):
-                st.markdown("**Model answer**")
-                st.write(question.get("model_answer", ""))
-                st.markdown("**Evaluation guideline**")
-                st.write(question.get("evaluation_guideline", ""))
+        questions = result.get("questions", [])
+        if not questions:
+            st.warning("No questions were returned for this configuration. Try regenerating.")
+        else:
+            for index, question in enumerate(questions, start=1):
+                with st.expander(f"{index}. {question.get('question', 'Interview question')}"):
+                    st.markdown("**Model answer**")
+                    st.write(question.get("model_answer", ""))
+                    st.markdown("**Evaluation guideline**")
+                    st.write(question.get("evaluation_guideline", ""))
 
 # Divide screen into Left list/calendar and Right forms/AI utilities
 col_left, col_right = st.columns([1.2, 0.8])

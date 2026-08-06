@@ -20,12 +20,53 @@ def _skill_names(skills: list) -> list[str]:
     return [skill.get("name", "") if isinstance(skill, dict) else str(skill) for skill in skills if skill]
 
 
-def _extract_json_array(text: str) -> list | None:
-    """Extract a JSON array from text, handling common formatting issues."""
-    if not text:
+def _extract_json_array(text) -> list | None:
+    """Extract a JSON array from text, handling common formatting issues.
+
+    ``text`` may be a raw string (markdown-fenced JSON), an already-parsed
+    list, or a dict (e.g. from the Ollama JSON-mode response or an error
+    sentinel).  All three cases are handled gracefully.
+    """
+    # Already a list — nothing to extract.
+    if isinstance(text, list):
+        return text if text else None
+
+    # Dict returned by _call_ollama (e.g. error sentinel or structured response).
+    if isinstance(text, dict):
+        # Error sentinel from _call_ollama: {"error": "...", "stale": True}
+        if "error" in text:
+            logger.warning("_extract_json_array received error dict: %s", text)
+            return None
+
+        # Pattern 1: LLM returned {"questions": [...]} wrapper.
+        if isinstance(text.get("questions"), list):
+            logger.info("_extract_json_array: auto-recovered {questions:[...]} wrapper dict")
+            return text["questions"] if text["questions"] else None
+
+        # Pattern 2: LLM returned a single question object instead of an array.
+        if all(k in text for k in ("question", "model_answer", "evaluation_guideline")):
+            logger.info("_extract_json_array: auto-recovered single question object — wrapped in list")
+            return [text]
+
+        # Pattern 3: Wrapper dict with a string/list value in a known key.
+        for key in ("response", "content", "text", "message"):
+            value = text.get(key)
+            if isinstance(value, str) and value.strip():
+                return _extract_json_array(value)  # recurse on the string
+            if isinstance(value, list):
+                return value if value else None
+
+        # None of the recoverable patterns matched.
+        logger.warning(
+            "_extract_json_array: truly malformed dict (no questions/question/wrapper key): %s",
+            text,
+        )
         return None
-    
-    # Try to find JSON array in the text
+
+    if not isinstance(text, str) or not text:
+        return None
+
+    # --- String path (original logic, unchanged) ---
     text = text.strip()
     
     # Remove markdown code fences
@@ -92,7 +133,7 @@ async def generate_interview_questions(job_context: dict, candidate_context: dic
     experience = latest_resume.get("experience") or candidate_context.get("experience", [])
     
     # Build a more explicit prompt with examples
-    prompt = f"""You are an expert technical interviewer. Generate exactly {count} interview questions for a candidate.
+    prompt = f"""You are an expert technical interviewer. Generate exactly {count} interview question(s) for a candidate.
 
 JOB: {job_context.get('title')} - {job_context.get('department')}
 ROUND TYPE: {round_type}
@@ -101,12 +142,17 @@ CANDIDATE SKILLS: {', '.join(candidate_skills) if candidate_skills else 'Unknown
 CANDIDATE RESUME SUMMARY: {resume_summary or 'Not available'}
 CANDIDATE EXPERIENCE: {json.dumps(experience, default=str)}
 
-CRITICAL: You MUST respond with a valid JSON array containing exactly {count} objects. Each object must have exactly these three string fields:
-- "question": The interview question
-- "model_answer": A good answer the candidate should provide
-- "evaluation_guideline": What the interviewer should look for
+OUTPUT RULES — READ CAREFULLY:
+1. Your response MUST be a JSON ARRAY [ ... ] — even if only 1 question is requested.
+2. NEVER return a bare object {{ ... }} at the top level. ALWAYS wrap in [ ].
+3. Each element of the array must be an object with EXACTLY these three string keys:
+   - "question": the interview question text
+   - "model_answer": a strong answer the candidate should give
+   - "evaluation_guideline": what the interviewer should look for
+4. Do NOT add any text, explanation, or markdown before or after the JSON array.
+5. Do NOT use ```json fences.
 
-Example format:
+EXACT OUTPUT FORMAT (copy this structure, fill in your content):
 [
   {{
     "question": "Describe a challenging bug you fixed recently.",
@@ -114,13 +160,13 @@ Example format:
     "evaluation_guideline": "Look for systematic debugging, root cause analysis, and prevention measures."
   }},
   {{
-    "question": "How do you optimize database queries?",
+    "question": "How do you optimize slow database queries?",
     "model_answer": "The candidate should mention indexing, query plans, caching, and avoiding N+1 queries.",
-    "evaluation_guideline": "Look for practical experience with performance tuning."
+    "evaluation_guideline": "Look for practical experience with profiling and performance tuning."
   }}
 ]
 
-Do NOT include any text before or after the JSON array. Do NOT use markdown formatting."""
+Generate exactly {count} question(s) following the format above."""
     
     try:
         res = await asyncio.wait_for(_call_ollama(prompt, json_format=True), timeout=35.0)

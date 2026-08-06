@@ -442,20 +442,37 @@ class RecruitmentDataStore:
             if cand: 
                 cand.status = "Interview Scheduled"
             
-            # Create communication record
+            # Create communication record (upsert-safe: update if exists)
             if cand:
-                comm = Communication(
-                    candidate_id=iv.candidate_id,
-                    application_id=application_id,
-                    job_id=iv.job_id,
-                    interview_id=iv.id,
-                    recruitment_round=iv.round,
-                    status="pending",
-                    email=cand.email,
-                    subject=f"Interview Invitation — {iv.round}",
-                    message="",
+                existing_comm_stmt = (
+                    select(Communication)
+                    .where(Communication.interview_id == iv.id)
+                    .order_by(desc(Communication.id))
+                    .limit(1)
                 )
-                session.add(comm)
+                existing_comm_res = await session.execute(existing_comm_stmt)
+                existing_comm = existing_comm_res.scalars().first()
+                if existing_comm:
+                    existing_comm.candidate_id = iv.candidate_id
+                    existing_comm.application_id = application_id
+                    existing_comm.job_id = iv.job_id
+                    existing_comm.recruitment_round = iv.round
+                    existing_comm.status = "pending"
+                    existing_comm.email = cand.email
+                    existing_comm.subject = f"Interview Invitation — {iv.round}"
+                else:
+                    comm = Communication(
+                        candidate_id=iv.candidate_id,
+                        application_id=application_id,
+                        job_id=iv.job_id,
+                        interview_id=iv.id,
+                        recruitment_round=iv.round,
+                        status="pending",
+                        email=cand.email,
+                        subject=f"Interview Invitation — {iv.round}",
+                        message="",
+                    )
+                    session.add(comm)
             
             await session.commit()
             await session.refresh(iv)
@@ -478,9 +495,14 @@ class RecruitmentDataStore:
             
             iv.invitation_email_status = "pending"
             
-            stmt_comm = select(Communication).where(Communication.interview_id == interview_id)
+            stmt_comm = (
+                select(Communication)
+                .where(Communication.interview_id == interview_id)
+                .order_by(desc(Communication.id))
+                .limit(1)
+            )
             res_comm = await session.execute(stmt_comm)
-            comm = res_comm.scalar_one_or_none()
+            comm = res_comm.scalars().first()
             if comm:
                 comm.status = "pending"
                 comm.recruitment_round = iv.round
@@ -492,14 +514,24 @@ class RecruitmentDataStore:
                 res_cand = await session.execute(stmt_cand)
                 cand = res_cand.scalar_one_or_none()
                 
-                stmt_app = select(Application).where(Application.candidate_id == iv.candidate_id, Application.job_id == iv.job_id)
+                stmt_app = (
+                    select(Application)
+                    .where(Application.candidate_id == iv.candidate_id, Application.job_id == iv.job_id)
+                    .order_by(desc(Application.id))
+                    .limit(1)
+                )
                 res_app = await session.execute(stmt_app)
-                app = res_app.scalar_one_or_none()
+                app = res_app.scalars().first()
                 app_id = app.id if app else None
                 if not app_id:
-                    stmt_app_fallback = select(Application).where(Application.candidate_id == iv.candidate_id)
+                    stmt_app_fallback = (
+                        select(Application)
+                        .where(Application.candidate_id == iv.candidate_id)
+                        .order_by(desc(Application.id))
+                        .limit(1)
+                    )
                     res_app_fallback = await session.execute(stmt_app_fallback)
-                    app_fallback = res_app_fallback.scalar_one_or_none()
+                    app_fallback = res_app_fallback.scalars().first()
                     app_id = app_fallback.id if app_fallback else None
                 
                 if app_id and cand:
@@ -602,9 +634,14 @@ class RecruitmentDataStore:
 
     async def get_employee_by_candidate_id(self, candidate_id: int) -> dict | None:
         async with get_db_session() as session:
-            stmt = select(Employee).where(Employee.candidate_id == candidate_id)
+            stmt = (
+                select(Employee)
+                .where(Employee.candidate_id == candidate_id)
+                .order_by(desc(Employee.id))
+                .limit(1)
+            )
             res = await session.execute(stmt)
-            return model_to_dict(res.scalar_one_or_none())
+            return model_to_dict(res.scalars().first())
 
     async def employee_exists(self, candidate_id: int) -> bool:
         emp = await self.get_employee_by_candidate_id(candidate_id)
@@ -718,12 +755,17 @@ class RecruitmentDataStore:
         summary: str = "",
     ) -> dict:
         async with get_db_session() as session:
-            stmt = select(Application).where(
-                Application.candidate_id == candidate_id,
-                Application.job_id == job_id,
+            stmt = (
+                select(Application)
+                .where(
+                    Application.candidate_id == candidate_id,
+                    Application.job_id == job_id,
+                )
+                .order_by(desc(Application.id))
+                .limit(1)
             )
             res = await session.execute(stmt)
-            app = res.scalar_one_or_none()
+            app = res.scalars().first()
             if app:
                 app.status = recommendation
                 app.match_score = score
@@ -770,9 +812,14 @@ class RecruitmentDataStore:
     ) -> dict:
         async with get_db_session() as session:
             email = parsed.get("email", "")
-            stmt = select(Candidate).where(Candidate.email == email)
+            stmt = (
+                select(Candidate)
+                .where(Candidate.email == email)
+                .order_by(desc(Candidate.id))
+                .limit(1)
+            )
             res = await session.execute(stmt)
-            candidate = res.scalar_one_or_none()
+            candidate = res.scalars().first()
             skill_names = parsed.get("skills", [])
             skills_objs = await self._skill_objects(session, skill_names)
             if not candidate:

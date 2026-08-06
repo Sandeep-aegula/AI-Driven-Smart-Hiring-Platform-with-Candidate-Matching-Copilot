@@ -226,8 +226,10 @@ def _render_detail_view():
                     st.success("Questions Generated!")
                     api_client.clear_interviews_cache()
                     st.rerun()
+                elif response and response.get("error"):
+                    st.error(f"Failed to generate questions: {response['error']}")
                 else:
-                    st.error("Failed to generate questions.")
+                    st.error("Failed to generate questions. Please try again.")
                     
         qs_cached = iv.get("generated_question_sets", {}).get(question_cache_key, [])
         if qs_cached:
