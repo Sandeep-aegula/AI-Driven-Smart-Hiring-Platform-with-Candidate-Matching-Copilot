@@ -30,7 +30,13 @@ if not DATABASE_URL.startswith("mysql+aiomysql://"):
 engine = create_async_engine(
     DATABASE_URL,
     echo=False,
-    pool_pre_ping=True,
+    # NOTE: pool_pre_ping is intentionally left off. The installed
+    # aiomysql (0.3.2) + SQLAlchemy (2.0.51) combination has a signature
+    # mismatch on the async ping path (AsyncAdapt_aiomysql_connection.ping()
+    # missing 1 required positional argument: 'reconnect'), so pre_ping
+    # crashes checkout with a TypeError instead of validating the
+    # connection. pool_recycle below already bounds how long a connection
+    # can go stale, which covers the case pre_ping exists for.
     pool_recycle=3600,
 )
 

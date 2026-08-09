@@ -98,16 +98,22 @@ def initialize_application_state():
     """
 
     if "app_mode" not in st.session_state:
-        st.session_state.app_mode = "public"
+        st.session_state.app_mode = st.query_params.get("app_mode", "public")
 
     if "public_page" not in st.session_state:
-        st.session_state.public_page = "Home"
+        st.session_state.public_page = st.query_params.get("public_page", "Home")
 
     if "current_page" not in st.session_state:
-        st.session_state.current_page = "Dashboard"
+        st.session_state.current_page = st.query_params.get("current_page", "Dashboard")
+
+    if "token" not in st.session_state:
+        st.session_state.token = st.query_params.get("token")
+
+    if "hr_email" not in st.session_state:
+        st.session_state.hr_email = st.query_params.get("hr_email")
 
     if "is_authenticated" not in st.session_state:
-        st.session_state.is_authenticated = False
+        st.session_state.is_authenticated = bool(st.session_state.token)
 
     if "search_query" not in st.session_state:
         st.session_state.search_query = ""
@@ -127,6 +133,8 @@ def open_public_page(page_name: str):
 
     st.session_state.app_mode = "public"
     st.session_state.public_page = page_name
+    st.query_params["app_mode"] = "public"
+    st.query_params["public_page"] = page_name
     st.rerun()
 
 
@@ -136,6 +144,7 @@ def open_hr_login():
     """
 
     st.session_state.app_mode = "hr_login"
+    st.query_params["app_mode"] = "hr_login"
     st.rerun()
 
 
@@ -148,6 +157,8 @@ def open_hr_portal():
 
     st.session_state.app_mode = "hr_portal"
     st.session_state.current_page = "Dashboard"
+    st.query_params["app_mode"] = "hr_portal"
+    st.query_params["current_page"] = "Dashboard"
     st.rerun()
 
 
@@ -158,6 +169,8 @@ def return_to_company_website():
 
     st.session_state.app_mode = "public"
     st.session_state.public_page = "Home"
+    st.query_params["app_mode"] = "public"
+    st.query_params["public_page"] = "Home"
     st.rerun()
 
 
@@ -1225,6 +1238,14 @@ def render_hr_portal():
         )
 
         render_interview_management()
+
+    elif page == "AI Interviews":
+
+        from frontend.components.ai_interviews import (
+            render_ai_interviews
+        )
+
+        render_ai_interviews()
 
     elif page == "Employees":
 

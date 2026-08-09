@@ -11,6 +11,7 @@ from backend.models.entities import Job, Candidate, Application, Resume, ResumeD
 logger = logging.getLogger(__name__)
 
 JOB_COLUMN_NAMES = {column.name for column in Job.__table__.columns}
+CANDIDATE_COLUMN_NAMES = {column.name for column in Candidate.__table__.columns}
 
 
 def _job_model_data(payload: JobCreate) -> dict:
@@ -19,6 +20,21 @@ def _job_model_data(payload: JobCreate) -> dict:
         key: value
         for key, value in payload.model_dump().items()
         if key in JOB_COLUMN_NAMES
+    }
+
+
+def _candidate_model_data(payload: CandidateCreate) -> dict:
+    """Map validated API payload fields to SQLAlchemy Candidate column names.
+
+    CandidateBase carries a couple of API-facing fields (skill_match_breakdown,
+    hire_recommendation) that aren't persisted columns on the Candidate model --
+    without this filter, Candidate(**payload.model_dump()) raises
+    "invalid keyword argument" on every candidate create/update.
+    """
+    return {
+        key: value
+        for key, value in payload.model_dump().items()
+        if key in CANDIDATE_COLUMN_NAMES
     }
 
 
@@ -268,7 +284,7 @@ class RecruitmentDataStore:
 
     async def create_candidate(self, payload: CandidateCreate) -> dict:
         async with get_db_session() as session:
-            candidate = Candidate(**payload.model_dump())
+            candidate = Candidate(**_candidate_model_data(payload))
             session.add(candidate)
             await session.commit()
             await session.refresh(candidate)
@@ -280,8 +296,8 @@ class RecruitmentDataStore:
             res = await session.execute(stmt)
             candidate = res.scalar_one_or_none()
             if not candidate: raise ValueError("Candidate not found")
-            
-            for key, value in payload.model_dump().items():
+
+            for key, value in _candidate_model_data(payload).items():
                 setattr(candidate, key, value)
             
             await session.commit()
@@ -407,7 +423,7 @@ class RecruitmentDataStore:
             if job_id is not None: stmt = stmt.where(Interview.job_id == job_id)
             if status != "All": stmt = stmt.where(Interview.status == status)
             if round_name != "All": stmt = stmt.where(Interview.round == round_name)
-            
+
             stmt = stmt.order_by(Interview.date, Interview.time)
             res = await session.execute(stmt)
             return [model_to_dict(i) for i in res.scalars().all()]

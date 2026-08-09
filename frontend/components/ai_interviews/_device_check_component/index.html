@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  html, body { margin: 0; padding: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: transparent; }
+  .wrap { padding: 4px 0 12px 0; }
+  .check-item {
+    display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px;
+    background: #F8FAFC; border: 1px solid #F1F5F9; font-size: 14px; color: #0F172A; max-width: 360px;
+  }
+  .check-item .icon { font-size: 15px; width: 18px; text-align: center; }
+  .check-item.ok { background: #F0FDF4; border-color: #DCFCE7; color: #166534; }
+  .check-item.pending { color: #64748B; }
+  .check-item.fail { background: #FEF2F2; border-color: #FEE2E2; color: #991B1B; }
+  .error-box {
+    margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: #FEF2F2;
+    border: 1px solid #FEE2E2; color: #991B1B; font-size: 13px; line-height: 1.5; max-width: 360px;
+  }
+  .retry-btn {
+    margin-top: 10px; padding: 8px 16px; border-radius: 8px; border: none;
+    background: #6366F1; color: white; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .retry-btn:hover { background: #4F46E5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="check-item pending" id="row-mic"><span class="icon">○</span><span>Microphone</span></div>
+  <div id="errorBox" style="display:none;" class="error-box"></div>
+  <button id="retryBtn" class="retry-btn" style="display:none;">Try Again</button>
+</div>
+
+<script>
+function sendToStreamlit(type, data) {
+  window.parent.postMessage(Object.assign({ isStreamlitMessage: true, type: type }, data), "*");
+}
+function setFrameHeight() {
+  sendToStreamlit("streamlit:setFrameHeight", { height: document.documentElement.scrollHeight + 10 });
+}
+function sendValue(value) {
+  sendToStreamlit("streamlit:setComponentValue", { value: value, dataType: "json" });
+}
+sendToStreamlit("streamlit:componentReady", { apiVersion: 1 });
+
+function setRow(id, state, label) {
+  const el = document.getElementById(id);
+  el.classList.remove("ok", "pending", "fail");
+  el.classList.add(state);
+  const icon = state === "ok" ? "✓" : state === "fail" ? "✕" : "○";
+  el.querySelector(".icon").textContent = icon;
+  if (label) el.querySelector("span:last-child").textContent = label;
+}
+
+function showError(message) {
+  const box = document.getElementById("errorBox");
+  box.style.display = "block";
+  box.textContent = message;
+  document.getElementById("retryBtn").style.display = "inline-block";
+  setFrameHeight();
+}
+
+async function requestMic() {
+  document.getElementById("errorBox").style.display = "none";
+  document.getElementById("retryBtn").style.display = "none";
+  setRow("row-mic", "pending", "Microphone");
+
+  let micOk = false;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    micOk = true;
+    // We only needed this to confirm + trigger the permission grant; the
+    // live interview screen's SpeechRecognition manages microphone capture
+    // itself and does not need this stream kept open.
+    stream.getTracks().forEach((t) => t.stop());
+  } catch (e) {
+    micOk = false;
+  }
+
+  setRow("row-mic", micOk ? "ok" : "fail", "Microphone" + (micOk ? " detected" : ""));
+
+  if (!micOk) {
+    showError("Microphone access is required for the AI interview.");
+  }
+
+  setFrameHeight();
+  sendValue({ microphone: micOk });
+}
+
+document.getElementById("retryBtn").addEventListener("click", requestMic);
+
+window.addEventListener("load", () => {
+  setFrameHeight();
+  requestMic();
+});
+</script>
+</body>
+</html>
