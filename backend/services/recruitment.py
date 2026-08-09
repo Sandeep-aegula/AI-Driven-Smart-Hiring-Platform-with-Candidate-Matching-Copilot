@@ -973,21 +973,21 @@ async def screen_resume_against_job(session: Any, candidate_id: int, job_id: int
     if resume:
         resume_text = resume.get("extracted_text", "")
     if not resume_text:
-        resume_text = f"Name: {candidate['name']}\nSkills: {', '.join(s.get('name') if isinstance(s, dict) else s for s in candidate['skills'])}\nSummary: {candidate['summary']}"
+        resume_text = f"Name: {candidate.get('name', 'Unknown')}\nSkills: {', '.join(s.get('name') if isinstance(s, dict) else s for s in candidate.get('skills', []))}\nSummary: {candidate.get('summary', '')}"
 
     job_text = f"""
-Title: {job['title']}
-Department: {job['department']}
-Location: {job['location']}
-Hiring Manager: {job['hiring_manager']}
-Experience: {job['experience_min']} to {job['experience_max']} years
-Salary: {job['salary_min']} to {job['salary_max']}
-Employment Type: {job['employment_type']}
-Description: {job['description']}
-Responsibilities: {', '.join(job['responsibilities'] or [])}
-Requirements: {', '.join(job['requirements'] or [])}
-Preferred Skills: {', '.join(job['preferred_skills'] or [])}
-Nice to Have: {', '.join(job['nice_to_have_skills'] or [])}
+Title: {job.get('title', '')}
+Department: {job.get('department', '')}
+Location: {job.get('location', '')}
+Hiring Manager: {job.get('hiring_manager', '')}
+Experience: {job.get('experience_min', 0)} to {job.get('experience_max', 0)} years
+Salary: {job.get('salary_min', 0)} to {job.get('salary_max', 0)}
+Employment Type: {job.get('employment_type', '')}
+Description: {job.get('description', '')}
+Responsibilities: {', '.join(job.get('responsibilities') or [])}
+Requirements: {', '.join(job.get('requirements') or [])}
+Preferred Skills: {', '.join(job.get('preferred_skills') or [])}
+Nice to Have: {', '.join(job.get('nice_to_have_skills') or [])}
 """
 
     client = OllamaClient()

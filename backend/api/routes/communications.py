@@ -232,7 +232,7 @@ async def _build_pending_entry(candidate: dict, interview: dict | None = None) -
     job_title = "Unknown Role"
     job_id = None
     if candidate.get("applications"):
-        application = candidate["applications"][0]
+        application = candidate.get("applications", [])[0]
         job_id = application.get("job_id")
     if job_id:
             job = await data_store.get_job(job_id)
@@ -732,7 +732,7 @@ async def send_communication_email(payload: CommunicationSendRequest) -> EmailRe
         job_title = job.get("title", "") if job else ""
     else:
         if candidate.get("applications"):
-            app = candidate["applications"][0]
+            app = candidate.get("applications", [])[0]
             job_id = app.get("job_id")
             job = await data_store.get_job(job_id)
             job_title = job.get("title", "") if job else ""
@@ -842,7 +842,7 @@ async def send_communication_email_multipart(
         job_title = job.get("title", "") if job else ""
     else:
         if candidate.get("applications"):
-            app = candidate["applications"][0]
+            app = candidate.get("applications", [])[0]
             job_id = app.get("job_id")
             job = await data_store.get_job(job_id)
             job_title = job.get("title", "") if job else ""
@@ -950,7 +950,7 @@ async def save_communication_draft(payload: CommunicationSendRequest) -> EmailRe
         job_title = job.get("title", "") if job else ""
     else:
         if candidate.get("applications"):
-            app = candidate["applications"][0]
+            app = candidate.get("applications", [])[0]
             job_id = app.get("job_id")
             job = await data_store.get_job(job_id)
             job_title = job.get("title", "") if job else ""
