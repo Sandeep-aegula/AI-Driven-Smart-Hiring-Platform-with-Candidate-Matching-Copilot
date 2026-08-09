@@ -82,6 +82,10 @@ def create_app() -> FastAPI:
     from backend.api.routes.assistant import router as assistant_router
     app.include_router(assistant_router, prefix="/api/assistant", tags=["assistant"])
 
+    # Isolated AI Interview module -- see backend/api/routes/ai_interviews.py
+    from backend.api.routes.ai_interviews import router as ai_interviews_router
+    app.include_router(ai_interviews_router, prefix="/api/ai-interviews", tags=["ai-interviews"])
+
     @app.get("/health")
     async def health() -> dict[str, str]:
         return {"status": "ok", "database": "mysql"}

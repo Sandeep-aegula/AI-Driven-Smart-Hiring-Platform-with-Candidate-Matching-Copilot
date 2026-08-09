@@ -42,10 +42,14 @@ def render_page():
                     if token:
                         st.session_state.token = token
                         st.session_state.app_mode = "hr_portal"
+                        st.session_state.hr_email = email
                         # Clear public page routing state to let app.py show the HR dashboard
                         if "public_page" in st.session_state:
                             del st.session_state.public_page
                         st.query_params.clear()
+                        st.query_params["token"] = token
+                        st.query_params["app_mode"] = "hr_portal"
+                        st.query_params["hr_email"] = email
                         st.rerun()
                     else:
                         st.error("Invalid email or password. Please try again.")
@@ -54,9 +58,13 @@ def render_page():
                     if email == "admin@hirepilot.com" and password:
                         st.session_state.token = "demo-jwt-token-123"
                         st.session_state.app_mode = "hr_portal"
+                        st.session_state.hr_email = email
                         if "public_page" in st.session_state:
                             del st.session_state.public_page
                         st.query_params.clear()
+                        st.query_params["token"] = "demo-jwt-token-123"
+                        st.query_params["app_mode"] = "hr_portal"
+                        st.query_params["hr_email"] = email
                         st.rerun()
                     else:
                         st.error("Invalid email or password. Please try again.")

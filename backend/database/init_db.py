@@ -23,6 +23,7 @@ from backend.database.schema_migrations import ensure_all_schemas
 
 # Import all models so they register on Base.metadata before create_all().
 import backend.models.entities  # noqa: F401
+import backend.models.ai_interview_entities  # noqa: F401 -- isolated AI Interview module table
 
 logger = logging.getLogger(__name__)
 

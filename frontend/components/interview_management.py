@@ -43,24 +43,31 @@ def _render_list_view():
             
     # Need to get jobs and candidates to map IDs to Names
     cands = get_candidates_cached()
-    cand_map = {c.get("id"): c.get("name", "Unknown") for c in cands if isinstance(c, dict)}
+    cand_map = {c.get("id"): c for c in cands if isinstance(c, dict)}
     jobs = get_jobs_cached()
     job_map = {j["id"]: j["title"] for j in jobs}
-            
+
     interviews = api_client.get_interviews(status=status_filter, round_name=round_filter)
-    
+
     if not interviews:
         st.info("No interviews found for the given filters.")
         return
-        
+
     # Render table
     data = []
     for iv in interviews:
         job_id = iv.get("job_id")
+        cand = cand_map.get(iv.get("candidate_id"))
+        # A candidate can only be scheduled for an interview by way of a real
+        # application, and every application is tied to a real job -- so the
+        # job always resolves. Fall back to the candidate's own job_title
+        # (from their application) if the interview's own job_id doesn't
+        # resolve, instead of showing an "Unknown" job.
+        job_title = job_map.get(job_id) or (cand.get("job_title") if cand else None) or ""
         data.append({
             "ID": iv["id"],
-            "Candidate": cand_map.get(iv.get("candidate_id"), f"Unknown ({iv.get('candidate_id', 'N/A')})"),
-            "Job": job_map.get(job_id, f"Unknown ({job_id if job_id is not None else 'N/A'})"),
+            "Candidate": cand.get("name", "Unknown") if cand else f"Unknown ({iv.get('candidate_id', 'N/A')})",
+            "Job": job_title,
             "Round": iv.get("round", ""),
             "Date": iv.get("date", ""),
             "Time": iv.get("time", ""),
@@ -113,7 +120,7 @@ def _render_schedule_view():
         with col1:
             sel_cand_name = st.selectbox("Candidate *", list(c_data_map.keys()), index=default_c_idx)
             sel_job_title = st.selectbox("Job *", list(j_map.keys()))
-            iv_round = st.selectbox("Round *", ["HR Screen", "Technical", "Coding", "Behavioral", "System Design", "Managerial"])
+            iv_round = st.selectbox("Round *", ["HR Screen", "Technical", "Coding", "Behavioral", "System Design", "Managerial", "AI Interview"])
             iv_type = st.selectbox("Type", ["Online", "Offline"])
             platform = st.selectbox("Meeting Platform", ["Google Meet", "Zoom", "Microsoft Teams", "In-person"])
         with col2:

@@ -12,6 +12,7 @@ _NAV_ITEMS = (
     ("Resume Parser", ":material/description:"),
     ("AI Screening", ":material/psychology:"),
     ("Interviews", ":material/event:"),
+    ("AI Interviews", ":material/videocam:"),
     ("Communications", ":material/mail:"),
     ("Onboarding", ":material/assignment_ind:"),
     ("Employees", ":material/badge:"),
@@ -40,6 +41,7 @@ def render_sidebar() -> None:
                 type="secondary",
             ):
                 st.session_state["current_page"] = page
+                st.query_params["current_page"] = page
                 st.rerun()
 
         st.space("medium")
@@ -56,4 +58,5 @@ def render_sidebar() -> None:
             except Exception as exc:
                 logger.warning("Backend logout call failed: %s", exc)
             clear_hr_session_state()
+            st.query_params.clear()
             st.rerun()
