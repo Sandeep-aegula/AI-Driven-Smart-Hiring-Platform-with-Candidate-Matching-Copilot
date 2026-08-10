@@ -167,11 +167,35 @@ def _build_interview_invitation_draft(
     return subject, "\n".join(body_lines)
 
 
-def _communication_response(communication: Communication, candidate: Candidate, interview: Interview, job: Job | None) -> dict[str, Any]:
-    interview_date, interview_time = _format_date_time(interview.date or "", interview.time or "")
+# def _communication_response(communication: Communication, candidate: Candidate, interview: Interview, job: Job | None) -> dict[str, Any]:
+#     interview_date, interview_time = _format_date_time(interview.date or "", interview.time or "")
+#     return {
+#         "communication_id": communication.id,
+#         "interview_id": interview.id,
+#         "candidate_id": candidate.id,
+#         "candidate_name": candidate.name,
+#         "recipient_email": communication.email,
+#         "subject": communication.subject,
+#         "body": communication.message,
+#         "status": communication.status,
+#         "generated_at": communication.generated_at.isoformat(timespec="seconds") if communication.generated_at else _iso_now(),
+#         "job_id": communication.job_id,
+#         "job_title": job.title if job else "",
+#         "round_name": interview.round,
+#         "interview_mode": interview.type,
+#         "interview_date": interview_date or interview.date,
+#         "interview_time": interview_time or interview.time,
+#         "timezone": interview.timezone or "UTC",
+#     }
+def _communication_response(communication: Communication, candidate: Candidate, interview: Interview | None, job: Job | None) -> dict[str, Any]:
+    if interview:
+        interview_date, interview_time = _format_date_time(interview.date or "", interview.time or "")
+    else:
+        interview_date, interview_time = "", ""
+
     return {
         "communication_id": communication.id,
-        "interview_id": interview.id,
+        "interview_id": interview.id if interview else None,
         "candidate_id": candidate.id,
         "candidate_name": candidate.name,
         "recipient_email": communication.email,
@@ -181,13 +205,12 @@ def _communication_response(communication: Communication, candidate: Candidate, 
         "generated_at": communication.generated_at.isoformat(timespec="seconds") if communication.generated_at else _iso_now(),
         "job_id": communication.job_id,
         "job_title": job.title if job else "",
-        "round_name": interview.round,
-        "interview_mode": interview.type,
-        "interview_date": interview_date or interview.date,
-        "interview_time": interview_time or interview.time,
-        "timezone": interview.timezone or "UTC",
+        "round_name": interview.round if interview else communication.recruitment_round,
+        "interview_mode": interview.type if interview else "",
+        "interview_date": interview_date if interview else "",
+        "interview_time": interview_time if interview else "",
+        "timezone": interview.timezone if interview else "UTC",
     }
-
 
 def clear_pending_cache() -> None:
     _pending_queue_cache["timestamp"] = None
@@ -515,6 +538,42 @@ async def _load_communication_bundle(session, communication_id: int) -> tuple[Co
     return communication, candidate, job, interview
 
 
+# @router.post("/{communication_id}/generate-draft", response_model=CommunicationDraftResponse)
+# async def generate_interview_draft(communication_id: int, payload: CommunicationDraftGenerateRequest):
+#     try:
+#         async with get_db_session() as session:
+#             communication, candidate, job, interview = await _load_communication_bundle(session, communication_id)
+#             if not communication:
+#                 raise HTTPException(status_code=404, detail="Communication not found")
+#             if not candidate:
+#                 raise HTTPException(status_code=404, detail="Candidate not found")
+#             if not interview:
+#                 raise HTTPException(
+#                     status_code=404,
+#                     detail={
+#                         "message": "Interview not found for communication",
+#                         "communication_id": communication_id,
+#                         "candidate_id": communication.candidate_id,
+#                         "job_id": communication.job_id,
+#                         "recruitment_round": communication.recruitment_round,
+#                     },
+#                 )
+
+#             if communication.status == "draft" and not payload.regenerate and communication.subject and communication.message:
+#                 return _communication_response(communication, candidate, interview, job)
+
+#             subject, body = _build_interview_invitation_draft(communication, candidate, job, interview)
+#             communication.subject = subject
+#             communication.message = body
+#             communication.status = "draft"
+#             communication.generated_at = datetime.utcnow()
+#             communication.error_message = ""
+#             await session.commit()
+#             await session.refresh(communication)
+#             clear_pending_cache()
+#             return _communication_response(communication, candidate, interview, job)
+#     except ValueError as exc:
+#         raise HTTPException(status_code=400, detail=str(exc))
 @router.post("/{communication_id}/generate-draft", response_model=CommunicationDraftResponse)
 async def generate_interview_draft(communication_id: int, payload: CommunicationDraftGenerateRequest):
     try:
@@ -524,22 +583,23 @@ async def generate_interview_draft(communication_id: int, payload: Communication
                 raise HTTPException(status_code=404, detail="Communication not found")
             if not candidate:
                 raise HTTPException(status_code=404, detail="Candidate not found")
-            if not interview:
-                raise HTTPException(
-                    status_code=404,
-                    detail={
-                        "message": "Interview not found for communication",
-                        "communication_id": communication_id,
-                        "candidate_id": communication.candidate_id,
-                        "job_id": communication.job_id,
-                        "recruitment_round": communication.recruitment_round,
-                    },
-                )
 
             if communication.status == "draft" and not payload.regenerate and communication.subject and communication.message:
                 return _communication_response(communication, candidate, interview, job)
 
-            subject, body = _build_interview_invitation_draft(communication, candidate, job, interview)
+            if interview:
+                # existing interview-invite logic
+                subject, body = _build_interview_invitation_draft(communication, candidate, job, interview)
+            else:
+                # NEW: no interview yet → generic communication draft (e.g. Shortlisted notice)
+                candidate_dict = {"name": candidate.name, "current_title": "", "match_score": 0}
+                job_dict = {"title": job.title if job else ""}
+                draft = await draft_communication_email(
+                    candidate_dict, job_dict, None,
+                    email_type=communication.recruitment_round or "Shortlisted",
+                )
+                subject, body = draft["subject"], draft["body"]
+
             communication.subject = subject
             communication.message = body
             communication.status = "draft"
@@ -551,7 +611,6 @@ async def generate_interview_draft(communication_id: int, payload: Communication
             return _communication_response(communication, candidate, interview, job)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
-
 
 @router.post("/generate-drafts")
 async def generate_bulk_interview_drafts(payload: CommunicationBulkDraftRequest) -> dict:
@@ -656,6 +715,62 @@ async def cancel_interview_communication(communication_id: int):
         return _communication_response(communication, candidate, interview, job)
 
 
+# @router.post("/{communication_id}/send")
+# async def send_interview_draft(communication_id: int) -> dict:
+#     async with get_db_session() as session:
+#         communication, candidate, job, interview = await _load_communication_bundle(session, communication_id)
+#         if not communication:
+#             raise HTTPException(status_code=404, detail="Communication not found")
+#         if not candidate:
+#             raise HTTPException(status_code=404, detail="Candidate not found")
+#         if not interview:
+#             raise HTTPException(status_code=404, detail="Interview not found for communication")
+#         if not communication.subject or not communication.message:
+#             raise HTTPException(status_code=400, detail="Draft is missing subject or body")
+
+#         recipient_email = candidate.email.strip()
+#         send_result = _safe_send_result({"success": False, "status_code": 500, "error_message": "Email service failed to send the message."})
+#         if recipient_email:
+#             send_result = _safe_send_result(
+#                 send_custom_email(
+#                     subject=communication.subject,
+#                     body=communication.message,
+#                     recipient=recipient_email,
+#                     sender=settings.smtp_from_email,
+#                 )
+#             )
+
+#         communication.status = "sent" if send_result["success"] else "failed"
+#         communication.sent_at = datetime.utcnow() if send_result["success"] else None
+#         communication.error_message = send_result["error_message"] if not send_result["success"] else ""
+#         if send_result["success"] and interview:
+#             interview.invitation_email_status = "sent"
+#             interview.invitation_sent_at = datetime.utcnow()
+#         elif interview:
+#             interview.invitation_email_status = "failed"
+#         await session.commit()
+#         clear_pending_cache()
+
+#     if not send_result["success"]:
+#         return JSONResponse(
+#             status_code=send_result["status_code"],
+#             content={
+#                 "success": False,
+#                 "message": send_result["error_message"],
+#                 "error_message": send_result["error_message"],
+#                 "status": "failed",
+#             },
+#         )
+
+#     return {
+#         "success": True,
+#         "message": "Interview invitation sent successfully.",
+#         "status": "sent",
+#         "communication_id": communication_id,
+#         "candidate_id": candidate.id,
+#         "interview_id": interview.id,
+#         "recipient_email": recipient_email,
+#     }
 @router.post("/{communication_id}/send")
 async def send_interview_draft(communication_id: int) -> dict:
     async with get_db_session() as session:
@@ -664,8 +779,6 @@ async def send_interview_draft(communication_id: int) -> dict:
             raise HTTPException(status_code=404, detail="Communication not found")
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        if not interview:
-            raise HTTPException(status_code=404, detail="Interview not found for communication")
         if not communication.subject or not communication.message:
             raise HTTPException(status_code=400, detail="Draft is missing subject or body")
 
@@ -684,11 +797,10 @@ async def send_interview_draft(communication_id: int) -> dict:
         communication.status = "sent" if send_result["success"] else "failed"
         communication.sent_at = datetime.utcnow() if send_result["success"] else None
         communication.error_message = send_result["error_message"] if not send_result["success"] else ""
-        if send_result["success"] and interview:
-            interview.invitation_email_status = "sent"
-            interview.invitation_sent_at = datetime.utcnow()
-        elif interview:
-            interview.invitation_email_status = "failed"
+        if interview:
+            interview.invitation_email_status = "sent" if send_result["success"] else "failed"
+            if send_result["success"]:
+                interview.invitation_sent_at = datetime.utcnow()
         await session.commit()
         clear_pending_cache()
 
@@ -709,10 +821,9 @@ async def send_interview_draft(communication_id: int) -> dict:
         "status": "sent",
         "communication_id": communication_id,
         "candidate_id": candidate.id,
-        "interview_id": interview.id,
+        "interview_id": interview.id if interview else None,
         "recipient_email": recipient_email,
     }
-
 
 @router.post("/send")
 async def send_communication_email(payload: CommunicationSendRequest) -> EmailRecord:

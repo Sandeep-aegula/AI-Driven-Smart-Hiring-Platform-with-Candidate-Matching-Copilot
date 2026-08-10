@@ -16,6 +16,7 @@ SHORTLISTABLE_CANDIDATE_STATUSES = [
     "under_review",
     "applied",
     "new",
+    "Screening"
 ]
 
 # Application statuses that are considered "final" (cannot be shortlisted)

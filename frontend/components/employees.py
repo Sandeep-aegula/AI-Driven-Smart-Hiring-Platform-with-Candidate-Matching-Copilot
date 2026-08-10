@@ -707,72 +707,561 @@ def _render_employee_profile(emp):
             st.success(f"Report would be downloaded for {emp.get('name')}")
 
 
+# def _render_edit_employee_form(emp):
+#     """Render the edit form for employee profile."""
+#     st.markdown("### Edit Employee Profile")
+    
+#     with st.form(f"edit_employee_{emp.get('id')}"):
+#         col1, col2 = st.columns(2)
+#         with col1:
+#             name = st.text_input("Full Name", value=emp.get("name", ""))
+#             email = st.text_input("Email", value=emp.get("email", ""))
+#             phone = st.text_input("Phone", value=emp.get("phone", ""))
+#             department = st.selectbox("Department", 
+#                 ["Engineering", "Analytics", "HR", "Sales", "Design", "Marketing", "Finance"],
+#                 index=["Engineering", "Analytics", "HR", "Sales", "Design", "Marketing", "Finance"].index(emp.get("department", "Engineering")) if emp.get("department") in ["Engineering", "Analytics", "HR", "Sales", "Design", "Marketing", "Finance"] else 0)
+#             designation = st.text_input("Designation", value=emp.get("designation", ""))
+#         with col2:
+#             work_location = st.selectbox("Work Location", 
+#                 ["Remote", "Hybrid", "On-site"],
+#                 index=["Remote", "Hybrid", "On-site"].index(emp.get("work_location", "Remote")) if emp.get("work_location") in ["Remote", "Hybrid", "On-site"] else 0)
+#             joining_date = st.date_input("Joining Date", value=emp.get("joining_date", ""))
+#             status = st.selectbox("Status", 
+#                 ["Active", "On Leave", "Ex-Employee"],
+#                 index=["Active", "On Leave", "Ex-Employee"].index(emp.get("status", "Active")) if emp.get("status") in ["Active", "On Leave", "Ex-Employee"] else 0)
+#             reporting_manager = st.text_input("Reporting Manager", value=emp.get("reporting_manager", ""))
+#             current_project = st.text_input("Current Project", value=emp.get("current_project", ""))
+        
+#         # st.markdown("**Skills:**")
+#         # skills = emp.get("skills", [])
+#         # if skills:
+#         #     for i, skill in enumerate(skills):
+#         #         col_s1, col_s2, col_s3 = st.columns([3, 1, 1])
+#         #         with col_s1:
+#         #             skill_name = st.text_input(f"Skill {i+1} Name", value=skill.get("name", ""), key=f"skill_name_{i}")
+#         #         with col_s2:
+#         #             proficiency = st.number_input(f"Proficiency %", value=skill.get("proficiency", 50), min_value=0, max_value=100, key=f"skill_prof_{i}")
+#         #         with col_s3:
+#         #             skill_status = st.selectbox(f"Status", ["Acquired", "Learning", "Planned"], 
+#         #                 index=["Acquired", "Learning", "Planned"].index(skill.get("status", "Acquired")) if skill.get("status") in ["Acquired", "Learning", "Planned"] else 0,
+#         #                 key=f"skill_status_{i}")
+#         st.markdown("**Skills:**")
+
+#             skills = emp.get("skills", [])
+
+#             # Always show at least one skill input
+#             if not skills:
+#                 skills = [
+#                     {
+#                         "name": "",
+#                        "proficiency": 50,
+#                         "status": "Acquired"
+#                     }
+#                 ]
+
+#             for i, skill in enumerate(skills):
+            
+#                 # Support both dictionary and string skill formats
+#                 if isinstance(skill, dict):
+#                     skill_name_value = skill.get("name", "")
+#                     proficiency_value = skill.get("proficiency", 50)
+#                     status_value = skill.get("status", "Acquired")
+#                 else:
+#                     skill_name_value = str(skill)
+#                     proficiency_value = 50
+#                     status_value = "Acquired"
+            
+#                 col_s1, col_s2, col_s3 = st.columns([3, 1, 1])
+
+#                with col_s1:
+#                    skill_name = st.text_input(
+#                         f"Skill {i+1} Name",
+#                        value=skill_name_value,
+#                        key=f"skill_name_{emp.get('id')}_{i}"
+#                    )
+            
+#                with col_s2:
+#                    proficiency = st.number_input(
+#                        "Proficiency %",
+#                        min_value=0,
+#                        max_value=100,
+#                        value=int(proficiency_value),
+#                        key=f"skill_prof_{emp.get('id')}_{i}"
+#                    )
+            
+#                 with col_s3:
+#                     skill_status = st.selectbox(
+#                         "Status",
+#                         ["Acquired", "Learning", "Planned"],
+#                         index=(
+#                             ["Acquired", "Learning", "Planned"].index(status_value)
+#                             if status_value in ["Acquired", "Learning", "Planned"]
+#                            else 0
+#                        ),
+#                        key=f"skill_status_{emp.get('id')}_{i}"
+#                    )
+#     with col_s3:
+#         skill_status = st.selectbox(
+#             "Status",
+#             ["Acquired", "Learning", "Planned"],
+#             index=(
+#                 ["Acquired", "Learning", "Planned"].index(status_value)
+#                 if status_value in ["Acquired", "Learning", "Planned"]
+#                 else 0
+#             ),
+#             key=f"skill_status_{emp.get('id')}_{i}"
+#         )
+        
+#         # st.markdown("**Projects:**")
+#         # projects = emp.get("projects", [])
+#         # if projects:
+#         #     for i, proj in enumerate(projects):
+#         #         if isinstance(proj, dict):
+#         #             proj_name = st.text_input(f"Project {i+1} Name", value=proj.get("name", ""), key=f"proj_name_{i}")
+#         #             proj_role = st.text_input(f"Role", value=proj.get("role", ""), key=f"proj_role_{i}")
+#         #             proj_client = st.text_input(f"Client", value=proj.get("client", "Internal"), key=f"proj_client_{i}")
+#         #             proj_desc = st.text_area(f"Description", value=proj.get("description", ""), key=f"proj_desc_{i}")
+#         #         else:
+#         #             proj_name = st.text_input(f"Project {i+1} Name", value=str(proj), key=f"proj_name_{i}")
+#         #             proj_role = st.text_input(f"Role", value="", key=f"proj_role_{i}")
+#         #             proj_client = st.text_input(f"Client", value="Internal", key=f"proj_client_{i}")
+#         #             proj_desc = st.text_area(f"Description", value="", key=f"proj_desc_{i}")
+        
+#         col_save, col_cancel = st.columns(2)
+#         with col_save:
+#             if st.form_submit_button("Save Changes", type="primary", width='stretch'):
+#                 # TODO: Implement save logic
+#                 st.success("Profile updated successfully!")
+#                 st.session_state.pop("edit_employee_id", None)
+#                 st.rerun()
+#         with col_cancel:
+#             if st.form_submit_button("Cancel", width='stretch'):
+#                 st.session_state.pop("edit_employee_id", None)
+#                 st.rerun()
 def _render_edit_employee_form(emp):
     """Render the edit form for employee profile."""
+
     st.markdown("### Edit Employee Profile")
-    
+
     with st.form(f"edit_employee_{emp.get('id')}"):
+
+        # ============================================================
+        # BASIC EMPLOYEE INFORMATION
+        # ============================================================
+
         col1, col2 = st.columns(2)
+
         with col1:
-            name = st.text_input("Full Name", value=emp.get("name", ""))
-            email = st.text_input("Email", value=emp.get("email", ""))
-            phone = st.text_input("Phone", value=emp.get("phone", ""))
-            department = st.selectbox("Department", 
-                ["Engineering", "Analytics", "HR", "Sales", "Design", "Marketing", "Finance"],
-                index=["Engineering", "Analytics", "HR", "Sales", "Design", "Marketing", "Finance"].index(emp.get("department", "Engineering")) if emp.get("department") in ["Engineering", "Analytics", "HR", "Sales", "Design", "Marketing", "Finance"] else 0)
-            designation = st.text_input("Designation", value=emp.get("designation", ""))
+            name = st.text_input(
+                "Full Name",
+                value=emp.get("name", "")
+            )
+
+            email = st.text_input(
+                "Email",
+                value=emp.get("email", "")
+            )
+
+            phone = st.text_input(
+                "Phone",
+                value=emp.get("phone", "")
+            )
+
+            departments = [
+                "Engineering",
+                "Analytics",
+                "HR",
+                "Sales",
+                "Design",
+                "Marketing",
+                "Finance"
+            ]
+
+            current_department = emp.get(
+                "department",
+                "Engineering"
+            )
+
+            department = st.selectbox(
+                "Department",
+                departments,
+                index=(
+                    departments.index(current_department)
+                    if current_department in departments
+                    else 0
+                )
+            )
+
+            designation = st.text_input(
+                "Designation",
+                value=emp.get("designation", "")
+            )
+
         with col2:
-            work_location = st.selectbox("Work Location", 
-                ["Remote", "Hybrid", "On-site"],
-                index=["Remote", "Hybrid", "On-site"].index(emp.get("work_location", "Remote")) if emp.get("work_location") in ["Remote", "Hybrid", "On-site"] else 0)
-            joining_date = st.date_input("Joining Date", value=emp.get("joining_date", ""))
-            status = st.selectbox("Status", 
-                ["Active", "On Leave", "Ex-Employee"],
-                index=["Active", "On Leave", "Ex-Employee"].index(emp.get("status", "Active")) if emp.get("status") in ["Active", "On Leave", "Ex-Employee"] else 0)
-            reporting_manager = st.text_input("Reporting Manager", value=emp.get("reporting_manager", ""))
-            current_project = st.text_input("Current Project", value=emp.get("current_project", ""))
-        
-        st.markdown("**Skills:**")
+
+            work_locations = [
+                "Remote",
+                "Hybrid",
+                "On-site"
+            ]
+
+            current_location = emp.get(
+                "work_location",
+                "Remote"
+            )
+
+            work_location = st.selectbox(
+                "Work Location",
+                work_locations,
+                index=(
+                    work_locations.index(current_location)
+                    if current_location in work_locations
+                    else 0
+                )
+            )
+
+            # Joining date
+            joining_date_value = emp.get("joining_date", "")
+
+            from datetime import date, datetime
+
+            if isinstance(joining_date_value, datetime):
+                joining_date_value = joining_date_value.date()
+
+            elif isinstance(joining_date_value, str):
+                try:
+                    joining_date_value = datetime.strptime(
+                        joining_date_value,
+                        "%Y-%m-%d"
+                    ).date()
+                except ValueError:
+                    try:
+                        joining_date_value = datetime.strptime(
+                            joining_date_value,
+                            "%Y/%m/%d"
+                        ).date()
+                    except ValueError:
+                        joining_date_value = date.today()
+
+            elif not isinstance(joining_date_value, date):
+                joining_date_value = date.today()
+
+            joining_date = st.date_input(
+                "Joining Date",
+                value=joining_date_value
+            )
+
+            statuses = [
+                "Active",
+                "On Leave",
+                "Ex-Employee"
+            ]
+
+            current_status = emp.get(
+                "status",
+                "Active"
+            )
+
+            status = st.selectbox(
+                "Status",
+                statuses,
+                index=(
+                    statuses.index(current_status)
+                    if current_status in statuses
+                    else 0
+                )
+            )
+
+            reporting_manager = st.text_input(
+                "Reporting Manager",
+                value=emp.get("reporting_manager", "")
+            )
+
+            current_project = st.text_input(
+                "Current Project",
+                value=emp.get("current_project", "")
+            )
+
+        # ============================================================
+        # SKILLS
+        # ============================================================
+
+        st.markdown("### Skills")
+
         skills = emp.get("skills", [])
-        if skills:
-            for i, skill in enumerate(skills):
-                col_s1, col_s2, col_s3 = st.columns([3, 1, 1])
-                with col_s1:
-                    skill_name = st.text_input(f"Skill {i+1} Name", value=skill.get("name", ""), key=f"skill_name_{i}")
-                with col_s2:
-                    proficiency = st.number_input(f"Proficiency %", value=skill.get("proficiency", 50), min_value=0, max_value=100, key=f"skill_prof_{i}")
-                with col_s3:
-                    skill_status = st.selectbox(f"Status", ["Acquired", "Learning", "Planned"], 
-                        index=["Acquired", "Learning", "Planned"].index(skill.get("status", "Acquired")) if skill.get("status") in ["Acquired", "Learning", "Planned"] else 0,
-                        key=f"skill_status_{i}")
-        
-        st.markdown("**Projects:**")
+
+        # Always display at least one input
+        if not skills:
+            skills = [
+                {
+                    "name": "",
+                    "proficiency": 50,
+                    "status": "Acquired"
+                }
+            ]
+
+        skill_values = []
+
+        for i, skill in enumerate(skills):
+
+            # Support both dictionary and string formats
+            if isinstance(skill, dict):
+
+                skill_name_value = skill.get(
+                    "name",
+                    ""
+                )
+
+                proficiency_value = skill.get(
+                    "proficiency",
+                    50
+                )
+
+                status_value = skill.get(
+                    "status",
+                    "Acquired"
+                )
+
+            else:
+
+                skill_name_value = str(skill)
+
+                proficiency_value = 50
+
+                status_value = "Acquired"
+
+            col_s1, col_s2, col_s3 = st.columns(
+                [3, 1, 1]
+            )
+
+            with col_s1:
+
+                skill_name = st.text_input(
+                    f"Skill {i + 1} Name",
+                    value=skill_name_value,
+                    key=f"skill_name_{emp.get('id')}_{i}"
+                )
+
+            with col_s2:
+
+                try:
+                    proficiency_value = int(
+                        proficiency_value
+                    )
+                except (TypeError, ValueError):
+                    proficiency_value = 50
+
+                proficiency = st.number_input(
+                    "Proficiency %",
+                    min_value=0,
+                    max_value=100,
+                    value=proficiency_value,
+                    key=f"skill_prof_{emp.get('id')}_{i}"
+                )
+
+            with col_s3:
+
+                skill_status_options = [
+                    "Acquired",
+                    "Learning",
+                    "Planned"
+                ]
+
+                skill_status = st.selectbox(
+                    "Status",
+                    skill_status_options,
+                    index=(
+                        skill_status_options.index(
+                            status_value
+                        )
+                        if status_value in skill_status_options
+                        else 0
+                    ),
+                    key=f"skill_status_{emp.get('id')}_{i}"
+                )
+
+            skill_values.append({
+                "name": skill_name,
+                "proficiency": proficiency,
+                "status": skill_status
+            })
+
+        # ============================================================
+        # PROJECTS
+        # ============================================================
+
+        st.markdown("### Projects")
+
         projects = emp.get("projects", [])
-        if projects:
-            for i, proj in enumerate(projects):
-                if isinstance(proj, dict):
-                    proj_name = st.text_input(f"Project {i+1} Name", value=proj.get("name", ""), key=f"proj_name_{i}")
-                    proj_role = st.text_input(f"Role", value=proj.get("role", ""), key=f"proj_role_{i}")
-                    proj_client = st.text_input(f"Client", value=proj.get("client", "Internal"), key=f"proj_client_{i}")
-                    proj_desc = st.text_area(f"Description", value=proj.get("description", ""), key=f"proj_desc_{i}")
-                else:
-                    proj_name = st.text_input(f"Project {i+1} Name", value=str(proj), key=f"proj_name_{i}")
-                    proj_role = st.text_input(f"Role", value="", key=f"proj_role_{i}")
-                    proj_client = st.text_input(f"Client", value="Internal", key=f"proj_client_{i}")
-                    proj_desc = st.text_area(f"Description", value="", key=f"proj_desc_{i}")
-        
+
+        # Always display at least one project
+        if not projects:
+            projects = [
+                {
+                    "name": "",
+                    "role": "",
+                    "client": "Internal",
+                    "description": ""
+                }
+            ]
+
+        project_values = []
+
+        for i, project in enumerate(projects):
+
+            # Support both dictionary and string formats
+            if isinstance(project, dict):
+
+                project_name_value = project.get(
+                    "name",
+                    ""
+                )
+
+                project_role_value = project.get(
+                    "role",
+                    ""
+                )
+
+                project_client_value = project.get(
+                    "client",
+                    "Internal"
+                )
+
+                project_description_value = project.get(
+                    "description",
+                    ""
+                )
+
+            else:
+
+                project_name_value = str(project)
+
+                project_role_value = ""
+
+                project_client_value = "Internal"
+
+                project_description_value = ""
+
+            st.markdown(
+                f"**Project {i + 1}**"
+            )
+
+            project_name = st.text_input(
+                "Project Name",
+                value=project_name_value,
+                key=f"project_name_{emp.get('id')}_{i}"
+            )
+
+            project_col1, project_col2 = st.columns(2)
+
+            with project_col1:
+
+                project_role = st.text_input(
+                    "Role",
+                    value=project_role_value,
+                    key=f"project_role_{emp.get('id')}_{i}"
+                )
+
+            with project_col2:
+
+                project_client = st.text_input(
+                    "Client",
+                    value=project_client_value,
+                    key=f"project_client_{emp.get('id')}_{i}"
+                )
+
+            project_description = st.text_area(
+                "Description",
+                value=project_description_value,
+                key=f"project_description_{emp.get('id')}_{i}"
+            )
+
+            project_values.append({
+                "name": project_name,
+                "role": project_role,
+                "client": project_client,
+                "description": project_description
+            })
+
+        # ============================================================
+        # SAVE / CANCEL
+        # ============================================================
+
+        st.markdown("---")
+
         col_save, col_cancel = st.columns(2)
+
         with col_save:
-            if st.form_submit_button("Save Changes", type="primary", width='stretch'):
-                # TODO: Implement save logic
-                st.success("Profile updated successfully!")
-                st.session_state.pop("edit_employee_id", None)
-                st.rerun()
-        with col_cancel:
-            if st.form_submit_button("Cancel", width='stretch'):
-                st.session_state.pop("edit_employee_id", None)
+
+            if st.form_submit_button(
+                "Save Changes",
+                type="primary",
+                width="stretch"
+            ):
+
+                # ----------------------------------------------------
+                # Prepare updated employee data
+                # ----------------------------------------------------
+
+                updated_employee = {
+                    "name": name,
+                    "email": email,
+                    "phone": phone,
+                    "department": department,
+                    "designation": designation,
+                    "work_location": work_location,
+                    "joining_date": joining_date.isoformat(),
+                    "status": status,
+                    "reporting_manager": reporting_manager,
+                    "current_project": current_project,
+
+                    # Save skills entered in the form
+                    "skills": [
+                        skill
+                        for skill in skill_values
+                        if skill["name"].strip()
+                    ],
+
+                    # Save projects entered in the form
+                    "projects": [
+                        project
+                        for project in project_values
+                        if project["name"].strip()
+                    ]
+                }
+
+                # ----------------------------------------------------
+                # IMPORTANT:
+                # Your current code does not yet have the API call
+                # implemented here.
+                #
+                # For now, keep the existing behavior.
+                # ----------------------------------------------------
+
+                st.success(
+                    "Profile updated successfully!"
+                )
+
+                st.session_state.pop(
+                    "edit_employee_id",
+                    None
+                )
+
                 st.rerun()
 
+        with col_cancel:
+
+            if st.form_submit_button(
+                "Cancel",
+                width="stretch"
+            ):
+
+                st.session_state.pop(
+                    "edit_employee_id",
+                    None
+                )
+
+                st.rerun()
 
 def render_employees() -> None:
     if "selected_employee_id" not in st.session_state:

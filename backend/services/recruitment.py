@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
@@ -1016,7 +1017,13 @@ Return strict JSON with the following keys and values:
 Important: Output valid JSON only, without any markdown formatting or other explanations.
 """
     try:
-        response_text = client.generate(prompt, system="You are an expert HR Screener. Output valid JSON only.", format_json=True)
+        # client.generate() is a synchronous, blocking HTTP call. Run it in a
+        # worker thread so it doesn't freeze the single asyncio event loop
+        # (which would otherwise stall every other in-flight request -- e.g.
+        # candidate/job list pages -- for the full duration of the AI call).
+        response_text = await asyncio.to_thread(
+            client.generate, prompt, system="You are an expert HR Screener. Output valid JSON only.", format_json=True
+        )
         data = OllamaClient.parse_json_response(response_text)
         
         skill_match = int(data.get("skill_match", 70))

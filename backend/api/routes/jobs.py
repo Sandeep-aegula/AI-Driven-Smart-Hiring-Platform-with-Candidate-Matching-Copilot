@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+
 from fastapi import APIRouter, HTTPException, File, UploadFile
 from pydantic import BaseModel
 
@@ -139,7 +141,10 @@ async def clone_job(job_id: int) -> JobRead:
 @router.post("/generate-jd")
 async def generate_jd(payload: JobCreate) -> dict[str, object]:
     try:
-        return generate_job_description(payload)
+        # generate_job_description() makes a synchronous, blocking Ollama call.
+        # Offload it to a worker thread so it doesn't stall the event loop
+        # (and every other concurrent request) for the duration of the call.
+        return await asyncio.to_thread(generate_job_description, payload)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 

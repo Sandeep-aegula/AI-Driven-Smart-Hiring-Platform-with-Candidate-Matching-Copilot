@@ -24,14 +24,14 @@ async def schedule_interview(payload: InterviewCreate):
 
 @router.get("")
 async def get_interviews(
-    candidate_id: int | None = None, 
-    job_id: int | None = None, 
+    candidate_id: int | None = None,
+    job_id: int | None = None,
     status: str = "All",
     round_name: str = "All"
 ):
     return await data_store.list_interviews(
-        candidate_id=candidate_id, 
-        job_id=job_id, 
+        candidate_id=candidate_id,
+        job_id=job_id,
         status=status,
         round_name=round_name
     )
@@ -87,8 +87,8 @@ async def make_questions(interview_id: int, payload: InterviewQuestionsRequest):
         warning = f"The linked job ({job_id}) could not be found. Update the interview before generating role-specific questions."
         return {"questions": fallback_question(iv.get("job_title", ""), "linked job not found"), "warning": warning}
 
-    if not iv.get("job_title") or iv.get("job_title") == "Unknown (N/A)":
-        await data_store.update_interview(interview_id, {"job_title": job.get("title", "Unknown (N/A)")})
+    if job.get("title") and iv.get("job_title") != job.get("title"):
+        await data_store.update_interview(interview_id, {"job_title": job.get("title")})
 
     candidate = await data_store.get_candidate(iv.get("candidate_id"))
     if not candidate:

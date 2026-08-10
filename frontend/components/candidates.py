@@ -91,15 +91,17 @@ def _render_candidates_list():
 
     df_data = []
     for c in candidates:
+        apps = c.get("applications", [])
+        matching_app = next( (a for a in apps if a.get("id") == c.get("application_id")), {} )
         df_data.append(
             {
                 "App ID": c.get("application_id", ""),
                 "ID": c.get("id", ""),
                 "Email": c.get("email", ""),
                 "Job": c.get("job_title", ""),
-                "Match": f"{c.get('match_score', 0)}%",
+                "Match": f"{matching_app.get('match_score', c.get('match_score', 0))}%",
                 "Name": c.get("name", "Unknown"),
-                "Status": c.get("status", "Unknown"),
+                "Status": matching_app.get("status", c.get("status", "Unknown")),
                 "Experience": f"{c.get('years_experience', 0)} Yrs",
                 "Rec": c.get("hire_recommendation", "N/A"),
                 "Updated": c.get("updated_at", "")[:10] if c.get("updated_at") else "",
@@ -155,7 +157,8 @@ def _render_candidates_list():
         non_shortlistable_selected = False
         if selected_rows:
             for r in selected_rows:
-                candidate_status = df.iloc[r]["Status"]
+                candidate_status = df.iloc[r]["Status"].strip().lower()
+                # st.caption(f"DEBUG status = '{candidate_status}' (len={len(candidate_status)})")
                 if candidate_status not in SHORTLISTABLE_CANDIDATE_STATUSES:
                     non_shortlistable_selected = True
                     break
@@ -223,6 +226,7 @@ def _render_compare_view():
 def _render_candidate_profile(candidate_id: int):
     st.button("← Back to List", on_click=lambda: st.session_state.update({"selected_candidate_id": None}))
     candidate = api_client.get_candidate(candidate_id)
+    st.json(candidate[0]) 
     if not candidate:
         st.error("Candidate not found.")
         return

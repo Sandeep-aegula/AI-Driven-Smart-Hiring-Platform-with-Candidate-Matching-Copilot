@@ -43,24 +43,31 @@ def _render_list_view():
             
     # Need to get jobs and candidates to map IDs to Names
     cands = get_candidates_cached()
-    cand_map = {c.get("id"): c.get("name", "Unknown") for c in cands if isinstance(c, dict)}
+    cand_map = {c.get("id"): c for c in cands if isinstance(c, dict)}
     jobs = get_jobs_cached()
     job_map = {j["id"]: j["title"] for j in jobs}
-            
+
     interviews = api_client.get_interviews(status=status_filter, round_name=round_filter)
-    
+
     if not interviews:
         st.info("No interviews found for the given filters.")
         return
-        
+
     # Render table
     data = []
     for iv in interviews:
         job_id = iv.get("job_id")
+        cand = cand_map.get(iv.get("candidate_id"))
+        # A candidate can only be scheduled for an interview by way of a real
+        # application, and every application is tied to a real job -- so the
+        # job always resolves. Fall back to the candidate's own job_title
+        # (from their application) if the interview's own job_id doesn't
+        # resolve, instead of showing an "Unknown" job.
+        job_title = job_map.get(job_id) or (cand.get("job_title") if cand else None) or ""
         data.append({
             "ID": iv["id"],
-            "Candidate": cand_map.get(iv.get("candidate_id"), f"Unknown ({iv.get('candidate_id', 'N/A')})"),
-            "Job": job_map.get(job_id, f"Unknown ({job_id if job_id is not None else 'N/A'})"),
+            "Candidate": cand.get("name", "Unknown") if cand else f"Unknown ({iv.get('candidate_id', 'N/A')})",
+            "Job": job_title,
             "Round": iv.get("round", ""),
             "Date": iv.get("date", ""),
             "Time": iv.get("time", ""),
@@ -113,7 +120,7 @@ def _render_schedule_view():
         with col1:
             sel_cand_name = st.selectbox("Candidate *", list(c_data_map.keys()), index=default_c_idx)
             sel_job_title = st.selectbox("Job *", list(j_map.keys()))
-            iv_round = st.selectbox("Round *", ["HR Screen", "Technical", "Coding", "Behavioral", "System Design", "Managerial"])
+            iv_round = st.selectbox("Round *", ["HR Screen", "Technical", "Coding", "Behavioral", "System Design", "Managerial", "AI Interview"])
             iv_type = st.selectbox("Type", ["Online", "Offline"])
             platform = st.selectbox("Meeting Platform", ["Google Meet", "Zoom", "Microsoft Teams", "In-person"])
         with col2:
@@ -219,19 +226,30 @@ def _render_detail_view():
 
         question_cache_key = f"{round_type.lower()}|{diff.lower()}|{int(num_q)}"
         
+        # if st.button("Generate Questions", type="primary"):
+        #     with st.spinner("AI is generating questions..."):
+        #         response = api_client.generate_interview_questions(iv_id, round_type, diff, int(num_q))
+        #         if response and response.get("questions"):
+        #             st.success("Questions Generated!")
+        #             api_client.clear_interviews_cache()
+        #             st.rerun()
+        #         elif response and response.get("error"):
+        #             st.error(f"Failed to generate questions: {response['error']}")
+        #         else:
+        #             st.error("Failed to generate questions. Please try again.")
         if st.button("Generate Questions", type="primary"):
             with st.spinner("AI is generating questions..."):
                 response = api_client.generate_interview_questions(iv_id, round_type, diff, int(num_q))
                 if response and response.get("questions"):
+                    st.session_state[f"iv_questions_{iv_id}"] = response["questions"]
                     st.success("Questions Generated!")
                     api_client.clear_interviews_cache()
-                    st.rerun()
                 elif response and response.get("error"):
                     st.error(f"Failed to generate questions: {response['error']}")
                 else:
                     st.error("Failed to generate questions. Please try again.")
-                    
-        qs_cached = iv.get("generated_question_sets", {}).get(question_cache_key, [])
+
+        qs_cached = st.session_state.get(f"iv_questions_{iv_id}") or iv.get("generated_question_sets", {}).get(question_cache_key, [])
         if qs_cached:
             st.markdown("### Generated Questions")
             for i, q in enumerate(qs_cached):
@@ -239,7 +257,17 @@ def _render_detail_view():
                     st.markdown("**Model Answer:**")
                     st.write(q.get("model_answer", ""))
                     st.markdown("**Evaluation Guideline:**")
-                    st.write(q.get("evaluation_guideline", ""))
+                    st.write(q.get("evaluation_guideline", ""))        
+                    
+        # qs_cached = iv.get("generated_question_sets", {}).get(question_cache_key, [])
+        # if qs_cached:
+        #     st.markdown("### Generated Questions")
+        #     for i, q in enumerate(qs_cached):
+        #         with st.expander(f"Q{i+1}: {q.get('question', '')}"):
+        #             st.markdown("**Model Answer:**")
+        #             st.write(q.get("model_answer", ""))
+        #             st.markdown("**Evaluation Guideline:**")
+        #             st.write(q.get("evaluation_guideline", ""))
 
     with t3:
         fb = iv.get("feedback", {})

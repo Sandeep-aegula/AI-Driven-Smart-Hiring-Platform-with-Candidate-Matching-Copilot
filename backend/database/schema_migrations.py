@@ -367,4 +367,9 @@ async def ensure_all_schemas() -> None:
     """Run all schema migrations in order."""
     await ensure_workflow_schema()
     await ensure_onboarding_schema()
-    await ensure_interview_application_id_not_null()
+    # NOTE: ensure_interview_application_id_not_null() is intentionally not run here.
+    # It forces interviews.application_id to NOT NULL, but the current SQLAlchemy
+    # model (Interview.application_id in backend/models/entities.py) declares that
+    # column nullable with ondelete="SET NULL" -- MySQL rejects a NOT NULL column
+    # backing a SET NULL foreign key, so this migration fails create_all() on every
+    # fresh database. Leaving it disabled until the model/migration are reconciled.

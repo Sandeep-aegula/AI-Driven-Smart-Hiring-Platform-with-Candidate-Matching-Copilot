@@ -128,15 +128,37 @@ async def list_onboarding_candidates(
         if verification_status != "All" and verification_status != ("Complete" if ready_for_onboarding else "Incomplete"):
             continue
 
+        # response.append({
+        #     "id": onboarding.id,
+        #     "candidate_id": onboarding.candidate_id,
+        #     "candidate_name": onboarding.candidate.name,
+        #     "candidate_email": onboarding.candidate.email,
+        #     "candidate_phone": onboarding.candidate.phone,
+        #     "job_id": onboarding.job_id,
+        #     "job_title": onboarding.job.title,
+        #     "department": onboarding.department or onboarding.job.department,
+        #     "designation": onboarding.designation,
+        #     "joining_date": onboarding.joining_date,
+        #     "selected_date": onboarding.selected_at.isoformat() if onboarding.selected_at else (onboarding.application.final_decision_at.isoformat() if onboarding.application and onboarding.application.final_decision_at else onboarding.created_at.isoformat() if onboarding.created_at else None),
+        #     "status": onboarding.status,
+        #     "ready_for_onboarding": ready_for_onboarding,
+        #     "verification_status": verification_status,
+        #     "completion_percentage": round(completion_percentage, 1),
+        #     "total_required": total_required,
+        #     "verified_count": verified_count,
+        #     "pending_count": pending_count,
+        #     "rejected_count": rejected_count,
+        #     "created_at": onboarding.created_at.isoformat() if onboarding.created_at else None,
+        # })
         response.append({
             "id": onboarding.id,
             "candidate_id": onboarding.candidate_id,
-            "candidate_name": onboarding.candidate.name,
-            "candidate_email": onboarding.candidate.email,
-            "candidate_phone": onboarding.candidate.phone,
+            "candidate_name": onboarding.candidate.name if onboarding.candidate else "Unknown",
+            "candidate_email": onboarding.candidate.email if onboarding.candidate else "",
+            "candidate_phone": onboarding.candidate.phone if onboarding.candidate else "",
             "job_id": onboarding.job_id,
-            "job_title": onboarding.job.title,
-            "department": onboarding.department or onboarding.job.department,
+            "job_title": onboarding.job.title if onboarding.job else "Unknown",
+            "department": onboarding.department or (onboarding.job.department if onboarding.job else ""),
             "designation": onboarding.designation,
             "joining_date": onboarding.joining_date,
             "selected_date": onboarding.selected_at.isoformat() if onboarding.selected_at else (onboarding.application.final_decision_at.isoformat() if onboarding.application and onboarding.application.final_decision_at else onboarding.created_at.isoformat() if onboarding.created_at else None),
@@ -253,23 +275,59 @@ async def get_onboarding_details(
     completion_percentage = (verified_count / total_required * 100) if total_required > 0 else 0
     ready_for_onboarding = bool(onboarding.ready_for_onboarding or (total_required > 0 and verified_count == total_required and missing_count == 0 and rejected_count == 0))
 
+    # return {
+    #     "id": onboarding.id,
+    #     "candidate": {
+    #         "id": onboarding.candidate.id,
+    #         "name": onboarding.candidate.name,
+    #         "email": onboarding.candidate.email,
+    #         "phone": onboarding.candidate.phone,
+    #         "location": onboarding.candidate.location,
+    #     },
+    #     "application_id": onboarding.application_id,
+    #     "selected_date": onboarding.selected_at.isoformat() if onboarding.selected_at else (onboarding.application.final_decision_at.isoformat() if onboarding.application and onboarding.application.final_decision_at else onboarding.created_at.isoformat() if onboarding.created_at else None),
+    #     "job": {
+    #         "id": onboarding.job.id,
+    #         "title": onboarding.job.title,
+    #         "department": onboarding.job.department,
+    #     },
+    #     "department": onboarding.department or onboarding.job.department,
+    #     "designation": onboarding.designation,
+    #     "joining_date": onboarding.joining_date,
+    #     "status": onboarding.status,
+    #     "ready_for_onboarding": ready_for_onboarding,
+    #     "created_at": onboarding.created_at.isoformat() if onboarding.created_at else None,
+    #     "updated_at": onboarding.updated_at.isoformat() if onboarding.updated_at else None,
+    #     "progress": {
+    #         "total_required": total_required,
+    #         "uploaded": uploaded_count,
+    #         "verified": verified_count,
+    #         "pending": pending_count,
+    #         "rejected": rejected_count,
+    #         "missing": missing_count,
+    #         "completion_percentage": round(completion_percentage, 1),
+    #         "ready_for_onboarding": ready_for_onboarding,
+    #         "verification_status": "Complete" if ready_for_onboarding else "Incomplete",
+    #     },
+    #     "document_requirements": requirements_list,
+    # }
     return {
         "id": onboarding.id,
         "candidate": {
-            "id": onboarding.candidate.id,
-            "name": onboarding.candidate.name,
-            "email": onboarding.candidate.email,
-            "phone": onboarding.candidate.phone,
-            "location": onboarding.candidate.location,
+            "id": onboarding.candidate.id if onboarding.candidate else onboarding.candidate_id,
+            "name": onboarding.candidate.name if onboarding.candidate else "Unknown",
+            "email": onboarding.candidate.email if onboarding.candidate else "",
+            "phone": onboarding.candidate.phone if onboarding.candidate else "",
+            "location": onboarding.candidate.location if onboarding.candidate else "",
         },
         "application_id": onboarding.application_id,
         "selected_date": onboarding.selected_at.isoformat() if onboarding.selected_at else (onboarding.application.final_decision_at.isoformat() if onboarding.application and onboarding.application.final_decision_at else onboarding.created_at.isoformat() if onboarding.created_at else None),
         "job": {
-            "id": onboarding.job.id,
-            "title": onboarding.job.title,
-            "department": onboarding.job.department,
+            "id": onboarding.job.id if onboarding.job else onboarding.job_id,
+            "title": onboarding.job.title if onboarding.job else "Unknown",
+            "department": onboarding.job.department if onboarding.job else "",
         },
-        "department": onboarding.department or onboarding.job.department,
+        "department": onboarding.department or (onboarding.job.department if onboarding.job else ""),
         "designation": onboarding.designation,
         "joining_date": onboarding.joining_date,
         "status": onboarding.status,
@@ -289,7 +347,6 @@ async def get_onboarding_details(
         },
         "document_requirements": requirements_list,
     }
-
 
 @router.post("")
 async def create_onboarding(

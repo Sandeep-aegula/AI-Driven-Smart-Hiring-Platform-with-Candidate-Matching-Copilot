@@ -29,7 +29,7 @@ class OllamaClient:
             payload["format"] = "json"
 
         try:
-            with httpx.Client(timeout=90.0) as client:
+            with httpx.Client(timeout=240.0) as client:
                 response = client.post(f"{self.base_url}/api/generate", json=payload)
                 response.raise_for_status()
                 return response.json().get("response", "")
