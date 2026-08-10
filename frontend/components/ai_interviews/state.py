@@ -27,14 +27,24 @@ _RESETTABLE_KEYS = (
 
 
 def init_state() -> None:
-    # Restoring screen from query parameters if available
-    q_screen = st.query_params.get("ai_iv_screen")
-    if q_screen:
-        st.session_state["ai_iv_screen"] = q_screen
-    else:
-        st.session_state.setdefault("ai_iv_screen", SCREEN_LIST)
+    # Restore screen from query parameters, but ONLY to seed a fresh session
+    # (e.g. a hard page refresh, where st.session_state was wiped but the
+    # URL still has ?ai_iv_screen=... on it). Once st.session_state already
+    # holds a value, it must always win over the query string on every later
+    # rerun -- otherwise a still-in-flight/stale browser URL (e.g. right
+    # after reset_to_list() updates query params and calls st.rerun(), before
+    # the browser has round-tripped the new URL back) can clobber a state
+    # change we just made, snapping the screen right back to where it was.
+    # This is exactly what caused "Back to AI Interviews" to appear to do
+    # nothing but exit full-screen: reset_to_list() correctly flipped the
+    # screen to SCREEN_LIST, but the next init_state() call re-read the old
+    # ai_iv_screen=interview from the not-yet-updated URL and overwrote it.
+    if "ai_iv_screen" not in st.session_state:
+        st.session_state["ai_iv_screen"] = st.query_params.get("ai_iv_screen") or SCREEN_LIST
 
     for key in _RESETTABLE_KEYS:
+        if key in st.session_state:
+            continue
         q_val = st.query_params.get(key)
         if q_val is not None:
             if key == "ai_iv_completed":
@@ -47,7 +57,7 @@ def init_state() -> None:
             else:
                 st.session_state[key] = q_val
         else:
-            st.session_state.setdefault(key, None)
+            st.session_state[key] = None
 
 
 def go_to(screen: str) -> None:

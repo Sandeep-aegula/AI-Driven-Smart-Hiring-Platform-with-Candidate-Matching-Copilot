@@ -4,7 +4,7 @@ AI Interview module — the live interview screen.
 Fully automatic, voice-only, real-time flow rendered as an immersive
 full-screen takeover (see _live_interview_component/index.html): a
 human-like animated AI avatar speaks each question, the candidate's speech
-is transcribed live, and after ~3 seconds of silence the answer is
+is transcribed live, and after ~5 seconds of silence the answer is
 automatically finalized and sent for evaluation -- no manual
 Start/Stop/Submit buttons, no candidate camera.
 
@@ -23,13 +23,6 @@ from ..live_components import live_interview_widget
 
 
 def render() -> None:
-    # DEBUG: Write all relevant session state keys to a log file
-    with open("c:/Users/Swaroop/OneDrive/Desktop/infosys/debug.log", "a") as f:
-        f.write(f"RENDER: screen={st.session_state.get('ai_iv_screen')}, "
-                f"widget={st.session_state.get('ai_iv_live_widget')}, "
-                f"completed={st.session_state.get('ai_iv_completed')}, "
-                f"query_params={dict(st.query_params)}\n")
-
     # 1. Early check for back_to_list message to avoid rendering the widget again
     widget_val = st.session_state.get("ai_iv_live_widget")
     if widget_val and isinstance(widget_val, dict) and widget_val.get("type") == "back_to_list":

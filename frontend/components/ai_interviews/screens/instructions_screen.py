@@ -13,14 +13,14 @@ from .. import state as ai_state
 from ..live_components import device_check_widget
 
 # Must match backend/database/ai_interview_repository.py's create_session default.
-QUESTION_COUNT = 8
+QUESTION_COUNT = 5
 
 GUIDELINES = [
     "This is a voice-only AI interview -- no camera is used.",
     "Use headphones if possible -- without them, your microphone can pick up the AI interviewer's own voice as it speaks.",
     "Keep your microphone enabled throughout the interview.",
     "Stay in a quiet environment with minimal background noise.",
-    "Answer each question clearly and briefly.",
+    "Keep your answers to one line -- short and to the point.",
     "Do not use another person to answer on your behalf.",
     "Do not intentionally leave the interview screen.",
     "Make sure your internet connection is stable.",

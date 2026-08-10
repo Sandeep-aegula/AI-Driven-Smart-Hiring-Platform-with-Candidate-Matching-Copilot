@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import logging
+from difflib import SequenceMatcher
 
 import httpx
 
@@ -123,6 +124,51 @@ def _difficulty_guidance(running_avg: float | None) -> str:
     return "- Difficulty: the candidate has been struggling so far -- ask an EASIER, more approachable question."
 
 
+# Last-resort, role-agnostic questions used ONLY if the model keeps
+# producing duplicates after every retry -- guarantees the candidate is
+# never asked the same question twice in one interview, even in the worst
+# case. Kept well above any realistic target_question_count so there's
+# always an unused one left.
+_FALLBACK_QUESTIONS = [
+    "Tell me about a challenging project you worked on and how you handled it.",
+    "What do you consider your key strengths for this role?",
+    "Describe a time you had to learn a new skill quickly for work.",
+    "How do you prioritize tasks when you're under a tight deadline?",
+    "Tell me about a time you disagreed with a teammate and how you resolved it.",
+    "What interests you most about this position?",
+    "Describe a mistake you made at work and what you learned from it.",
+    "How do you stay current with developments in your field?",
+    "Tell me about a time you had to work with a difficult stakeholder or client.",
+    "What's a piece of feedback you received that changed how you work?",
+    "Walk me through how you'd approach a problem you've never seen before.",
+    "What does success look like to you in this role?",
+]
+
+
+def _normalize_question(text: str) -> str:
+    return " ".join((text or "").lower().split())
+
+
+def _is_duplicate_question(candidate_q: str, asked: list[str]) -> bool:
+    """True if candidate_q is (near-)identical to a question already asked.
+    Catches both exact repeats and trivial rewordings (e.g. punctuation or a
+    tacked-on "Can you tell me..." prefix) that a small local model tends to
+    produce when it "repeats" a question rather than always emitting a
+    byte-for-byte copy."""
+    norm_candidate = _normalize_question(candidate_q)
+    if not norm_candidate:
+        return False
+    for prior in asked:
+        norm_prior = _normalize_question(prior)
+        if not norm_prior:
+            continue
+        if norm_candidate == norm_prior:
+            return True
+        if SequenceMatcher(None, norm_candidate, norm_prior).ratio() >= 0.85:
+            return True
+    return False
+
+
 async def evaluate_and_generate_next(
     job: dict, candidate: dict, resume: dict | None,
     question: str, answer_transcript: str, qa_history: list[dict],
@@ -139,10 +185,17 @@ async def evaluate_and_generate_next(
         f"  A: {qa.get('answer_transcript', '') or '(no answer captured)'}"
         for qa in recent
     ) or "(none yet)"
-    already_asked = "\n".join(f"- {qa.get('question', '')}" for qa in qa_history) or "(none yet)"
+    # `question` (the one just answered) is NOT yet in qa_history at this
+    # point -- it's still being evaluated in this same call -- so it must be
+    # added explicitly here. Leaving it out meant the most-recently-asked
+    # question (the one a model is most likely to echo back) was never on
+    # the "don't repeat" list, which was causing back-to-back repeats.
+    asked_questions = [qa.get("question", "") for qa in qa_history] + [question]
+    already_asked = "\n".join(f"- {q}" for q in asked_questions if q) or "(none yet)"
     difficulty_guidance = _difficulty_guidance(_running_average(qa_history))
 
-    prompt = f"""You are conducting a short, spoken screening interview for this role.
+    def _build_prompt(extra_note: str = "") -> str:
+        return f"""You are conducting a short, spoken screening interview for this role.
 
 JOB DESCRIPTION:
 {_job_context(job)}
@@ -156,7 +209,7 @@ CANDIDATE'S ANSWER (transcribed from speech, may contain minor transcription err
 Recent exchange(s) for context:
 {history_text}
 
-Questions already asked (never repeat one of these):
+Questions already asked (never repeat one of these, including the one just asked above):
 {already_asked}
 
 TASK 1: Rate the candidate's answer above internally on a 0-10 scale for each of: relevance, correctness, job_relevance, skill_demonstration, completeness.
@@ -165,22 +218,45 @@ TASK 2: Generate ONE new interview question that continues the interview. Rules:
 {difficulty_guidance}
 - Specific to this job description and/or this candidate's resume.
 - Short and direct (one sentence), quick to answer out loud.
-- Do not repeat a question already asked.
-
+- Do not repeat a question already asked, and do not just reword one of them.
+{extra_note}
 Respond ONLY with strict JSON:
 {{"evaluation": {{"relevance": 0, "correctness": 0, "job_relevance": 0, "skill_demonstration": 0, "completeness": 0, "notes": "one short internal note"}}, "next_question": "..."}}
 """
-    try:
-        raw = await _ollama_generate(prompt, system="You are a concise technical interviewer and a strict but fair evaluator. Output valid JSON only.")
-        data = _parse_json(raw)
-        evaluation = data.get("evaluation") or {}
-        next_question = (data.get("next_question") or "").strip()
-        if not next_question:
-            raise ValueError("empty next_question")
-        return {"evaluation": evaluation, "next_question": next_question}
-    except Exception:
-        logger.exception("AI Interview: combined evaluate+next-question generation failed")
-    raise RuntimeError("Unable to generate the next question.")
+
+    last_evaluation: dict = {}
+    extra_note = ""
+    # Several attempts: the model occasionally echoes an already-asked
+    # question despite the instruction, so on a detected duplicate we retry
+    # with an explicit callout naming the rejected question.
+    for attempt in range(4):
+        try:
+            raw = await _ollama_generate(_build_prompt(extra_note), system="You are a concise technical interviewer and a strict but fair evaluator. Output valid JSON only.")
+            data = _parse_json(raw)
+            evaluation = data.get("evaluation") or {}
+            next_question = (data.get("next_question") or "").strip()
+            if not next_question:
+                raise ValueError("empty next_question")
+        except Exception:
+            logger.exception("AI Interview: combined evaluate+next-question generation failed (attempt %s/4)", attempt + 1)
+            continue
+
+        last_evaluation = evaluation
+        if not _is_duplicate_question(next_question, asked_questions):
+            return {"evaluation": evaluation, "next_question": next_question}
+
+        logger.warning("AI Interview: generated a duplicate/near-duplicate question, retrying: %r", next_question)
+        extra_note = f'- Your last suggestion, "{next_question}", was too similar to one already asked -- pick a different topic entirely.\n'
+
+    # Hard guarantee: never send the candidate a repeat, even in the worst
+    # case where the model keeps echoing prior questions. Fall back to a
+    # role-agnostic question the model hasn't (and can't have) produced.
+    for fallback_q in _FALLBACK_QUESTIONS:
+        if not _is_duplicate_question(fallback_q, asked_questions):
+            logger.warning("AI Interview: exhausted retries, using a fallback question instead of risking a repeat.")
+            return {"evaluation": last_evaluation, "next_question": fallback_q}
+
+    raise RuntimeError("Unable to generate a non-repeating next question.")
 
 
 async def generate_question(job: dict, candidate: dict, resume: dict | None, qa_history: list[dict]) -> str:
