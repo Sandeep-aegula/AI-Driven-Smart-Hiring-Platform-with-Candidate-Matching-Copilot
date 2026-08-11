@@ -4,7 +4,7 @@ AI Interview module — the live interview screen.
 Fully automatic, voice-only, real-time flow rendered as an immersive
 full-screen takeover (see _live_interview_component/index.html): a
 human-like animated AI avatar speaks each question, the candidate's speech
-is transcribed live, and after ~3 seconds of silence the answer is
+is transcribed live, and after ~5 seconds of silence the answer is
 automatically finalized and sent for evaluation -- no manual
 Start/Stop/Submit buttons, no candidate camera.
 

@@ -41,7 +41,7 @@ class AIInterviewSession(Base):
     questions: Mapped[list[dict]] = mapped_column(JSON, default=list)
 
     current_index: Mapped[int] = mapped_column(Integer, default=0)
-    target_question_count: Mapped[int] = mapped_column(Integer, default=8)
+    target_question_count: Mapped[int] = mapped_column(Integer, default=5)
 
     # "" while in progress, then "PASS" or "FAIL" once completed. Mirrors
     # (but is independent of) the value written back to interviews.status.

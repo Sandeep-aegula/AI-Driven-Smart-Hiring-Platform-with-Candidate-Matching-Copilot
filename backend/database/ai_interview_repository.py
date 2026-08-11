@@ -52,7 +52,7 @@ async def delete_session(session_id: int) -> None:
             await db.delete(row)
 
 
-async def create_session(interview_id: int, first_question: str, target_question_count: int = 8) -> dict:
+async def create_session(interview_id: int, first_question: str, target_question_count: int = 5) -> dict:
     async with get_db_session() as db:
         row = AIInterviewSession(
             interview_id=interview_id,

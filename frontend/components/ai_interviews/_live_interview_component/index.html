@@ -30,7 +30,7 @@
  *
  * No camera. Voice only: TTS (speechSynthesis) for the AI interviewer,
  * live SpeechRecognition (interim + final results) for the candidate,
- * with a 3-second continuous-silence timer to auto-finalize each answer.
+ * with a 5-second continuous-silence timer to auto-finalize each answer.
  * A one-click gate requests real OS-level full-screen (not just filling the
  * browser viewport) before the interview starts, since the Fullscreen API
  * requires a direct user gesture.
@@ -50,10 +50,10 @@ sendToStreamlit("streamlit:componentReady", { apiVersion: 1 });
 // portaled into the parent document -- so keep the iframe itself at 0 height.
 setFrameHeight(1);
 
-const SILENCE_MS = 3000;
+const SILENCE_MS = 5000;
 // If the candidate never says anything at all after a question is asked,
 // don't wait forever -- move on after this much total silence.
-const NO_ANSWER_TIMEOUT_MS = 5000;
+const NO_ANSWER_TIMEOUT_MS = 10000;
 const POLL_MS = 200;
 const WAVE_BARS = 9;
 

@@ -41,7 +41,7 @@ def live_interview_widget(
     """The immersive, full-screen live interview. Portals its UI directly
     into the parent document body (covering the normal HR dashboard chrome
     without modifying it) and drives TTS + live SpeechRecognition + a
-    3-second silence timer entirely in the browser. No camera.
+    5-second silence timer entirely in the browser. No camera.
 
     Returns one of:
       - {"type": "transcript_final", "seq": int, "question_index": int,
