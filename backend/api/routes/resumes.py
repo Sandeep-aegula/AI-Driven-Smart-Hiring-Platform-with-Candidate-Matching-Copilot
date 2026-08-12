@@ -18,6 +18,11 @@ router = APIRouter()
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".txt"}
 
+# A literal 0% match score reads as "zero relevant qualifications" rather
+# than "weak/failed evaluation" -- floor it whenever a job-match evaluation
+# was actually attempted (see process_single_resume below).
+MIN_ATS_SCORE = 10
+
 # In-memory tracker for bulk uploads
 _batch_jobs = {}
 
@@ -41,10 +46,11 @@ async def process_single_resume(file: UploadFile, job_id: Optional[int] = None) 
     if not raw_text.strip():
         raise ValueError(f"No text extracted from {file.filename}.")
         
+    eval_attempted = bool(job_id)
     async with _ai_semaphore:
         try:
             parsed_json = await parse_resume_to_json(raw_text)
-            
+
             if job_id:
                 job = await data_store.get_job(job_id)
                 if job:
@@ -69,6 +75,15 @@ async def process_single_resume(file: UploadFile, job_id: Optional[int] = None) 
     # Actually, data_store expects a Pydantic model for upsert_candidate_from_resume (it accesses parsed.name etc)
     # Let's just create the candidate directly
     # Better: modify the dict to include the parsed fields, then create CandidateCreate
+    match_score = parsed_json.get("match_score", 0)
+    if eval_attempted:
+        # A job-match evaluation was attempted (whether it succeeded with a
+        # genuinely low score or failed outright) -- floor a 0% result so it
+        # doesn't misread as "zero relevant qualifications". A candidate for
+        # whom no job was even selected (job_id was never passed) legitimately
+        # has no match score yet, so that case is left at 0.
+        match_score = max(MIN_ATS_SCORE, int(match_score or 0))
+
     payload = CandidateCreate(
         name=parsed_json.get("name") or Path(file.filename).stem,
         email=parsed_json.get("email") or f"{uuid.uuid4().hex[:8]}@example.com",
@@ -76,7 +91,7 @@ async def process_single_resume(file: UploadFile, job_id: Optional[int] = None) 
         linkedin=parsed_json.get("linkedin", ""),
         github=parsed_json.get("github", ""),
         status="Applied",
-        match_score=parsed_json.get("match_score", 0),
+        match_score=match_score,
         skill_match_breakdown=parsed_json.get("skill_match_breakdown", {}),
         hire_recommendation=parsed_json.get("hire_recommendation", ""),
         summary=parsed_json.get("resume_summary", parsed_json.get("summary", ""))

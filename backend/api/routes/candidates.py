@@ -278,7 +278,16 @@ async def get_candidates(
                 "status": application_status,
                 "candidate_status": c.status,
                 "ats_score": ats_score,
-                "match_score": c.match_score,
+                # Candidate.match_score is the source of truth the UI has
+                # always shown -- it's kept up to date by both the manual
+                # "Screen" action (data_store.update_candidate_screening_result)
+                # and, as of the application_workflow_service.py fix, the
+                # automatic apply-time scoring pipeline too. Falling back to
+                # the per-application ats_score only when the candidate-level
+                # value is still at its default covers candidates whose only
+                # score so far came from the automatic pipeline before that
+                # fix landed.
+                "match_score": c.match_score or ats_score,
                 "summary": c.summary,
                 "linkedin": c.linkedin,
                 "github": c.github,
@@ -363,6 +372,12 @@ async def get_candidate_by_id(candidate_id: int) -> dict:
                 "resume": resume_data,
             })
 
+        # See the matching note in GET /candidates: candidate.match_score is
+        # the source of truth (kept in sync by both the manual "Screen"
+        # action and the automatic apply-time pipeline); only fall back to
+        # the first application's ats_score if it's still unset.
+        top_match_score = candidate.match_score or (applications_data[0]["ats_score"] if applications_data else 0)
+
         return {
             "id": candidate.id,
             "name": candidate.name,
@@ -373,7 +388,7 @@ async def get_candidate_by_id(candidate_id: int) -> dict:
             "years_experience": candidate.years_experience,
             "location": candidate.location,
             "status": candidate.status,
-            "match_score": candidate.match_score,
+            "match_score": top_match_score,
             "summary": candidate.summary,
             "linkedin": candidate.linkedin,
             "github": candidate.github,

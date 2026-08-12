@@ -103,6 +103,39 @@ def _avg_score(evaluation: dict | None) -> float | None:
     return sum(scores) / len(scores) if scores else None
 
 
+# An answer "counts" as correct toward the pass/fail decision once its
+# average internal sub-score reaches half marks. Paired with the scoring
+# guide in the evaluation prompts (a correct, on-topic answer should land
+# 6-8/10, not 3-5/10), this is meant to land close to "would a human
+# reviewer call this answer basically right".
+CORRECT_SCORE_THRESHOLD = 5.0
+
+
+def _is_correct(evaluation: dict | None) -> bool | None:
+    """Whether one answer counts as correct for the pass/fail count. None
+    means this turn has no usable score at all (e.g. the evaluator call
+    itself failed) and must be excluded rather than counted as wrong --
+    otherwise a transient Ollama/network hiccup would silently drag the
+    candidate toward FAIL for a turn they were never actually judged on."""
+    avg = _avg_score(evaluation)
+    if avg is None:
+        return None
+    return avg >= CORRECT_SCORE_THRESHOLD
+
+
+def _score_summary(qa_history: list[dict]) -> tuple[int, int]:
+    """(correct, scored) across all answered questions so far -- 'scored'
+    excludes turns whose evaluation failed to produce a usable score."""
+    correct = scored = 0
+    for qa in qa_history:
+        verdict = _is_correct(qa.get("evaluation"))
+        if verdict is None:
+            continue
+        scored += 1
+        correct += int(verdict)
+    return correct, scored
+
+
 def _running_average(qa_history: list[dict]) -> float | None:
     """Average score across every answered question so far -- used to steer
     the next question's difficulty (see _difficulty_guidance)."""
@@ -213,6 +246,13 @@ Questions already asked (never repeat one of these, including the one just asked
 {already_asked}
 
 TASK 1: Rate the candidate's answer above internally on a 0-10 scale for each of: relevance, correctness, job_relevance, skill_demonstration, completeness.
+Scoring guide (apply consistently, and use the full scale):
+- 0-2: wrong, off-topic, incoherent, or no real answer given.
+- 3-4: weak -- barely relevant, mostly incorrect, or just restates the question.
+- 5-6: acceptable -- generally correct and on-topic, even if brief or missing some depth.
+- 7-8: strong -- correct, clear, and reasonably detailed for a spoken answer.
+- 9-10: excellent -- thorough, precise, and demonstrates deep expertise.
+A short but technically correct, on-topic answer should typically score 6-8, NOT 3-5 -- do not penalize brevity on its own. Only score below 5 if the answer is actually incorrect, off-topic, or largely non-responsive.
 
 TASK 2: Generate ONE new interview question that continues the interview. Rules:
 {difficulty_guidance}
@@ -325,19 +365,59 @@ Rate this answer internally on a 0-10 scale for each of:
 - skill_demonstration
 - completeness
 
+Scoring guide (apply consistently, and use the full scale):
+- 0-2: wrong, off-topic, incoherent, or no real answer given.
+- 3-4: weak -- barely relevant, mostly incorrect, or just restates the question.
+- 5-6: acceptable -- generally correct and on-topic, even if brief or missing some depth.
+- 7-8: strong -- correct, clear, and reasonably detailed for a spoken answer.
+- 9-10: excellent -- thorough, precise, and demonstrates deep expertise.
+A short but technically correct, on-topic answer should typically score 6-8, NOT 3-5 -- do not penalize brevity on its own. Only score below 5 if the answer is actually incorrect, off-topic, or largely non-responsive.
+
 Respond ONLY with strict JSON:
 {{"relevance": 0, "correctness": 0, "job_relevance": 0, "skill_demonstration": 0, "completeness": 0, "notes": "one short internal note"}}
 """
     try:
-        raw = await _ollama_generate(prompt, system="You are a strict but fair technical interview evaluator. Output valid JSON only.")
+        raw = await _ollama_generate(prompt, system="You are a fair technical interview evaluator. Output valid JSON only.")
         return _parse_json(raw)
     except Exception:
+        # Excluded from scoring (see _is_correct/_score_summary), NOT scored
+        # as a real zero -- a transient LLM/network failure here must not be
+        # able to single-handedly flip a PASS to FAIL.
         logger.exception("AI Interview: answer evaluation failed")
-        return {"relevance": 0, "correctness": 0, "job_relevance": 0, "skill_demonstration": 0, "completeness": 0, "notes": "Evaluation failed."}
+        return {"notes": "Evaluation unavailable due to a processing error.", "evaluation_failed": True}
+
+
+def _fallback_result(qa_history: list[dict]) -> str:
+    """PASS if at least half of the scored answers were rated correct (e.g.
+    3 out of 5) -- see CORRECT_SCORE_THRESHOLD / _is_correct."""
+    correct, scored = _score_summary(qa_history)
+    if scored == 0:
+        return "FAIL"
+    return "PASS" if correct * 2 >= scored else "FAIL"
 
 
 async def final_decision(job: dict, candidate: dict, qa_history: list[dict]) -> dict:
-    """Aggregate all Q&A + per-answer evaluations into a final PASS/FAIL."""
+    """Decide the final PASS/FAIL and write a short summary of why.
+
+    The result itself is decided deterministically -- PASS if at least half
+    of the scored answers (e.g. 3 out of 5) were rated correct -- rather
+    than left to a free-form holistic LLM judgment. A separate holistic
+    "vibe check" call could disagree with the interview's own per-answer
+    scores in either direction (too lenient or too harsh) with no way for a
+    recruiter to tell why; a fixed, explainable rule means the same
+    transcript always produces the same result, and "3 of 5 correct = pass"
+    is exactly what's shown to the candidate/recruiter afterwards. The LLM
+    is only used to write the human-readable explanation.
+    """
+    correct, scored = _score_summary(qa_history)
+    result = _fallback_result(qa_history)
+    default_summary = (
+        f"{correct} of {scored} scored answers were rated correct "
+        f"(an answer counts as correct at {CORRECT_SCORE_THRESHOLD:.0f}/10 or higher on average); "
+        f"{result.title()} requires at least half."
+        if scored else "No answers could be scored."
+    )
+
     transcript_block = "\n\n".join(
         f"Q{i + 1}: {qa.get('question', '')}\n"
         f"A{i + 1}: {qa.get('answer_transcript', '') or '(no answer captured)'}\n"
@@ -345,7 +425,7 @@ async def final_decision(job: dict, candidate: dict, qa_history: list[dict]) -> 
         for i, qa in enumerate(qa_history)
     )
 
-    prompt = f"""You are making a final hiring-screen decision after a short AI interview.
+    prompt = f"""You are writing a short internal summary after a completed AI screening interview.
 
 JOB DESCRIPTION:
 {_job_context(job)}
@@ -356,34 +436,19 @@ CANDIDATE RESUME:
 FULL INTERVIEW TRANSCRIPT AND INTERNAL SCORES:
 {transcript_block}
 
-Based on overall relevance, correctness, job fit, skill demonstration, and completeness across all answers,
-decide a final result of exactly "PASS" or "FAIL".
+The result has already been decided: {result} ({correct} of {scored} scored answers were rated correct;
+PASS requires at least half correct).
 
-Respond ONLY with strict JSON: {{"result": "PASS", "summary": "one short internal paragraph explaining why"}}
-("result" must be exactly "PASS" or "FAIL")
+Write a short (2-3 sentence) internal summary explaining this result, referencing specific strengths or
+gaps from the transcript above. Do not contradict the given result.
+
+Respond ONLY with strict JSON: {{"summary": "..."}}
 """
     try:
-        raw = await _ollama_generate(prompt, system="You are a fair, consistent hiring-screen decision maker. Output valid JSON only.")
+        raw = await _ollama_generate(prompt, system="You are a fair, consistent hiring-screen summarizer. Output valid JSON only.")
         data = _parse_json(raw)
-        result = str(data.get("result", "")).strip().upper()
-        if result not in {"PASS", "FAIL"}:
-            # Fall back to a simple average-score threshold if the model didn't
-            # follow the exact PASS/FAIL contract.
-            result = _fallback_result(qa_history)
-        return {"result": result, "summary": data.get("summary", "")}
+        summary = (data.get("summary") or "").strip()
     except Exception:
-        logger.exception("AI Interview: final decision failed")
-        return {"result": _fallback_result(qa_history), "summary": "AI decision unavailable; used fallback scoring."}
-
-
-def _fallback_result(qa_history: list[dict]) -> str:
-    if not qa_history:
-        return "FAIL"
-    totals = []
-    for qa in qa_history:
-        ev = qa.get("evaluation") or {}
-        scores = [ev.get(k, 0) for k in ("relevance", "correctness", "job_relevance", "skill_demonstration", "completeness")]
-        if scores:
-            totals.append(sum(scores) / len(scores))
-    avg = sum(totals) / len(totals) if totals else 0
-    return "PASS" if avg >= 6 else "FAIL"
+        logger.exception("AI Interview: final summary generation failed")
+        summary = ""
+    return {"result": result, "summary": summary or default_summary}

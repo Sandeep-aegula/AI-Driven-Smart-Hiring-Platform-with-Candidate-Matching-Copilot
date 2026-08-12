@@ -20,6 +20,12 @@ from backend.schemas.entities import (
 
 logger = logging.getLogger(__name__)
 
+# A literal 0% match score reads to a recruiter as "zero relevant
+# qualifications", which is almost never an honest signal for a real
+# submitted resume -- every computed ATS/match score is floored here so the
+# UI never shows a stark, misleading 0%.
+MIN_ATS_SCORE = 10
+
 STORAGE_PATH = Path("storage.json")
 
 def load_storage() -> dict[str, list[dict[str, Any]]]:
@@ -1031,8 +1037,11 @@ Important: Output valid JSON only, without any markdown formatting or other expl
         education_match = int(data.get("education_match", 70))
         projects_match = int(data.get("projects_match", 70))
         overall = int(data.get("overall_match_percent", 70))
-        
-        overall = max(0, min(100, overall))
+
+        # A literal 0% reads to a recruiter as "zero relevant qualifications",
+        # which is almost never an honest signal from a real resume -- floor
+        # it at a small non-zero minimum instead of a stark 0.
+        overall = max(MIN_ATS_SCORE, min(100, overall))
         rec = data.get("overall_recommendation", "Shortlist")
         if rec not in {"Approve", "Shortlist", "Reject"}:
             if overall >= 85:
@@ -1075,6 +1084,7 @@ Important: Output valid JSON only, without any markdown formatting or other expl
         education_match = 100 if resume and resume.get("education") else 70
         projects_match = 80 if resume and resume.get("projects") else 55
         overall = int((skill_match * 0.4) + (experience_match * 0.25) + (education_match * 0.2) + (projects_match * 0.15))
+        overall = max(MIN_ATS_SCORE, overall)
 
         if overall >= 85:
             rec = "Approve"

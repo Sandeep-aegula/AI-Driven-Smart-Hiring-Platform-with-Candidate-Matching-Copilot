@@ -35,6 +35,14 @@ ALLOWED_EXTENSIONS = {".pdf", ".doc", ".docx", ".txt"}
 MAX_FILE_SIZE = 5 * 1024 * 1024
 PUBLISHED_STATUS = "published"
 
+# A literal 0% match score reads to a recruiter as "zero relevant
+# qualifications", which is almost never an honest signal -- it's either a
+# genuine mismatch that still has *some* baseline relevance, or (on the
+# except branch below) scoring never actually completed. Every score
+# written here is floored at a small non-zero minimum so the UI never shows
+# a stark, misleading 0%.
+MIN_ATS_SCORE = 10
+
 
 def _uploads_root() -> Path:
     root = Path(settings.uploads_dir)
@@ -381,15 +389,16 @@ async def process_application_pipeline(application_id: int) -> None:
                 eval_result = await evaluate_candidate_match(parsed, _job_requirements(job))
                 recommendation = _recommendation_label(eval_result.get("hire_recommendation", "Hold"))
                 breakdown = eval_result.get("skill_match_breakdown", {}) or {}
+                match_score = max(MIN_ATS_SCORE, int(eval_result.get("match_score", 0) or 0))
                 score = ApplicationScore(
                     application_id=application.id,
                     job_id=job.id,
-                    ats_score=int(eval_result.get("match_score", 0) or 0),
+                    ats_score=match_score,
                     skills_score=int(breakdown.get("match_percentage", eval_result.get("match_score", 0)) or 0),
-                    experience_score=int(eval_result.get("match_score", 0) or 0),
+                    experience_score=match_score,
                     education_score=0,
                     keyword_score=int(breakdown.get("match_percentage", 0) or 0),
-                    job_match_score=int(eval_result.get("match_score", 0) or 0),
+                    job_match_score=match_score,
                     recommendation=recommendation,
                     strengths=breakdown.get("matched_skills", []),
                     gaps=breakdown.get("missing_skills", []),
@@ -398,6 +407,11 @@ async def process_application_pipeline(application_id: int) -> None:
                 )
                 session.add(score)
                 application.match_score = score.job_match_score
+                # Keep the candidate-level score in sync too -- the
+                # Candidates table/profile reads Candidate.match_score, not
+                # Application.match_score, so without this the real AI score
+                # computed here never reaches that view and stays stuck at 0.
+                candidate.match_score = score.job_match_score
                 application.ai_summary = eval_result.get("resume_summary", eval_result.get("reason", ""))
                 application.status = ApplicationWorkflowStatus.parsed.value
             except Exception as exc:
@@ -405,10 +419,19 @@ async def process_application_pipeline(application_id: int) -> None:
                 parse_result.parser_status = "failed"
                 parse_result.parser_error = "Resume parsing failed. HR can still review the application."
                 application.status = ApplicationWorkflowStatus.under_review.value
+                # Automated scoring never ran here -- a blank/0% score would
+                # look like "this candidate scored zero" rather than "we
+                # couldn't evaluate this one automatically", so this still
+                # gets the same floor value as a genuine low score, with
+                # recommendation/scoring_error flagging it for manual review.
+                application.match_score = MIN_ATS_SCORE
+                candidate.match_score = MIN_ATS_SCORE
                 session.add(
                     ApplicationScore(
                         application_id=application.id,
                         job_id=job.id,
+                        ats_score=MIN_ATS_SCORE,
+                        job_match_score=MIN_ATS_SCORE,
                         recommendation="review",
                         scoring_error="Automatic scoring unavailable.",
                         scored_at=datetime.utcnow(),
