@@ -15,7 +15,7 @@ _NAV_ITEMS = (
     ("AI Interviews", ":material/videocam:"),
     ("Communications", ":material/mail:"),
     ("Onboarding", ":material/assignment_ind:"),
-    ("Employees", ":material/badge:"),
+    # ("Employees", ":material/badge:"),
     ("Analytics", ":material/analytics:"),
     ("Reports", ":material/assessment:"),
     ("AI Copilot", ":material/smart_toy:"),
@@ -28,7 +28,7 @@ def render_sidebar() -> None:
 
     with st.sidebar:
         st.title("HirePilot")
-        st.caption("AI recruitment and talent management")
+        st.caption("AI-Driven Smart Hiring Platform with Candidate Matching")
         st.space("small")
         st.caption("NAVIGATION")
 

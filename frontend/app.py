@@ -180,7 +180,7 @@ def return_to_company_website():
 
 PUBLIC_CONTENT = {
     "company_name": "HirePilot",
-    "tagline": "AI Recruitment & Talent Management Platform",
+    "tagline": "AI-Driven Smart Hiring Platform with Candidate Matching",
     "hero": {
         "badge_text": "AI-Powered Recruitment",
         "badge_icon": "✨",
@@ -1078,8 +1078,7 @@ def render_hr_login():
             </div>
 
             <div class="login-description">
-                Access the HirePilot Recruitment and Talent
-                Management Portal
+                Access the Al-Driven Smart Hiring Platform with Candidate Matching
             </div>
             """,
             unsafe_allow_html=True,

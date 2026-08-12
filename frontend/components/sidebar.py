@@ -12,7 +12,7 @@ _NAV_ITEMS = [
     "Resume Parser",
     # "AI Screening",
     "Interviews",
-    "Employees",
+    # "Employees",
     "Analytics",
     "Reports",
     "AI Copilot"
@@ -25,7 +25,7 @@ def render_sidebar():
     with st.sidebar:
 
         st.title("HirePilot")
-        st.caption("AI Recruitment & Talent Management")
+        st.caption("AI-Driven Smart Hiring Platform with Candidate Matching")
 
         st.divider()
 

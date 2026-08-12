@@ -26,7 +26,7 @@ def render_header():
     with header_col2:
         st.markdown("""
         <div style="padding-top: 5px;">
-            <h1 style="font-size: 1.8rem; font-weight: 800; color: #0F172A; margin: 0; line-height: 1.2;">AI Recruitment & Talent Management Copilot</h1>
+            <h1 style="font-size: 1.8rem; font-weight: 800; color: #0F172A; margin: 0; line-height: 1.2;">AI-Driven Smart Hiring Platform with Candidate Matching</h1>
             <p style="font-size: 0.9rem; color: #64748B; margin: 2px 0 0 0; font-weight: 500;">Smart Resume Screening and Candidate Ranking System</p>
         </div>
         """, unsafe_allow_html=True)
@@ -35,15 +35,7 @@ def render_header():
         st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
         head_c1, head_c2 = st.columns([7, 3])
         
-        # with head_c1:
-        #     st.session_state.search_query = st.text_input(
-        #         label="Search Box", 
-        #         placeholder="Search candidate name, skills...", 
-        #         value=st.session_state.search_query,
-        #         label_visibility="collapsed",
-        #         key="header_search_input"
-        #     )
-            
+ 
         with head_c2:
             today_str = datetime.date.today().strftime("%b %d, %Y")
             # Read profile picture if available
