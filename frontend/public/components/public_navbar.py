@@ -105,3 +105,10 @@ def _render_public_navbar(active_page: str, on_hr_sign_in=None) -> None:
                     on_hr_sign_in()
 
     st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+
+
+# frontend/public/views/*.py (used by app1.py) import this function without the
+# leading underscore, while frontend/app.py imports the underscored name above —
+# both pre-existing, both still needed, so this alias satisfies both call sites
+# without renaming (and breaking) either one.
+render_public_navbar = _render_public_navbar
