@@ -15,53 +15,60 @@ def get_pipeline_funnel(jobs_data: list[dict], applications_data: list[dict], in
     if department_filter != "All":
         df_jobs = df_jobs[df_jobs["department"] == department_filter]
         
-    valid_job_ids = set(df_jobs["id"].tolist()) if not df_jobs.empty else set()
-    
-    if not valid_job_ids:
+    if df_jobs.empty:
         return {"Applied": 0, "Screened": 0, "Interview": 0, "Offer": 0, "Hired": 0}
 
-    # Applied (From applications_data)
-    df_apps = pd.DataFrame(applications_data) if applications_data else pd.DataFrame()
-    applied = 0
-    if not df_apps.empty and "job_id" in df_apps.columns:
-        applied = int(df_apps[df_apps["job_id"].isin(valid_job_ids)].shape[0])
+    valid_job_ids = set(df_jobs["id"].tolist())
 
-    # Screened (Candidates linked to valid jobs with status != New)
-    df_cands = pd.DataFrame(candidates_data) if candidates_data else pd.DataFrame()
-    screened = 0
-    hired = 0
-    offer = 0
-    interview_status = 0
+    df_apps = pd.DataFrame(applications_data) if applications_data else pd.DataFrame()
+    if df_apps.empty or "job_id" not in df_apps.columns:
+        return {"Applied": 0, "Screened": 0, "Interview": 0, "Offer": 0, "Hired": 0}
+
+    df_apps = df_apps[df_apps["job_id"].isin(valid_job_ids)].copy()
+    if df_apps.empty:
+        return {"Applied": 0, "Screened": 0, "Interview": 0, "Offer": 0, "Hired": 0}
+
+    applied = len(df_apps)
+
+    # Convert status to lower for consistent checking
+    df_apps["status_lower"] = df_apps["status"].str.lower()
     
-    if not df_cands.empty:
-        # We need a way to link candidate to job. Let's assume apps link them.
-        if not df_apps.empty:
-            valid_cands = set(df_apps[df_apps["job_id"].isin(valid_job_ids)]["candidate_id"])
-            df_cands = df_cands[df_cands["id"].isin(valid_cands)]
-            
-            screened = int(df_cands[df_cands["status"] != "New"].shape[0])
-            hired = int(df_cands[df_cands["status"] == "Hired"].shape[0])
-            offer = int(df_cands[df_cands["status"] == "Offer"].shape[0])
-            interview_status = int(df_cands[df_cands["status"] == "Interview"].shape[0])
+    screened_statuses = ["shortlisted", "interview", "offer", "hired", "approved"]
     
-    # Interview (From interviews_data)
+    screened_apps = df_apps[df_apps["status_lower"].isin(screened_statuses)]
+    screened = len(screened_apps)
+    
     df_iv = pd.DataFrame(interviews_data) if interviews_data else pd.DataFrame()
-    interview_count = 0
+    interviewed_cands = set()
     if not df_iv.empty and "job_id" in df_iv.columns:
-        # Distinct candidates interviewed
         df_iv_valid = df_iv[df_iv["job_id"].isin(valid_job_ids)]
-        if not df_iv_valid.empty:
-            interview_count = int(df_iv_valid["candidate_id"].nunique())
-            
-    # Max of status-based or interview table based
-    actual_interview = max(interview_status, interview_count, hired + offer)
-    actual_offer = max(offer, hired)
+        interviewed_cands = set(df_iv_valid["candidate_id"].dropna().tolist())
+    
+    # Interview: either has an interview record, or status is interview/offer/hired
+    interview_apps = df_apps[
+        (df_apps["candidate_id"].isin(interviewed_cands)) | 
+        (df_apps["status_lower"].isin(["interview", "offer", "hired", "approved"]))
+    ]
+    interview = len(interview_apps)
+    
+    offer_apps = df_apps[df_apps["status_lower"].isin(["offer", "approved", "hired"])]
+    offer = len(offer_apps)
+    
+    hired_apps = df_apps[df_apps["status_lower"] == "hired"]
+    hired = len(hired_apps)
+    
+    # Ensure funnel logic holds (each stage should be <= previous stage)
+    hired = hired
+    offer = max(offer, hired)
+    interview = max(interview, offer)
+    screened = max(screened, interview)
+    applied = max(applied, screened)
 
     return {
         "Applied": applied,
-        "Screened": max(screened, actual_interview),
-        "Interview": actual_interview,
-        "Offer": actual_offer,
+        "Screened": screened,
+        "Interview": interview,
+        "Offer": offer,
         "Hired": hired
     }
 
@@ -236,3 +243,78 @@ def get_overview_kpis(jobs_data: list[dict], candidates_data: list[dict], interv
         "interviews_this_week": iv_this_week,
         "average_match_score": avg_match
     }
+
+def get_time_to_hire(jobs_data: list[dict], applications_data: list[dict]) -> list[dict]:
+    df_jobs = pd.DataFrame(jobs_data)
+    df_apps = pd.DataFrame(applications_data)
+    if df_jobs.empty or df_apps.empty or "final_decision_at" not in df_apps.columns:
+        return []
+
+    df_merged = df_apps.merge(df_jobs, left_on="job_id", right_on="id", suffixes=("_app", "_job"))
+    df_hired = df_merged[df_merged["status_app"].str.lower() == "hired"].copy()
+    if df_hired.empty:
+        return []
+        
+    df_hired["created_at_app"] = pd.to_datetime(df_hired["created_at_app"], errors='coerce')
+    df_hired["final_decision_at"] = pd.to_datetime(df_hired["final_decision_at"], errors='coerce')
+    
+    df_hired = df_hired.dropna(subset=["created_at_app", "final_decision_at"])
+    if df_hired.empty:
+        return []
+        
+    df_hired["days_to_hire"] = (df_hired["final_decision_at"] - df_hired["created_at_app"]).dt.days
+    
+    avg_days = df_hired.groupby("title")["days_to_hire"].mean().reset_index()
+    avg_days.rename(columns={"title": "Role", "days_to_hire": "Days"}, inplace=True)
+    avg_days["Days"] = avg_days["Days"].round(1)
+    
+    return avg_days.to_dict(orient="records")
+
+def get_pipeline_status(candidates_data: list[dict]) -> list[dict]:
+    df_cands = pd.DataFrame(candidates_data)
+    if df_cands.empty or "status" not in df_cands.columns:
+        return []
+    counts = df_cands.groupby("status").size().reset_index(name="Count")
+    counts.rename(columns={"status": "Stage"}, inplace=True)
+    return counts.to_dict(orient="records")
+
+def get_top_skills(jobs_data: list[dict]) -> list[dict]:
+    df_jobs = pd.DataFrame(jobs_data)
+    if df_jobs.empty or "required_skills" not in df_jobs.columns:
+        return []
+    
+    skills = []
+    for s_list in df_jobs["required_skills"].dropna():
+        if isinstance(s_list, list):
+            skills.extend(s_list)
+            
+    if not skills:
+        return []
+        
+    skill_counts = pd.Series(skills).value_counts().reset_index()
+    skill_counts.columns = ["Skill", "Count"]
+    return skill_counts.head(5).to_dict(orient="records")
+
+def get_acquisition_sources(applications_data: list[dict]) -> list[dict]:
+    df_apps = pd.DataFrame(applications_data)
+    if df_apps.empty or "source" not in df_apps.columns:
+        return []
+    counts = df_apps.groupby("source").size().reset_index(name="Count")
+    counts.rename(columns={"source": "Source"}, inplace=True)
+    return counts.to_dict(orient="records")
+
+def get_recruiter_performance(applications_data: list[dict]) -> list[dict]:
+    df_apps = pd.DataFrame(applications_data)
+    if df_apps.empty:
+        return []
+        
+    screens = df_apps[df_apps["reviewed_by"].notna() & (df_apps["reviewed_by"] != "")].groupby("reviewed_by").size()
+    hires = df_apps[df_apps["final_selected_by"].notna() & (df_apps["final_selected_by"] != "")].groupby("final_selected_by").size()
+    
+    df_perf = pd.DataFrame({
+        "Screens Conducted": screens,
+        "Hires Advanced": hires
+    }).fillna(0).reset_index()
+    df_perf.rename(columns={"index": "Recruiter"}, inplace=True)
+    
+    return df_perf.to_dict(orient="records")

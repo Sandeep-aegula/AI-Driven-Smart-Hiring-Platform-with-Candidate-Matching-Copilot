@@ -1,9 +1,13 @@
-﻿# Byte-compiled / optimized / DLL files
+﻿# Python cache files - all folders
+__pycache__/
 **/__pycache__/
+*.pyc
+*.pyo
+*.pyd
 *.py[cod]
 *$py.class
 
-# Python virtual environments
+# Virtual environments
 .venv/
 venv/
 env/
@@ -18,7 +22,7 @@ env/
 storage.json
 .streamlit/
 
-# Local uploaded files
+# Uploaded files
 uploads/
 frontend/uploads/
 reports/
@@ -45,7 +49,7 @@ build/
 dist/
 *.egg-info/
 
-# pytest / mypy
+# Testing / type checking
 .pytest_cache/
 .mypy_cache/
 .coverage

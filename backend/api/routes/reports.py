@@ -34,7 +34,7 @@ class ExportRequest(BaseModel):
 @router.get("/recruitment-summary")
 async def get_recruitment_summary(department: str = "All"):
     # Aggregated funnel report + velocity
-    jobs = await data_store.list_jobs(department=department if department != "All" else "", status="All")
+    jobs = await data_store.list_jobs(department=department, status="All")
     cands = await data_store.list_candidates()
     ivs = await data_store.list_interviews()
     apps = await data_store.list_applications()

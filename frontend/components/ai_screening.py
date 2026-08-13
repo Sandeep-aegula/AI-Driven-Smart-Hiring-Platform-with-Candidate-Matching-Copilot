@@ -32,16 +32,55 @@ def render_ai_screening() -> None:
         sel_job    = st.selectbox("Target Job Opening", list(job_opts.keys()))
         job_id     = job_opts[sel_job]
 
+    # with cs2:
+    #     cand_opts  = {f"{c['name']} ({c.get('current_title','Applicant')})": c["id"] for c in cands_list}
+    #     presel     = 0
+    #     pre_id     = st.session_state.get("selected_eval_cand_id")
+    #     if pre_id:
+    #         for i, c in enumerate(cands_list):
+    #             if c["id"] == pre_id: presel = i; break
+    #         st.session_state["selected_eval_cand_id"] = None
+    #     sel_cand   = st.selectbox("Candidate to Evaluate", list(cand_opts.keys()), index=presel)
+    #     cand_id    = cand_opts[sel_cand]
     with cs2:
-        cand_opts  = {f"{c['name']} ({c.get('current_title','Applicant')})": c["id"] for c in cands_list}
-        presel     = 0
-        pre_id     = st.session_state.get("selected_eval_cand_id")
+        st.markdown("**Candidate to Evaluate**")
+        search_term = st.text_input(
+            "Search candidates",
+            placeholder="Type a name, role, or skill to search…",
+            label_visibility="collapsed",
+            key="ai_screen_cand_search"
+        )
+
+        if search_term.strip():
+            term = search_term.strip().lower()
+            filtered = [
+                c for c in cands_list
+                if term in c.get("name", "").lower()
+                or term in c.get("current_title", "").lower()
+                or any(term in (s.get("name") if isinstance(s, dict) else s).lower()
+                       for s in c.get("skills", []))
+            ]
+        else:
+            # Default: show top N by match_score when no search is typed
+            filtered = sorted(cands_list, key=lambda c: c.get("match_score", 0), reverse=True)[:10]
+
+        if not filtered:
+            st.info("No candidates match your search.")
+            st.stop()
+
+        cand_opts = {f"{c['name']} ({c.get('current_title','Applicant')})": c["id"] for c in filtered}
+
+        presel = 0
+        pre_id = st.session_state.get("selected_eval_cand_id")
         if pre_id:
-            for i, c in enumerate(cands_list):
-                if c["id"] == pre_id: presel = i; break
+            for i, c in enumerate(filtered):
+                if c["id"] == pre_id:
+                    presel = i
+                    break
             st.session_state["selected_eval_cand_id"] = None
-        sel_cand   = st.selectbox("Candidate to Evaluate", list(cand_opts.keys()), index=presel)
-        cand_id    = cand_opts[sel_cand]
+
+        sel_cand = st.selectbox("Candidate to Evaluate", list(cand_opts.keys()), index=presel, key="ai_screen_cand_select")
+        cand_id = cand_opts[sel_cand]
 
     st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
 

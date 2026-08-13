@@ -132,7 +132,7 @@ def render_resume_management():
     
     # Global Job Selector
     jobs = get_jobs_cached()
-    active_jobs = [j for j in jobs if j.get("status") == "Active"]
+    active_jobs = [j for j in jobs if str(j.get("status", "")).strip().lower() in ["active", "published", "open"]]
     job_options = {j["id"]: f"{j['title']} ({j['department']})" for j in active_jobs}
     
     if not job_options:

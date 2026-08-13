@@ -57,6 +57,14 @@ async def get_workforce():
     emps = await data_store.list_employees()
     return get_workforce_summary(emps)
 
+from backend.services.report_aggregation_service import (
+    get_hiring_velocity, get_interview_load, get_overview_kpis,
+    get_pipeline_funnel, get_source_quality, get_workforce_summary,
+    get_time_to_hire, get_pipeline_status, get_top_skills,
+    get_acquisition_sources, get_recruiter_performance
+)
+
+# ... inside get_dashboard_bundle ...
 @router.get("/dashboard-bundle")
 async def get_dashboard_bundle(department: str = "All", days: int = 30):
     """
@@ -77,13 +85,25 @@ async def get_dashboard_bundle(department: str = "All", days: int = 30):
     load = get_interview_load(ivs, days)
     workforce = get_workforce_summary(emps)
     
+    # New analytics for dashboard
+    time_to_hire = get_time_to_hire(jobs, apps)
+    pipeline_status = get_pipeline_status(cands)
+    top_skills = get_top_skills(jobs)
+    acquisition_sources = get_acquisition_sources(apps)
+    recruiter_performance = get_recruiter_performance(apps)
+    
     return {
         "overview": overview,
         "funnel": funnel,
         "velocity": velocity,
         "source_quality": quality,
         "interview_load": load,
-        "workforce": workforce
+        "workforce": workforce,
+        "time_to_hire": time_to_hire,
+        "pipeline_status": pipeline_status,
+        "top_skills": top_skills,
+        "acquisition_sources": acquisition_sources,
+        "recruiter_performance": recruiter_performance
     }
 
 @router.get("/refresh")
