@@ -21,10 +21,13 @@ if not DATABASE_URL:
         "Configure the MySQL connection in the .env file."
     )
 
-if not DATABASE_URL.startswith("mysql+aiomysql://"):
+SUPPORTED_DRIVERS = ("mysql+aiomysql://", "sqlite+aiosqlite://")
+
+if not DATABASE_URL.startswith(SUPPORTED_DRIVERS):
     raise RuntimeError(
-        "DATABASE_URL must use the MySQL async driver format: "
-        "mysql+aiomysql://USER:PASSWORD@HOST:PORT/DATABASE"
+        "DATABASE_URL must use an async driver format, e.g. "
+        "mysql+aiomysql://USER:PASSWORD@HOST:PORT/DATABASE or "
+        "sqlite+aiosqlite:///PATH/TO/DATABASE.db"
     )
 
 engine = create_async_engine(

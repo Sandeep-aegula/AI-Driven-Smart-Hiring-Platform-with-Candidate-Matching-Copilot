@@ -365,6 +365,19 @@ async def ensure_interview_application_id_not_null() -> None:
 
 async def ensure_all_schemas() -> None:
     """Run all schema migrations in order."""
+    if engine.dialect.name != "mysql":
+        # These migrations patch columns/tables onto pre-existing MySQL
+        # databases with raw MySQL-only DDL (backticks, AUTO_INCREMENT,
+        # ENGINE=InnoDB, MODIFY COLUMN, ...). On any other backend the
+        # current SQLAlchemy models already declare every column/table
+        # these migrations add, so Base.metadata.create_all() (run before
+        # this in initialize_database()) provisions the up-to-date schema
+        # directly and there is nothing left to patch.
+        logger.info(
+            "Skipping MySQL-specific incremental schema migrations for %s backend.",
+            engine.dialect.name,
+        )
+        return
     await ensure_workflow_schema()
     await ensure_onboarding_schema()
     await ensure_interview_application_id_not_null()
