@@ -386,7 +386,7 @@ class RecruitmentDataStore:
         async with get_db_session() as session:
             stmt = select(ResumeData).order_by(desc(ResumeData.created_at)).limit(limit)
             res = await session.execute(stmt)
-            from backend.services.recruitment import _normalize_resume_record
+            from backend.scripts.services.recruitment import _normalize_resume_record
             return [_normalize_resume_record(model_to_dict(u)) for u in res.scalars().all()]
 
     async def store_resume_record(self, candidate_id: int, filename: str, mime_type: str, file_path: str, parsed: Any, raw_text: str) -> dict:
@@ -806,7 +806,7 @@ class RecruitmentDataStore:
             return model_to_dict(app)
 
     async def parse_resume_file(self, file_path: str) -> dict:
-        from backend.services.resume_parser_service import extract_text_from_document
+        from backend.scripts.services.resume_parser_service import extract_text_from_document
         from pathlib import Path
         raw_text = extract_text_from_document(
             Path(file_path).read_bytes(), Path(file_path).name
@@ -816,7 +816,7 @@ class RecruitmentDataStore:
     async def parse_resume_text(
         self, raw_text: str, filename: str = "pasted_resume.txt"
     ) -> dict:
-        from backend.services.resume_parser_service import (
+        from backend.scripts.services.resume_parser_service import (
             ollama_resume_parse,
             heuristic_resume_parse,
         )

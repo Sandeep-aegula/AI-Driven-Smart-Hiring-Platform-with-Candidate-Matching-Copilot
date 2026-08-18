@@ -34,8 +34,8 @@ from pydantic import BaseModel
 
 from backend.database import ai_interview_repository as repo
 from backend.database.data_store import data_store
-from backend.services import ai_interview_session_service as session_service
-from backend.services.ai_interview_stt_service import transcribe_answer
+from backend.scripts.services import ai_interview_session_service as session_service
+from backend.scripts.services.ai_interview_stt_service import transcribe_answer
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

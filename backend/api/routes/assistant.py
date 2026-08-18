@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import List, Optional
-from backend.services.assistant_service import chat
+from backend.scripts.services.assistant_service import chat
 
 router = APIRouter()
 

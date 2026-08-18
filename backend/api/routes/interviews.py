@@ -4,9 +4,9 @@ from fastapi import APIRouter, HTTPException, Query
 
 from backend.schemas.entities import InterviewCreate, InterviewFeedback, InterviewQuestionsRequest, InterviewQuestionsResponse, InterviewEmailDraftRequest, EmailSendRequest, EmailRecord, InterviewDecisionRequest
 from backend.database.data_store import data_store
-from backend.services.ai_interview_service import generate_interview_questions, fallback_question
-from backend.services.ai_email_service import draft_interview_email
-from backend.services.onboarding_workflow_service import record_interview_decision
+from backend.scripts.services.ai_interview_service import generate_interview_questions, fallback_question
+from backend.scripts.services.ai_email_service import draft_interview_email
+from backend.scripts.services.onboarding_workflow_service import record_interview_decision
 
 logger = logging.getLogger(__name__)
 

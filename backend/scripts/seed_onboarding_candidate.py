@@ -104,7 +104,7 @@ async def seed_onboarding_candidate():
             await session.flush()
             
             # Create default document requirements and documents
-            from backend.services.onboarding_workflow_service import DEFAULT_DOCUMENT_TYPES
+            from backend.scripts.services.onboarding_workflow_service import DEFAULT_DOCUMENT_TYPES
             for doc_type, doc_name, required, order in DEFAULT_DOCUMENT_TYPES:
                 req = OnboardingDocumentRequirement(
                     onboarding_id=onboarding.id,

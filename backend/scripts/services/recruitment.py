@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from backend.ai.ollama_client import OllamaClient
-from backend.services.emailer import send_recruiter_decision_email
+from backend.scripts.services.emailer import send_recruiter_decision_email
 from backend.schemas.entities import (
     ApplicationCreate,
     CandidateCreate,

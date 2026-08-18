@@ -12,7 +12,7 @@ from backend.schemas.workflow import (
     PublicJobDetail,
     PublicJobSummary,
 )
-from backend.services.application_workflow_service import (
+from backend.scripts.services.application_workflow_service import (
     get_public_job,
     list_hr_applications,
     list_public_jobs,

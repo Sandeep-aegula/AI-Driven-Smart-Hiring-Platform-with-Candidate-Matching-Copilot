@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 
 from backend.schemas.entities import ScreeningResponse
-from backend.services.recruitment import screen_resume_against_job
+from backend.scripts.services.recruitment import screen_resume_against_job
 from backend.database.data_store import data_store
 
 router = APIRouter()

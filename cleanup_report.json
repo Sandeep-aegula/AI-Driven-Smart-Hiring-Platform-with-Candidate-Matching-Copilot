@@ -1,0 +1,1983 @@
+[
+  {
+    "path": ".env",
+    "category": "KEEP",
+    "reason": "Config/Meta file (FLAG: SENSITIVE DATA)",
+    "size": 570,
+    "mtime": "2026-08-10 17:20:16"
+  },
+  {
+    "path": ".env.example",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 575,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": ".gitignore",
+    "category": "KEEP",
+    "reason": "Config/Meta file",
+    "size": 607,
+    "mtime": "2026-08-13 21:04:45"
+  },
+  {
+    "path": "AI_COPILOT_RESTRICTION_SYSTEM_EXPLANATION.md",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 65871,
+    "mtime": "2026-07-27 19:20:05"
+  },
+  {
+    "path": "ai_recruitment_copilot.db",
+    "category": "KEEP",
+    "reason": "Actively referenced in code (FLAG: SENSITIVE DATA)",
+    "size": 196608,
+    "mtime": "2026-07-29 22:09:00"
+  },
+  {
+    "path": "app1.py",
+    "category": "KEEP",
+    "reason": "Entry point",
+    "size": 6611,
+    "mtime": "2026-07-31 20:31:56"
+  },
+  {
+    "path": "CANDIDATE_MANAGEMENT_IMPLEMENTATION.md",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 17751,
+    "mtime": "2026-08-01 11:29:47"
+  },
+  {
+    "path": "CANDIDATE_WORKFLOW_FIX_SUMMARY.md",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 21126,
+    "mtime": "2026-08-01 13:12:23"
+  },
+  {
+    "path": "check_database.py",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 1426,
+    "mtime": "2026-07-31 17:21:38"
+  },
+  {
+    "path": "check_details.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 2823,
+    "mtime": "2026-07-31 17:23:56"
+  },
+  {
+    "path": "LICENSE",
+    "category": "KEEP",
+    "reason": "Config/Meta file",
+    "size": 1092,
+    "mtime": "2026-08-13 21:09:46"
+  },
+  {
+    "path": "migrate_json_to_mysql.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 6956,
+    "mtime": "2026-07-29 22:07:32"
+  },
+  {
+    "path": "README.md",
+    "category": "KEEP",
+    "reason": "Config/Meta file",
+    "size": 14267,
+    "mtime": "2026-08-13 20:38:41"
+  },
+  {
+    "path": "requirements.txt",
+    "category": "KEEP",
+    "reason": "Config/Meta file",
+    "size": 2896,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "resume.txt",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 59,
+    "mtime": "2026-07-31 17:23:35"
+  },
+  {
+    "path": "rewrite_migration.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 20481,
+    "mtime": "2026-07-30 22:54:38"
+  },
+  {
+    "path": "storage.json",
+    "category": "KEEP",
+    "reason": "Actively referenced in code (FLAG: SENSITIVE DATA)",
+    "size": 139873,
+    "mtime": "2026-07-28 19:48:04"
+  },
+  {
+    "path": "temp_scanner.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 4328,
+    "mtime": "2026-08-16 18:53:37"
+  },
+  {
+    "path": "test_candidate_management.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 17749,
+    "mtime": "2026-08-01 11:30:47"
+  },
+  {
+    "path": "test_db_connection.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 1172,
+    "mtime": "2026-07-30 19:34:43"
+  },
+  {
+    "path": "test_payload.json",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 218,
+    "mtime": "2026-08-02 07:32:46"
+  },
+  {
+    "path": "assets\\css\\animations.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2299,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "assets\\css\\cards.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 4506,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "assets\\css\\forms.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2324,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "assets\\css\\global.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 20124,
+    "mtime": "2026-07-17 17:18:25"
+  },
+  {
+    "path": "assets\\css\\header.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2641,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "assets\\css\\sidebar.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 4558,
+    "mtime": "2026-07-16 18:57:16"
+  },
+  {
+    "path": "assets\\css\\style.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1110,
+    "mtime": "2026-07-16 18:56:36"
+  },
+  {
+    "path": "assets\\css\\tables.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1254,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "assets\\images\\banner.png",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 631114,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "assets\\images\\logo.png",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 159916,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "assets\\images\\profile.png",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 630444,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "backend\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 56,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "backend\\ai\\ollama_client.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1702,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\ai\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 19,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "backend\\api\\app.py",
+    "category": "KEEP",
+    "reason": "Entry point",
+    "size": 4494,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\api\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 36,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "backend\\api\\routes\\ai_interviews.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 11341,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\api\\routes\\ai_screening.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1194,
+    "mtime": "2026-07-15 21:47:00"
+  },
+  {
+    "path": "backend\\api\\routes\\analytics.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 4220,
+    "mtime": "2026-08-13 19:44:58"
+  },
+  {
+    "path": "backend\\api\\routes\\applications.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1801,
+    "mtime": "2026-08-02 10:35:56"
+  },
+  {
+    "path": "backend\\api\\routes\\assistant.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1242,
+    "mtime": "2026-07-25 18:01:48"
+  },
+  {
+    "path": "backend\\api\\routes\\auth.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2605,
+    "mtime": "2026-07-29 22:08:27"
+  },
+  {
+    "path": "backend\\api\\routes\\candidates.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 35118,
+    "mtime": "2026-08-12 20:23:56"
+  },
+  {
+    "path": "backend\\api\\routes\\communications.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 56250,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\api\\routes\\copilot.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2267,
+    "mtime": "2026-07-27 19:22:59"
+  },
+  {
+    "path": "backend\\api\\routes\\employees.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 5214,
+    "mtime": "2026-07-15 22:53:35"
+  },
+  {
+    "path": "backend\\api\\routes\\interviews.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 8174,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\api\\routes\\jobs.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 5735,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\api\\routes\\onboarding.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 31799,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\api\\routes\\parser.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 951,
+    "mtime": "2026-07-15 21:47:41"
+  },
+  {
+    "path": "backend\\api\\routes\\public.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3700,
+    "mtime": "2026-08-01 17:17:09"
+  },
+  {
+    "path": "backend\\api\\routes\\reports.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 4864,
+    "mtime": "2026-08-13 20:55:07"
+  },
+  {
+    "path": "backend\\api\\routes\\resume.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2223,
+    "mtime": "2026-07-15 21:47:37"
+  },
+  {
+    "path": "backend\\api\\routes\\resumes.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 10916,
+    "mtime": "2026-08-12 20:23:56"
+  },
+  {
+    "path": "backend\\api\\routes\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 22,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "backend\\constants\\email_mapping.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1210,
+    "mtime": "2026-07-16 22:22:08"
+  },
+  {
+    "path": "backend\\core\\config.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2098,
+    "mtime": "2026-08-02 07:56:48"
+  },
+  {
+    "path": "backend\\core\\constants.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3363,
+    "mtime": "2026-08-02 15:50:58"
+  },
+  {
+    "path": "backend\\core\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 29,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "backend\\database\\add_communication_table.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3668,
+    "mtime": "2026-08-02 07:56:48"
+  },
+  {
+    "path": "backend\\database\\ai_interview_repository.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 4046,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\database\\base.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 88,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "backend\\database\\data_store.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 41120,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\database\\init_db.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1889,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\database\\migrate_interview_invitation.py",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 1550,
+    "mtime": "2026-08-02 10:12:00"
+  },
+  {
+    "path": "backend\\database\\migrate_json_to_mysql.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 19274,
+    "mtime": "2026-07-31 16:28:22"
+  },
+  {
+    "path": "backend\\database\\run_migration_interview_invitation.py",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 1526,
+    "mtime": "2026-08-02 10:12:00"
+  },
+  {
+    "path": "backend\\database\\schema_migrations.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 18646,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\database\\session.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2067,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\database\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 25,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "backend\\models\\ai_interview_entities.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2302,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\models\\entities.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 28934,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\models\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 906,
+    "mtime": "2026-07-31 15:04:08"
+  },
+  {
+    "path": "backend\\schemas\\entities.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 11934,
+    "mtime": "2026-08-02 15:09:29"
+  },
+  {
+    "path": "backend\\schemas\\workflow.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 15464,
+    "mtime": "2026-08-02 10:35:56"
+  },
+  {
+    "path": "backend\\schemas\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 238,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "backend\\scripts\\audit_orphaned_interviews.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 4681,
+    "mtime": "2026-08-02 15:09:29"
+  },
+  {
+    "path": "backend\\scripts\\backfill_interview_application_links.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 7637,
+    "mtime": "2026-08-02 15:09:29"
+  },
+  {
+    "path": "backend\\scripts\\cleanup_duplicate_communications.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 2781,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\scripts\\create_hr_user.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 873,
+    "mtime": "2026-08-03 17:53:15"
+  },
+  {
+    "path": "backend\\scripts\\email_test.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 283,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\scripts\\migrate_sqlite_legacy_data.py",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 11746,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\scripts\\seed_onboarding_candidate.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 5564,
+    "mtime": "2026-08-02 13:08:25"
+  },
+  {
+    "path": "backend\\services\\ai_candidate_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 4129,
+    "mtime": "2026-07-15 22:17:41"
+  },
+  {
+    "path": "backend\\services\\ai_email_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 6154,
+    "mtime": "2026-08-02 07:47:15"
+  },
+  {
+    "path": "backend\\services\\ai_interview_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 8850,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\services\\ai_interview_session_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 17604,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\services\\ai_interview_stt_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1823,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\services\\ai_job_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 4897,
+    "mtime": "2026-07-15 21:57:14"
+  },
+  {
+    "path": "backend\\services\\ai_resume_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3520,
+    "mtime": "2026-07-15 22:04:26"
+  },
+  {
+    "path": "backend\\services\\ai_talent_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3781,
+    "mtime": "2026-07-25 17:36:22"
+  },
+  {
+    "path": "backend\\services\\application_workflow_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 20888,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\services\\assistant_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3117,
+    "mtime": "2026-07-25 18:40:05"
+  },
+  {
+    "path": "backend\\services\\chat_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3601,
+    "mtime": "2026-07-27 19:22:35"
+  },
+  {
+    "path": "backend\\services\\context_retrieval_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 5869,
+    "mtime": "2026-07-27 19:21:50"
+  },
+  {
+    "path": "backend\\services\\copilot_context_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1468,
+    "mtime": "2026-07-15 23:00:52"
+  },
+  {
+    "path": "backend\\services\\emailer.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 6849,
+    "mtime": "2026-08-02 07:56:48"
+  },
+  {
+    "path": "backend\\services\\employee_conversion_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3871,
+    "mtime": "2026-07-25 17:36:08"
+  },
+  {
+    "path": "backend\\services\\export_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 23958,
+    "mtime": "2026-07-21 00:47:25"
+  },
+  {
+    "path": "backend\\services\\intent_router_service.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 3098,
+    "mtime": "2026-07-15 23:01:07"
+  },
+  {
+    "path": "backend\\services\\ollama_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 12714,
+    "mtime": "2026-07-27 19:22:25"
+  },
+  {
+    "path": "backend\\services\\onboarding_workflow_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 19173,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\services\\recruitment.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 56126,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "backend\\services\\report_aggregation_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 13226,
+    "mtime": "2026-08-13 20:55:44"
+  },
+  {
+    "path": "backend\\services\\resume_parser_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2053,
+    "mtime": "2026-07-15 22:04:09"
+  },
+  {
+    "path": "backend\\services\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 34,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "exports\\job_report_4_202607d_121555_93d19bdd.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 4078,
+    "mtime": "2026-07-25 17:45:55"
+  },
+  {
+    "path": "frontend\\app.py",
+    "category": "KEEP",
+    "reason": "Entry point",
+    "size": 47951,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\assets\\css\\public.css",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 18293,
+    "mtime": "2026-08-03 18:40:39"
+  },
+  {
+    "path": "frontend\\components\\about_us.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 0,
+    "mtime": "2026-08-02 21:38:43"
+  },
+  {
+    "path": "frontend\\components\\ai_assistant.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 20774,
+    "mtime": "2026-08-02 16:25:26"
+  },
+  {
+    "path": "frontend\\components\\ai_chat_window.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 5807,
+    "mtime": "2026-07-21 23:05:33"
+  },
+  {
+    "path": "frontend\\components\\ai_copilot.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 34000,
+    "mtime": "2026-08-01 17:37:18"
+  },
+  {
+    "path": "frontend\\components\\ai_copilot_panel.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 16617,
+    "mtime": "2026-07-22 19:31:42"
+  },
+  {
+    "path": "frontend\\components\\ai_floating_button.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 2777,
+    "mtime": "2026-07-22 19:22:50"
+  },
+  {
+    "path": "frontend\\components\\ai_header.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3028,
+    "mtime": "2026-07-22 19:50:31"
+  },
+  {
+    "path": "frontend\\components\\ai_input.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2685,
+    "mtime": "2026-07-21 22:54:58"
+  },
+  {
+    "path": "frontend\\components\\ai_message.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3019,
+    "mtime": "2026-07-21 22:54:58"
+  },
+  {
+    "path": "frontend\\components\\ai_screening.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 16402,
+    "mtime": "2026-08-13 19:26:19"
+  },
+  {
+    "path": "frontend\\components\\ai_sidebar.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2062,
+    "mtime": "2026-08-01 17:37:18"
+  },
+  {
+    "path": "frontend\\components\\ai_typing_indicator.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1522,
+    "mtime": "2026-07-21 22:54:58"
+  },
+  {
+    "path": "frontend\\components\\analytics.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 15229,
+    "mtime": "2026-08-13 19:45:25"
+  },
+  {
+    "path": "frontend\\components\\api_client.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 55717,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\bar.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2043,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\candidates.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 22254,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\candidate_table.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 8182,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\components\\careers.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 0,
+    "mtime": "2026-08-02 21:38:54"
+  },
+  {
+    "path": "frontend\\components\\communications.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 21800,
+    "mtime": "2026-08-02 15:20:19"
+  },
+  {
+    "path": "frontend\\components\\create_job.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 6656,
+    "mtime": "2026-08-01 17:37:18"
+  },
+  {
+    "path": "frontend\\components\\dashboard.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 15049,
+    "mtime": "2026-08-03 19:12:53"
+  },
+  {
+    "path": "frontend\\components\\dashboard_cards.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 3947,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\components\\employees.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 61196,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\file_uploader.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3284,
+    "mtime": "2026-08-03 15:44:57"
+  },
+  {
+    "path": "frontend\\components\\footer.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1389,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\components\\header.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2561,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\interviews.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 15261,
+    "mtime": "2026-08-03 00:02:42"
+  },
+  {
+    "path": "frontend\\components\\interview_management.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 17953,
+    "mtime": "2026-08-14 19:34:37"
+  },
+  {
+    "path": "frontend\\components\\jobs.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 20149,
+    "mtime": "2026-08-02 15:20:48"
+  },
+  {
+    "path": "frontend\\components\\job_match.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3385,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\components\\onboarding.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 16477,
+    "mtime": "2026-08-02 15:09:29"
+  },
+  {
+    "path": "frontend\\components\\page_utils.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 5181,
+    "mtime": "2026-07-17 16:52:51"
+  },
+  {
+    "path": "frontend\\components\\public_about.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 873,
+    "mtime": "2026-08-03 12:26:40"
+  },
+  {
+    "path": "frontend\\components\\public_careers.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 6453,
+    "mtime": "2026-08-03 13:36:15"
+  },
+  {
+    "path": "frontend\\components\\public_contact.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2167,
+    "mtime": "2026-08-03 14:17:52"
+  },
+  {
+    "path": "frontend\\components\\public_footer.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1551,
+    "mtime": "2026-08-03 07:48:58"
+  },
+  {
+    "path": "frontend\\components\\public_job_card.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 1065,
+    "mtime": "2026-07-31 11:56:44"
+  },
+  {
+    "path": "frontend\\components\\public_job_details.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 6901,
+    "mtime": "2026-08-03 13:41:00"
+  },
+  {
+    "path": "frontend\\components\\public_navbar.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1299,
+    "mtime": "2026-07-31 11:56:31"
+  },
+  {
+    "path": "frontend\\components\\recommendation.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3170,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\components\\reports.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 32662,
+    "mtime": "2026-08-13 20:46:12"
+  },
+  {
+    "path": "frontend\\components\\resume_analysis.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 6404,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\components\\resume_management.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 15361,
+    "mtime": "2026-08-13 19:23:28"
+  },
+  {
+    "path": "frontend\\components\\resume_parser.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 10559,
+    "mtime": "2026-08-13 19:16:01"
+  },
+  {
+    "path": "frontend\\components\\sidebar.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1489,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\timeline.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1568,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\components\\upload_resume.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 10876,
+    "mtime": "2026-08-02 15:09:29"
+  },
+  {
+    "path": "frontend\\components\\workflow.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2488,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\components\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 68,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\components\\ai_interviews\\api.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3262,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\ai_interviews\\live_components.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2934,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\ai_interviews\\state.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2752,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\ai_interviews\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1603,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\ai_interviews\\screens\\complete_screen.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1000,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\ai_interviews\\screens\\instructions_screen.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 4262,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\ai_interviews\\screens\\interview_screen.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 5807,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\ai_interviews\\screens\\list_screen.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3976,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\ai_interviews\\screens\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 0,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\ai_interviews\\_device_check_component\\index.html",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3640,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\components\\ai_interviews\\_live_interview_component\\index.html",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 35635,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\pages\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 0,
+    "mtime": "2026-08-02 23:03:51"
+  },
+  {
+    "path": "frontend\\prompts\\assistant_system_prompt.md",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 761,
+    "mtime": "2026-07-25 18:00:54"
+  },
+  {
+    "path": "frontend\\prompts\\faq.md",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1301,
+    "mtime": "2026-07-25 18:01:26"
+  },
+  {
+    "path": "frontend\\prompts\\knowledge_base.md",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3966,
+    "mtime": "2026-07-21 22:01:18"
+  },
+  {
+    "path": "frontend\\prompts\\navigation.md",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1509,
+    "mtime": "2026-07-21 22:01:20"
+  },
+  {
+    "path": "frontend\\prompts\\system_prompt.md",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3120,
+    "mtime": "2026-07-22 19:14:12"
+  },
+  {
+    "path": "frontend\\prompts\\system_prompt.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1893,
+    "mtime": "2026-07-21 22:56:28"
+  },
+  {
+    "path": "frontend\\prompts\\workflow.md",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1745,
+    "mtime": "2026-07-21 22:01:20"
+  },
+  {
+    "path": "frontend\\public\\home.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 23522,
+    "mtime": "2026-08-02 16:42:51"
+  },
+  {
+    "path": "frontend\\public\\utils.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 641,
+    "mtime": "2026-07-31 11:56:48"
+  },
+  {
+    "path": "frontend\\public\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 0,
+    "mtime": "2026-07-30 23:13:13"
+  },
+  {
+    "path": "frontend\\public\\components\\job_card.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1883,
+    "mtime": "2026-08-02 16:43:21"
+  },
+  {
+    "path": "frontend\\public\\components\\public_footer.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1597,
+    "mtime": "2026-07-31 12:31:21"
+  },
+  {
+    "path": "frontend\\public\\components\\public_navbar.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 4407,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\public\\data\\mock_jobs.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 6728,
+    "mtime": "2026-07-31 12:31:21"
+  },
+  {
+    "path": "frontend\\public\\styles\\public_portal.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 20227,
+    "mtime": "2026-08-03 14:08:12"
+  },
+  {
+    "path": "frontend\\public\\views\\about.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 4435,
+    "mtime": "2026-07-31 12:22:52"
+  },
+  {
+    "path": "frontend\\public\\views\\apply.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 6756,
+    "mtime": "2026-08-02 15:22:14"
+  },
+  {
+    "path": "frontend\\public\\views\\careers.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2832,
+    "mtime": "2026-07-31 15:10:42"
+  },
+  {
+    "path": "frontend\\public\\views\\home.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 5205,
+    "mtime": "2026-08-01 17:37:18"
+  },
+  {
+    "path": "frontend\\public\\views\\hr_login.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3793,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\public\\views\\job_details.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 5490,
+    "mtime": "2026-08-01 17:37:18"
+  },
+  {
+    "path": "frontend\\public\\views\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 0,
+    "mtime": "2026-07-31 11:56:51"
+  },
+  {
+    "path": "frontend\\services\\ai_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2635,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\services\\app_state.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 4649,
+    "mtime": "2026-07-20 21:28:59"
+  },
+  {
+    "path": "frontend\\services\\assistant_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 9352,
+    "mtime": "2026-07-22 19:22:50"
+  },
+  {
+    "path": "frontend\\services\\cache.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 11894,
+    "mtime": "2026-08-03 16:16:33"
+  },
+  {
+    "path": "frontend\\services\\context_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 3573,
+    "mtime": "2026-07-22 22:59:17"
+  },
+  {
+    "path": "frontend\\services\\copilot_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 5696,
+    "mtime": "2026-07-23 23:32:11"
+  },
+  {
+    "path": "frontend\\services\\json_storage.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2897,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\services\\knowledge_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2050,
+    "mtime": "2026-07-22 22:56:36"
+  },
+  {
+    "path": "frontend\\services\\llm_service.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1809,
+    "mtime": "2026-07-23 19:08:32"
+  },
+  {
+    "path": "frontend\\services\\memory_service.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 742,
+    "mtime": "2026-07-21 22:56:28"
+  },
+  {
+    "path": "frontend\\services\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 33,
+    "mtime": "2026-07-23 22:29:43"
+  },
+  {
+    "path": "frontend\\src\\constants.ts",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 3173,
+    "mtime": "2026-08-02 15:52:35"
+  },
+  {
+    "path": "frontend\\styles\\ai_copilot.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 0,
+    "mtime": "2026-07-20 20:08:56"
+  },
+  {
+    "path": "frontend\\styles\\animations.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 659,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\styles\\cards.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 4704,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\styles\\forms.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 2846,
+    "mtime": "2026-08-03 18:48:46"
+  },
+  {
+    "path": "frontend\\styles\\style.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 14912,
+    "mtime": "2026-08-03 18:47:44"
+  },
+  {
+    "path": "frontend\\styles\\tables.css",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1254,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "frontend\\uploads\\Naveen_Automation_Tester_Resume.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 3655,
+    "mtime": "2026-08-13 16:59:16"
+  },
+  {
+    "path": "frontend\\utils\\chat_utils.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1117,
+    "mtime": "2026-07-22 19:22:50"
+  },
+  {
+    "path": "frontend\\utils\\constants.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 1937,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\utils\\copy_utils.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 365,
+    "mtime": "2026-07-21 22:56:28"
+  },
+  {
+    "path": "frontend\\utils\\markdown_utils.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 710,
+    "mtime": "2026-07-21 22:56:28"
+  },
+  {
+    "path": "frontend\\views\\ai_copilot.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 18563,
+    "mtime": "2026-08-01 17:37:18"
+  },
+  {
+    "path": "frontend\\views\\ai_copilot_new.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 11145,
+    "mtime": "2026-08-02 15:22:36"
+  },
+  {
+    "path": "frontend\\views\\ai_screening.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 15252,
+    "mtime": "2026-08-01 17:37:18"
+  },
+  {
+    "path": "frontend\\views\\analytics.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 14799,
+    "mtime": "2026-08-01 17:37:18"
+  },
+  {
+    "path": "frontend\\views\\candidates.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 34448,
+    "mtime": "2026-08-01 17:37:18"
+  },
+  {
+    "path": "frontend\\views\\candidate_management.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 24780,
+    "mtime": "2026-08-01 17:37:18"
+  },
+  {
+    "path": "frontend\\views\\employees.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 38878,
+    "mtime": "2026-08-02 10:35:56"
+  },
+  {
+    "path": "frontend\\views\\interviews.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 15754,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "frontend\\views\\jobs.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 27530,
+    "mtime": "2026-08-01 17:37:18"
+  },
+  {
+    "path": "frontend\\views\\reports.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 16617,
+    "mtime": "2026-08-01 17:37:18"
+  },
+  {
+    "path": "frontend\\views\\resume_parser.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 18540,
+    "mtime": "2026-08-02 15:22:53"
+  },
+  {
+    "path": "frontend\\views\\write_ai_copilot.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 6606,
+    "mtime": "2026-08-02 15:23:28"
+  },
+  {
+    "path": "frontend\\views\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 0,
+    "mtime": "2026-08-13 19:21:26"
+  },
+  {
+    "path": "scripts\\add_onboarding_tables.py",
+    "category": "CONFIRMED UNUSED",
+    "reason": "No references found anywhere",
+    "size": 1052,
+    "mtime": "2026-07-31 20:12:29"
+  },
+  {
+    "path": "scripts\\init_database.py",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 455,
+    "mtime": "2026-07-31 14:42:54"
+  },
+  {
+    "path": "services\\cache.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 313,
+    "mtime": "2026-07-14 22:23:33"
+  },
+  {
+    "path": "services\\state.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 5432,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "services\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 63,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "shared\\__init__.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 58,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "storage\\reports\\interview_backfill_log_20260802_135003.csv",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 977,
+    "mtime": "2026-08-02 13:50:03"
+  },
+  {
+    "path": "storage\\reports\\orphaned_interviews_20260802_134753.csv",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 1132,
+    "mtime": "2026-08-02 13:47:53"
+  },
+  {
+    "path": "uploads\\04195c88895c4a2f99eb491980629a19.txt",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 59,
+    "mtime": "2026-07-31 17:23:40"
+  },
+  {
+    "path": "uploads\\0b6083f630dc46e8a7ce57bb4916507a.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 117399,
+    "mtime": "2026-08-03 11:12:10"
+  },
+  {
+    "path": "uploads\\0ba893c814b847269f101270ea2a2596.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 117399,
+    "mtime": "2026-08-01 16:54:19"
+  },
+  {
+    "path": "uploads\\1726d2cb4e784c7594a5dfc1e2a3380d.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 139829,
+    "mtime": "2026-08-06 19:38:02"
+  },
+  {
+    "path": "uploads\\1812c4888cf6454b878ecce39a232c82.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 117399,
+    "mtime": "2026-08-01 20:13:57"
+  },
+  {
+    "path": "uploads\\1c84746adc054c9fb5b5ec02d70bef8c.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 54053,
+    "mtime": "2026-08-01 20:00:35"
+  },
+  {
+    "path": "uploads\\2b682bea5abb48918eb271f3a31bb985.txt",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 51,
+    "mtime": "2026-08-01 17:21:23"
+  },
+  {
+    "path": "uploads\\3b004d83b384454b915937a2797ccff1.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 139829,
+    "mtime": "2026-08-10 20:01:05"
+  },
+  {
+    "path": "uploads\\41b897a7ea4a4f02b25602335b26a313.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 117399,
+    "mtime": "2026-08-01 17:23:37"
+  },
+  {
+    "path": "uploads\\497fcff327494ac89b8b3ffedea3d91d.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 117399,
+    "mtime": "2026-08-01 14:57:49"
+  },
+  {
+    "path": "uploads\\53f6ca637d6a49de9233d840aa1e1e3f.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 117399,
+    "mtime": "2026-08-01 10:55:35"
+  },
+  {
+    "path": "uploads\\57b11053afd4494d8f65e60d9535f830.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 117399,
+    "mtime": "2026-07-31 18:22:49"
+  },
+  {
+    "path": "uploads\\61315f8142164abfb263a2893b4aed0a.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 117399,
+    "mtime": "2026-08-01 11:42:38"
+  },
+  {
+    "path": "uploads\\6f3ef85410cc4a779701332c2e052715.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 3655,
+    "mtime": "2026-08-07 19:51:55"
+  },
+  {
+    "path": "uploads\\7b348601fc494ae5bb3717f8f8750dde.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 117399,
+    "mtime": "2026-08-01 19:13:26"
+  },
+  {
+    "path": "uploads\\93d5230c0cdf4790b4bb6fbda9e81d4c.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 55425,
+    "mtime": "2026-08-10 16:07:41"
+  },
+  {
+    "path": "uploads\\aab0e43fbd06402392f8bb84cb5c8f52.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 54053,
+    "mtime": "2026-08-01 11:24:41"
+  },
+  {
+    "path": "uploads\\ABHINASH RESUME.docx",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 36412,
+    "mtime": "2026-07-15 17:55:59"
+  },
+  {
+    "path": "uploads\\ba3316e4d6a245d7abfbe3038b6adc36.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 3655,
+    "mtime": "2026-08-12 18:11:04"
+  },
+  {
+    "path": "uploads\\c750c4b0f6bb409cb72a7f09cea59c3c.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 117399,
+    "mtime": "2026-08-03 15:45:42"
+  },
+  {
+    "path": "uploads\\d56d93a7dda84e22acc074f12932a60f.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 54053,
+    "mtime": "2026-08-01 20:58:01"
+  },
+  {
+    "path": "uploads\\dc75baa7fa4c4f9b8736510d7e14f02c.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 117399,
+    "mtime": "2026-08-01 12:16:03"
+  },
+  {
+    "path": "uploads\\dcd7d4ac53d147f89f2d00cc0cf59b52.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 55425,
+    "mtime": "2026-08-06 19:21:13"
+  },
+  {
+    "path": "uploads\\e54639178ad544e29e3f380a0027d160.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 117399,
+    "mtime": "2026-07-31 17:26:14"
+  },
+  {
+    "path": "uploads\\ead34c709129499291d4f385b52c8a50.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 55425,
+    "mtime": "2026-08-02 15:27:16"
+  },
+  {
+    "path": "uploads\\ee340054f6684285a8a79d8192d2cedf.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 139829,
+    "mtime": "2026-08-10 20:01:04"
+  },
+  {
+    "path": "uploads\\fc5bf465ae8245738b36529ff58ca5a8.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 117399,
+    "mtime": "2026-08-01 12:52:03"
+  },
+  {
+    "path": "uploads\\fe09454bfb5f4fe7bcf0ec4f09d0b594.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 54053,
+    "mtime": "2026-08-02 23:27:48"
+  },
+  {
+    "path": "uploads\\onboarding\\0e724c36e72d4d3c9d3b4d792dcad3cf.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 185346,
+    "mtime": "2026-08-03 19:47:09"
+  },
+  {
+    "path": "uploads\\onboarding\\36a6f68aa83c4313a6134eca1f4d8afb.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 827441,
+    "mtime": "2026-08-10 18:51:42"
+  },
+  {
+    "path": "uploads\\onboarding\\6edf24ab501e427cb69f97066bf73d88.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 185346,
+    "mtime": "2026-08-02 14:18:27"
+  },
+  {
+    "path": "uploads\\onboarding\\6fdada692ee54f2c8b36e912fe2745ca.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 55425,
+    "mtime": "2026-08-02 14:16:56"
+  },
+  {
+    "path": "uploads\\onboarding\\76494bd576c5419697568f6aba3f3023.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 185346,
+    "mtime": "2026-08-14 19:56:18"
+  },
+  {
+    "path": "uploads\\onboarding\\7ec12382c3ca46e995cd40da33fba88b.jpeg",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 58593,
+    "mtime": "2026-08-10 18:53:34"
+  },
+  {
+    "path": "uploads\\onboarding\\94133436b99a4bd3942222d4ae097a3f.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 827441,
+    "mtime": "2026-08-10 18:45:51"
+  },
+  {
+    "path": "uploads\\onboarding\\a273bb72744540a682c574f3859325c2.jpeg",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 58593,
+    "mtime": "2026-08-02 14:17:52"
+  },
+  {
+    "path": "uploads\\onboarding\\a65ed36f8f874adc8ac1e118ddc0f498.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 185346,
+    "mtime": "2026-08-10 18:42:16"
+  },
+  {
+    "path": "uploads\\onboarding\\ba8c56bfd16f4e22b05f156a0924f70c.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 185346,
+    "mtime": "2026-08-02 14:15:42"
+  },
+  {
+    "path": "uploads\\onboarding\\d17f49de39714c7db1d26cb19d0e4aeb.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 185346,
+    "mtime": "2026-08-02 14:17:11"
+  },
+  {
+    "path": "uploads\\onboarding\\d2e034fc723a43cb92a7a011b718c73e.docx",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 16554,
+    "mtime": "2026-08-10 18:47:25"
+  },
+  {
+    "path": "uploads\\onboarding\\dc10bbff06f3415bb5c18e4a39f1cf7d.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 185346,
+    "mtime": "2026-08-02 14:18:35"
+  },
+  {
+    "path": "uploads\\onboarding\\ead35448900842008c85bda98b04934b.docx",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 16554,
+    "mtime": "2026-08-10 18:49:47"
+  },
+  {
+    "path": "uploads\\onboarding\\eb6e738c619140c2b951f9f230092957.pdf",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 185346,
+    "mtime": "2026-08-10 18:44:28"
+  },
+  {
+    "path": "uploads\\onboarding\\ef39799afafa493cb4af721a244d9ba5.docx",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 16554,
+    "mtime": "2026-08-02 14:19:59"
+  },
+  {
+    "path": "utils\\dummy_data.py",
+    "category": "LIKELY UNUSED",
+    "reason": "No references found, but it's a data/upload file (might be dynamic)",
+    "size": 13932,
+    "mtime": "2026-07-14 19:19:03"
+  },
+  {
+    "path": "utils\\styles.py",
+    "category": "KEEP",
+    "reason": "Actively referenced in code",
+    "size": 759,
+    "mtime": "2026-07-14 19:19:03"
+  }
+]

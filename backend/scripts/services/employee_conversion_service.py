@@ -86,7 +86,7 @@ async def create_employee_from_candidate(candidate_id: int) -> dict:
             logger.info(f"Successfully converted Candidate {candidate_id} to Employee {employee.get('id')}.")
             
         # Automatically generate and store AI insights
-        from backend.services.ai_talent_service import generate_talent_insights
+        from backend.scripts.services.ai_talent_service import generate_talent_insights
         insights = await generate_talent_insights(employee)
         await data_store.update_talent_insights(employee["id"], insights)
         employee["talent_insights"] = insights

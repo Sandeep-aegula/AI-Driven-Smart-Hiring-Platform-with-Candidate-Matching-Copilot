@@ -3,7 +3,7 @@ import logging
 import httpx
 from pydantic import BaseModel
 
-from backend.services.copilot_context_service import get_system_context
+from backend.scripts.services.copilot_context_service import get_system_context
 
 logger = logging.getLogger(__name__)
 

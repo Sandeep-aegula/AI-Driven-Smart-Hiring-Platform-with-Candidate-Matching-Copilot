@@ -7,9 +7,9 @@ from pydantic import BaseModel
 
 from backend.schemas.entities import JobCreate, JobRead
 from backend.database.data_store import data_store
-from backend.services.application_workflow_service import close_job, pause_job, publish_job
-from backend.services.recruitment import generate_job_description
-from backend.services.ai_job_service import parse_document, generate_job_description as ai_generate_jd, regenerate_job_description as ai_regenerate_jd
+from backend.scripts.services.application_workflow_service import close_job, pause_job, publish_job
+from backend.scripts.services.recruitment import generate_job_description
+from backend.scripts.services.ai_job_service import parse_document, generate_job_description as ai_generate_jd, regenerate_job_description as ai_regenerate_jd
 
 router = APIRouter()
 
@@ -60,7 +60,7 @@ async def create_job(payload: JobCreate) -> JobRead:
         raise HTTPException(status_code=400, detail="Openings must be at least 1")
     created = await data_store.create_job(payload)
     if payload.status in {"Active", "Open", "draft", ""}:
-        from backend.services.application_workflow_service import normalize_created_job_status
+        from backend.scripts.services.application_workflow_service import normalize_created_job_status
         await normalize_created_job_status(created["id"], payload.status)
         created["status"] = "draft"
     return created

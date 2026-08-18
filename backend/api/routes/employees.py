@@ -4,7 +4,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 
 from backend.database.data_store import data_store
-from backend.services.ai_talent_service import generate_talent_insights
+from backend.scripts.services.ai_talent_service import generate_talent_insights
 
 logger = logging.getLogger(__name__)
 

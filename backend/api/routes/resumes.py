@@ -10,8 +10,8 @@ from backend.database.session import get_db_session
 from backend.database.data_store import data_store
 from backend.models.entities import ResumeData
 from backend.schemas.entities import CandidateCreate, CandidateRead, BatchUploadStatus, ResumeDraftResponse
-from backend.services.resume_parser_service import extract_text_from_document
-from backend.services.ai_resume_service import parse_resume_to_json, evaluate_candidate_match
+from backend.scripts.services.resume_parser_service import extract_text_from_document
+from backend.scripts.services.ai_resume_service import parse_resume_to_json, evaluate_candidate_match
 
 router = APIRouter()
 

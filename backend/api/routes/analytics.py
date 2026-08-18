@@ -5,7 +5,7 @@ import asyncio
 from fastapi import APIRouter
 
 from backend.database.data_store import data_store
-from backend.services.report_aggregation_service import (
+from backend.scripts.services.report_aggregation_service import (
     get_overview_kpis,
     get_pipeline_funnel,
     get_hiring_velocity,
@@ -57,7 +57,7 @@ async def get_workforce():
     emps = await data_store.list_employees()
     return get_workforce_summary(emps)
 
-from backend.services.report_aggregation_service import (
+from backend.scripts.services.report_aggregation_service import (
     get_hiring_velocity, get_interview_load, get_overview_kpis,
     get_pipeline_funnel, get_source_quality, get_workforce_summary,
     get_time_to_hire, get_pipeline_status, get_top_skills,

@@ -9,9 +9,9 @@ from sqlalchemy.orm import selectinload
 
 from backend.schemas.entities import CandidateCreate, CandidateRead, CompareCandidatesRequest, EmailDraftRequest, EmailSendRequest, EmailRecord
 from backend.database.data_store import data_store
-from backend.services.ai_candidate_service import generate_ranking_explanation, analyze_skill_gap, compare_candidates
-from backend.services.ai_email_service import draft_candidate_email
-from backend.services.emailer import send_custom_email
+from backend.scripts.services.ai_candidate_service import generate_ranking_explanation, analyze_skill_gap, compare_candidates
+from backend.scripts.services.ai_email_service import draft_candidate_email
+from backend.scripts.services.emailer import send_custom_email
 from backend.database.session import get_db_session
 from backend.models.entities import Candidate, Application, Job, Resume, ResumeParseResult, ApplicationScore, Communication
 
@@ -406,7 +406,7 @@ async def note_candidate(candidate_id: int, note: str) -> CandidateRead:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
-from backend.services.employee_conversion_service import create_employee_from_candidate
+from backend.scripts.services.employee_conversion_service import create_employee_from_candidate
 
 @router.post("/{candidate_id}/status", response_model=CandidateRead)
 async def status_candidate(candidate_id: int, status: str) -> CandidateRead:

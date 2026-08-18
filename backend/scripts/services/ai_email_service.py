@@ -1,6 +1,6 @@
 import json
 import logging
-from backend.services.ai_candidate_service import _call_ollama
+from backend.scripts.services.ai_candidate_service import _call_ollama
 
 logger = logging.getLogger(__name__)
 

@@ -25,7 +25,7 @@ from backend.models.entities import (
     OnboardingStatus,
     OnboardingDocumentStatus,
 )
-from backend.services.onboarding_workflow_service import complete_onboarding
+from backend.scripts.services.onboarding_workflow_service import complete_onboarding
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

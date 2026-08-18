@@ -4,8 +4,8 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from backend.services.chat_service import chat_service
-from backend.services.context_retrieval_service import detect_intent, retrieve_context, build_rag_prompt
+from backend.scripts.services.chat_service import chat_service
+from backend.scripts.services.context_retrieval_service import detect_intent, retrieve_context, build_rag_prompt
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

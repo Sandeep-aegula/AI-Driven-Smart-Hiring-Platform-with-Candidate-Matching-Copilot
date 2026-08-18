@@ -2,7 +2,7 @@ import logging
 from collections import OrderedDict
 from typing import Optional
 
-from backend.services.ollama_service import OllamaService, OllamaServiceError, ollama_service
+from backend.scripts.services.ollama_service import OllamaService, OllamaServiceError, ollama_service
 
 logger = logging.getLogger(__name__)
 

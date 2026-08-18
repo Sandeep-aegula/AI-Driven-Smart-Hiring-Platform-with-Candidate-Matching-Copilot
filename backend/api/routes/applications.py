@@ -3,11 +3,11 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 
 from backend.schemas.workflow import ApplicationStatusUpdate, ApplicationSelectRequest, HRApplicationRead
-from backend.services.application_workflow_service import (
+from backend.scripts.services.application_workflow_service import (
     list_hr_applications,
     update_application_status,
 )
-from backend.services.onboarding_workflow_service import select_application_for_onboarding
+from backend.scripts.services.onboarding_workflow_service import select_application_for_onboarding
 
 router = APIRouter()
 

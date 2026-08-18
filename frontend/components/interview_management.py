@@ -201,7 +201,7 @@ def _render_detail_view():
     if st.button("← Back to List"):
         _navigate_to("List")
         
-    t1, t2, t3, t4 = st.tabs(["Schedule Info", "AI Questions", "Feedback & Decision", "Email"])
+    t1, t2, t3 = st.tabs(["Schedule Info", "AI Questions", "Feedback & Decision"])
     
     with t1:
         st.markdown(f"""
@@ -324,41 +324,41 @@ def _render_detail_view():
                 error_msg = res.get("error", "Failed to log decision.") if res else "Failed to log decision."
                 st.error(f"Failed to log decision: {error_msg}")
 
-    with t4:
-        st.markdown("Draft an email to the candidate regarding this interview.")
-        mode = "Result" if iv.get("decision") else "Invitation"
-        mode_sel = st.selectbox("Email Mode", ["Invitation", "Result"], index=0 if mode == "Invitation" else 1)
+    # with t4:
+    #     st.markdown("Draft an email to the candidate regarding this interview.")
+    #     mode = "Result" if iv.get("decision") else "Invitation"
+    #     mode_sel = st.selectbox("Email Mode", ["Invitation", "Result"], index=0 if mode == "Invitation" else 1)
         
-        draft_key = f"iv_draft_{iv_id}_{mode_sel}"
-        if st.button(f"Generate {mode_sel} Draft"):
-            with st.spinner("Drafting email..."):
-                draft = api_client.draft_interview_email(iv_id, mode_sel)
-                if draft:
-                    st.session_state[draft_key] = draft
-                else:
-                    st.error("Failed to generate draft.")
+    #     draft_key = f"iv_draft_{iv_id}_{mode_sel}"
+    #     if st.button(f"Generate {mode_sel} Draft"):
+    #         with st.spinner("Drafting email..."):
+    #             draft = api_client.draft_interview_email(iv_id, mode_sel)
+    #             if draft:
+    #                 st.session_state[draft_key] = draft
+    #             else:
+    #                 st.error("Failed to generate draft.")
                     
-        draft_data = st.session_state.get(draft_key)
-        if draft_data:
-            subj = st.text_input("Subject", value=draft_data.get("subject", ""))
-            body = st.text_area("Body", value=draft_data.get("body", ""), height=250)
-            if st.button("Send Email", type="primary"):
-                with st.spinner("Sending..."):
-                    res = api_client.send_interview_email(iv_id, subj, body)
-                    if res:
-                        st.success("Email sent! (Saved to candidate history)")
-                        del st.session_state[draft_key]
-                    else:
-                        st.error("Failed to send email.")
+    #     draft_data = st.session_state.get(draft_key)
+    #     if draft_data:
+    #         subj = st.text_input("Subject", value=draft_data.get("subject", ""))
+    #         body = st.text_area("Body", value=draft_data.get("body", ""), height=250)
+    #         if st.button("Send Email", type="primary"):
+    #             with st.spinner("Sending..."):
+    #                 res = api_client.send_interview_email(iv_id, subj, body)
+    #                 if res:
+    #                     st.success("Email sent! (Saved to candidate history)")
+    #                     del st.session_state[draft_key]
+    #                 else:
+    #                     st.error("Failed to send email.")
                         
-        st.markdown("#### Email History")
-        history = api_client.get_interview_email_history(iv_id)
-        if not history:
-            st.info("No emails sent yet.")
-        else:
-            for h in history:
-                with st.expander(f"{h.get('sent_at')} - {h.get('subject')}"):
-                    st.text(h.get("body"))
+    #     st.markdown("#### Email History")
+    #     history = api_client.get_interview_email_history(iv_id)
+    #     if not history:
+    #         st.info("No emails sent yet.")
+    #     else:
+    #         for h in history:
+    #             with st.expander(f"{h.get('sent_at')} - {h.get('subject')}"):
+    #                 st.text(h.get("body"))
 
 
 def render_interview_management():

@@ -24,8 +24,8 @@ from backend.schemas.entities import (
     CommunicationSendRequest,
     EmailRecord,
 )
-from backend.services.ai_email_service import draft_communication_email
-from backend.services.emailer import send_custom_email
+from backend.scripts.services.ai_email_service import draft_communication_email
+from backend.scripts.services.emailer import send_custom_email
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

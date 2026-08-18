@@ -26,8 +26,8 @@ from backend.schemas.workflow import (
     PublicJobDetail,
     PublicJobSummary,
 )
-from backend.services.ai_resume_service import evaluate_candidate_match, parse_resume_to_json
-from backend.services.resume_parser_service import extract_text_from_document
+from backend.scripts.services.ai_resume_service import evaluate_candidate_match, parse_resume_to_json
+from backend.scripts.services.resume_parser_service import extract_text_from_document
 
 logger = logging.getLogger(__name__)
 

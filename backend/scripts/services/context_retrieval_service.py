@@ -1,7 +1,7 @@
 import json
 import logging
 from backend.database.data_store import data_store
-from backend.services.ollama_service import ollama_service
+from backend.scripts.services.ollama_service import ollama_service
 
 logger = logging.getLogger(__name__)
 

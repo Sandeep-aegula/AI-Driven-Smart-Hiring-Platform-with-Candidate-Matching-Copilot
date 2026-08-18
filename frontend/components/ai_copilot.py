@@ -25,7 +25,7 @@ from frontend.services.copilot_service import (
     send_message,
     set_thinking,
 )
-from backend.services.resume_parser_service import extract_text_from_document
+from backend.scripts.services.resume_parser_service import extract_text_from_document
 
 
 # Typewriter tuning — small enough to feel snappy, not a slog on long responses.

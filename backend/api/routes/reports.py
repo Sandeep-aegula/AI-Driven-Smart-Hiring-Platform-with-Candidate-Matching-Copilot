@@ -8,13 +8,13 @@ from pydantic import BaseModel
 from typing import Any
 
 from backend.database.data_store import data_store
-from backend.services.report_aggregation_service import (
+from backend.scripts.services.report_aggregation_service import (
     get_pipeline_funnel,
     get_hiring_velocity,
     get_source_quality,
     get_workforce_summary
 )
-from backend.services.export_service import generate_export, get_export_status
+from backend.scripts.services.export_service import generate_export, get_export_status
 
 logger = logging.getLogger(__name__)
 
