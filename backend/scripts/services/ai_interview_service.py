@@ -169,7 +169,28 @@ EXACT OUTPUT FORMAT (copy this structure, fill in your content):
 Generate exactly {count} question(s) following the format above."""
     
     try:
-        res = await asyncio.wait_for(_call_ollama(prompt, json_format=True), timeout=35.0)
+        question_schema = {
+    "type": "array",
+    "minItems": count,
+    "maxItems": count,
+    "items": {
+        "type": "object",
+        "properties": {
+            "question": {"type": "string"},
+            "model_answer": {"type": "string"},
+            "evaluation_guideline": {"type": "string"}
+        },
+        "required": ["question", "model_answer", "evaluation_guideline"]
+           }
+           }
+        
+        
+        
+        res = await asyncio.wait_for(
+    _call_ollama(prompt, json_format=True, schema=question_schema, num_predict=300 * count),
+    timeout=150.0
+)
+        # res = await asyncio.wait_for(_call_ollama(prompt, json_format=True), timeout=35.0)
     except (asyncio.TimeoutError, Exception) as exc:
         logger.warning("Interview-question generation failed: %s", exc)
         return fallback_question(job_context.get("title", ""), "AI generation unavailable")
@@ -198,9 +219,39 @@ Generate exactly {count} question(s) following the format above."""
     
     logger.info("Successfully generated %d interview questions", len(normalized))
     
-    # If we got fewer questions than requested, pad with fallback
-    while len(normalized) < count:
-        fallback = fallback_question(job_context.get("title", ""), "AI generated insufficient questions")
-        normalized.extend(fallback)
+    # # If we got fewer questions than requested, pad with fallback
+    # while len(normalized) < count:
+    #     fallback = fallback_question(job_context.get("title", ""), "AI generated insufficient questions")
+    #     normalized.extend(fallback)
     
+    # return normalized[:count]
+        # If we got fewer questions than requested, retry once before padding with fallback
+    if len(normalized) < count:
+        missing = count - len(normalized)
+        retry_prompt = prompt + f"\n\nYour previous response only contained {len(normalized)} question(s). You MUST return exactly {count} questions, no fewer."
+        try:
+            # res2 = await asyncio.wait_for(_call_ollama(retry_prompt, json_format=True), timeout=35.0)
+            res2 = await asyncio.wait_for(
+    _call_ollama(retry_prompt, json_format=True, schema=question_schema, num_predict=300 * (count - len(normalized))),
+    timeout=150.0
+)
+            more = _extract_json_array(res2) or []
+            for item in more:
+                if len(normalized) >= count:
+                    break
+                if isinstance(item, dict) and all(
+                    isinstance(item.get(key), str) and item[key].strip()
+                    for key in ("question", "model_answer", "evaluation_guideline")
+                ):
+                    normalized.append({key: item[key].strip() for key in ("question", "model_answer", "evaluation_guideline")})
+        except Exception as exc:
+            logger.warning("Retry for missing questions failed: %s", exc)
+
+    # Only pad with fallback if the retry still didn't fill the gap, and never repeat identical text
+    idx = 1
+    while len(normalized) < count:
+        fallback = fallback_question(job_context.get("title", ""), f"AI generated insufficient questions — filler {idx}/{count - len(normalized) + idx - 1}")
+        normalized.extend(fallback)
+        idx += 1
+
     return normalized[:count]

@@ -7,17 +7,23 @@ logger = logging.getLogger(__name__)
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "qwen2.5-coder:7b"
-TIMEOUT_SECONDS = 30.0
+TIMEOUT_SECONDS = 180.0
 
-
-async def _call_ollama(prompt: str, json_format: bool = True) -> Any:
+async def _call_ollama(prompt: str, json_format: bool = True, schema: Optional[dict] = None, num_predict: int = 2048) -> Any:
     payload = {
         "model": OLLAMA_MODEL,
         "prompt": prompt,
-        "stream": False
+        "stream": False,
+        "options": {
+            "num_predict": num_predict
+        }
     }
-    if json_format:
+    if schema is not None:
+        payload["format"] = schema
+    elif json_format:
         payload["format"] = "json"
+    # if json_format:
+    #     payload["format"] = "json"
         
     try:
         async with httpx.AsyncClient() as client:
